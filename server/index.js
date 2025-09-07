@@ -1,11 +1,13 @@
 const express = require('express');
-require('./src/models/user');
+require('./src/models/user.model');
+require('./src/models/course.model');
 const localAuthRoute = require('./src/routes/auth/localAuth.route');
 const oAuthRoute = require('./src/routes/auth/oAuth.route');
 const cookieParser = require('cookie-parser');
 
 const passport = require('passport');
 const connectDB = require('./src/lib/db');
+const courseRoute = require('./src/routes/admin/course.route');
 
 require('./src/lib/passport');
 
@@ -27,7 +29,7 @@ app.use(passport.initialize());
 
 app.use('/api/auth', localAuthRoute);
 app.use('/auth/google', oAuthRoute);
-
+app.use('/api/admin/courses',courseRoute)
 
 
 

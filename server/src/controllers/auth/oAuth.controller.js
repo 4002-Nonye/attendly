@@ -1,5 +1,5 @@
 const passport = require('passport');
-const setAuthCookie = require('../utils/setAuthCookie');
+const setAuthCookie = require('../../utils/setAuthCookie');
 require('dotenv').config();
 
 exports.authGoogle = passport.authenticate('google', {

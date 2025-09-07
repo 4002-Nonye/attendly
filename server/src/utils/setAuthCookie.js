@@ -2,10 +2,10 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 const setAuthCookie = (res, user) => {
-  
+ 
   // create a jwt for a newly created user
   const token = jwt.sign(
-    { id: user._id, email: user.email },
+    { id: user._id, email: user.email ,role:user.role},
     process.env.JWT_SECRET,
     {
       expiresIn: '1d',

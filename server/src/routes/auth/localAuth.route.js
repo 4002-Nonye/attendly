@@ -8,7 +8,7 @@ const {
   // forgotPassword,
   // resetPassword,
   // getUser,
-} = require('../../controllers/localAuth.controller');
+} = require('../../controllers/auth/localAuth.controller');
 
 const localAuthRoute = express.Router();
 

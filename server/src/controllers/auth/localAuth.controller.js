@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
-const setAuthCookie = require('../utils/setAuthCookie');
-const sanitizeUser = require('../utils/sanitizeUser');
+const setAuthCookie = require('../../utils/setAuthCookie');
+const sanitizeUser = require('../../utils/sanitizeUser');
 const jwt = require('jsonwebtoken');
 // const sendEmail = require('../lib/sendEmail');
 require('dotenv').config();
@@ -12,11 +12,28 @@ const User = mongoose.model('User');
 
 exports.signup = async (req, res) => {
   try {
-    const { fullName, email, password, role } = req.body;
+    const { fullName, email, password, role, matricNo ,faculty,department} = req.body;
+    // Basic field validation
     if (!fullName || !email || !password || !role) {
-      return res.status(404).json({
+      return res.status(400).json({
         error: 'All fields are required',
       });
+    }
+
+    // If role is student, faculty, department, and matricNo must be provided
+    if (role === 'student') {
+      if (!matricNo || !faculty || !department) {
+        return res.status(400).json({
+          error: 'Matric number, faculty, and department are required for students',
+        });
+      }
+    } else {
+      // If role is not student, faculty, department, and matricNo should not be provided
+      if (matricNo || faculty || department) {
+        return res.status(400).json({
+          error: 'Matric number, faculty, and department should only be provided for students',
+        });
+      }
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -42,6 +59,7 @@ exports.signup = async (req, res) => {
       password: hashedPassword,
       email,
       role,
+      matricNo,
     }).save();
 
     // Create a JWT token for the newly registered user
@@ -70,7 +88,7 @@ exports.login = async (req, res) => {
     return res.status(400).json({ error: 'All fields are required' });
   }
   try {
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email }).select('+password');
     // If there is no existing user, do not log in
     if (!existingUser) {
       return res
@@ -80,12 +98,10 @@ exports.login = async (req, res) => {
 
     if (existingUser) {
       if (!existingUser.password) {
-        return res
-          .status(401)
-          .json({
-            error:
-              'This account was created using Google. Please sign in with Google instead.',
-          });
+        return res.status(401).json({
+          error:
+            'This account was created using Google. Please sign in with Google instead.',
+        });
       }
       // compare password to allow login if there is a user
       const comparePassword = bcrypt.compareSync(
@@ -137,7 +153,7 @@ exports.logout = async (_, res) => {
 //     const payload = jwt.verify(token, process.env.JWT_SECRET);
 //     const { userEmail, googleID } = payload;
 
-//     const existingUser = await User.findOne({ email: userEmail });
+//     const existingUser = await User.findOne({ email: userEmail }).select('+password');
 //     if (!existingUser) {
 //       return res.status(404).json({ error: 'User does not exist' });
 //     }
@@ -189,7 +205,7 @@ exports.logout = async (_, res) => {
 //         .status(200)
 //         .json({ message: 'Reset link sent to your email.' });
 //     } catch (error) {
-     
+
 //       return res.status(500).json({ error: 'Failed to send reset email' });
 //     }
 //   } catch (error) {
@@ -206,7 +222,7 @@ exports.logout = async (_, res) => {
 //       email,
 //       resetPasswordToken: token,
 //       resetPasswordExpires: { $gt: Date.now() },
-//     });
+//     }).select('+password');
 //     if (!existingUser) {
 //       return res.status(400).json({ error: 'Invalid token' });
 //     }
