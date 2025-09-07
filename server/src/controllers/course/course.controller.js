@@ -72,12 +72,10 @@ exports.getCourseByID = async (req, res) => {};
 exports.editCourse = async (req, res) => {};
 exports.deleteCourse = async (req, res) => {};
 
-
 exports.assignLecturer = async (req, res) => {
   try {
     const { courseIDs } = req.body;
     const lecturerID = req.user.id;
-    console.log(req.user)
 
     // Validate IDs
     if (!courseIDs || !Array.isArray(courseIDs) || courseIDs.length === 0) {
@@ -110,12 +108,61 @@ exports.assignLecturer = async (req, res) => {
     const result = await Course.bulkWrite(bulkOps);
 
     // fetch updated data for response
-    const updatedCourses = await Course.find({ _id: { $in: validIds } }).populate('lecturers', 'fullName email');
-    res.status(200).json({message:'Course(s) assigned successfully',updatedCourses})
-
-   
+    const updatedCourses = await Course.find({
+      _id: { $in: validIds },
+    }).populate('lecturers', 'fullName email');
+    res.status(200).json({
+      message: 'Courses assigned successfully',
+      updatedCourses,
+    });
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
-exports.registerCourse = async (req, res) => {};
+exports.registerCourse = async (req, res) => {
+  try {
+    const { courseIDs } = req.body;
+    const studentID = req.user.id;
+
+    // Validate IDs
+    if (!courseIDs || !Array.isArray(courseIDs) || courseIDs.length === 0) {
+      return res.status(400).json({ message: 'No courses selected' });
+    }
+
+    // Filter out invalid MongoDB ObjectIds
+    const validIds = courseIDs.filter((id) =>
+      mongoose.Types.ObjectId.isValid(id)
+    );
+    if (validIds.length !== courseIDs.length) {
+      return res.status(400).json({ message: 'Some course IDs are invalid' });
+    }
+
+    // Prepare bulk operations
+    // For each valid course ID, create an update operation
+    const bulkOps = validIds.map((courseID) => ({
+      updateOne: {
+        // $ne ensures we only update courses where lecturer is NOT already assigned
+        filter: {
+          _id: courseID,
+          students: { $ne: studentID },
+        },
+        update: { $addToSet: { students: studentID } },
+        // $addToSet ensures we don't add duplicate IDs in the array
+      },
+    }));
+
+    //Execute bulk update
+    const result = await Course.bulkWrite(bulkOps);
+
+    // fetch updated data for response
+    const updatedCourses = await Course.find({
+      _id: { $in: validIds },
+    }).populate('students', 'fullName email matricNo');
+    res.status(200).json({
+      message: 'Courses registered successfully',
+      updatedCourses,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};

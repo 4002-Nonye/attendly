@@ -41,7 +41,7 @@ courseRoute.get('/lecturer', requireLogin, requireLecturerAccess, getCoursesForL
 
 // Student roles
 courseRoute.post(
-  '/:id/register',
+  '/register',
   requireLogin,
   requireStudentAccess,
   registerCourse
