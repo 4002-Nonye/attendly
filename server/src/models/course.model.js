@@ -37,7 +37,11 @@ const courseSchema = new Schema(
       type: String,
       required: true,
     },
-     faculty: {
+    faculty: {
+      type: String,
+      required: true,
+    },
+    level: {
       type: String,
       required: true,
     },

@@ -7,7 +7,7 @@ const cookieParser = require('cookie-parser');
 
 const passport = require('passport');
 const connectDB = require('./src/lib/db');
-const courseRoute = require('./src/routes/admin/course.route');
+const courseRoute = require('./src/routes/course/course.route');
 
 require('./src/lib/passport');
 
@@ -29,7 +29,7 @@ app.use(passport.initialize());
 
 app.use('/api/auth', localAuthRoute);
 app.use('/auth/google', oAuthRoute);
-app.use('/api/admin/courses',courseRoute)
+app.use('/api/courses',courseRoute)
 
 
 
