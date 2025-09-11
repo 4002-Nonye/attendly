@@ -30,6 +30,8 @@ courseRoute.get('/admin/all', requireLogin, requireAdminAccess, getCoursesForAdm
 //courseRoute.put('/:id', requireLogin, requireAdminAccess, editCourse); // edit a course
 courseRoute.delete('/:id', requireLogin, requireAdminAccess, deleteCourse); // delete a course
 
+
+
 // Lecturer roles
 courseRoute.post(
   '/assign-lecturer',

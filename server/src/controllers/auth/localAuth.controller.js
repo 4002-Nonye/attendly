@@ -9,26 +9,38 @@ require('dotenv').config();
 // const html = require('../utils/emailTemplates/resetPasswordTemplate');
 
 const User = mongoose.model('User');
-
+const School = mongoose.model('School');
 exports.signup = async (req, res) => {
   try {
-    const { fullName, email, password, role, matricNo ,faculty,department} = req.body;
-    // Basic field validation
+    // Destructure fields from the request body
+    const { fullName, email, password, role, matricNo, faculty, department, schoolName } = req.body;
+
+    // Basic validation: required fields
     if (!fullName || !email || !password || !role) {
       return res.status(400).json({
         error: 'All fields are required',
       });
     }
+    
+    //School creation / retrieval
+    // Check if a school with the given name already exists
+    const school = await School.findOne({ schoolName: schoolName.trim() });
+    if (!school) {
+      // If school doesn't exist, create a new school
+      school = new School({ schoolName: schoolName.trim() });
+      await school.save();
+    }
 
-    // If role is student, faculty, department, and matricNo must be provided
+    //Role-specific validation
     if (role === 'student') {
+      // Students must have matricNo, faculty, and department
       if (!matricNo || !faculty || !department) {
         return res.status(400).json({
           error: 'Matric number, faculty, and department are required for students',
         });
       }
     } else {
-      // If role is not student, faculty, department, and matricNo should not be provided
+      // Non-students should NOT provide these fields
       if (matricNo || faculty || department) {
         return res.status(400).json({
           error: 'Matric number, faculty, and department should only be provided for students',
@@ -36,6 +48,7 @@ exports.signup = async (req, res) => {
       }
     }
 
+    //Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({
@@ -43,42 +56,50 @@ exports.signup = async (req, res) => {
       });
     }
 
+    //Check for existing user
     const existingUser = await User.findOne({ email });
-
     if (existingUser) {
       return res.status(409).json({
-        message: 'User already exist',
+        message: 'User already exists',
       });
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    // Password hashing
+    const salt = await bcrypt.genSalt(10); // Generate salt
+    const hashedPassword = await bcrypt.hash(password, salt); // Hash the password
 
+    //Create new user
     const newUser = await new User({
       fullName,
       password: hashedPassword,
       email,
       role,
-      matricNo,
+      matricNo,          // only for students
+      schoolID: school._id, // Link the user to the school
     }).save();
 
-    // Create a JWT token for the newly registered user
-    // Send the JWT token as an HTTP-only cookie
+    //Set authentication cookie with JWT
     setAuthCookie(res, newUser);
 
-    // Destructure the user object to remove sensitive or unnecessary fields before sending to the client
+    //Sanitize user object before sending to client
+    // Removes sensitive info like password
     const safeToSendUser = sanitizeUser(newUser._doc);
+
+    //Send success response
     return res.status(201).json({
       message: 'User successfully registered',
       user: safeToSendUser,
     });
+
   } catch (error) {
+    // Catch any server errors
     console.log(error);
     return res.status(500).json({
       error: 'Internal server error',
     });
   }
 };
+
 
 exports.login = async (req, res) => {
   const { email, password } = req.body;
@@ -242,4 +263,45 @@ exports.logout = async (_, res) => {
 
 exports.getUser = async (req, res) => {
   res.status(200).json({ user: req.user });
+};
+
+// complete user profile if sign up with google
+exports.completeProfile = async (req, res) => {
+  try {
+    const userId = req.user.id; 
+    const { role, schoolID, faculty, department, matricNo } = req.body;
+
+    // Validate role
+    if (!role) {
+      return res.status(400).json({ error: 'Role is required' });
+    }
+
+    // role-specific validation
+    if (role === 'student' && (!faculty || !department || !matricNo)) {
+      return res.status(400).json({
+        error: 'Student must have faculty, department, and matric number',
+      });
+    }
+     // role-specific validation
+    if (role === 'lecturer' && (!faculty || !department )) {
+      return res.status(400).json({
+        error: 'Lecturer must have faculty and department',
+      });
+    }
+
+    // Update the user
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { role, schoolID, faculty, department, matricNo },
+      { new: true }
+    );
+
+    return res.status(200).json({
+      message: 'Profile completed successfully',
+      user: updatedUser,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
 };

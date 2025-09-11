@@ -22,25 +22,21 @@ const courseSchema = new Schema(
         ref: 'User',
       },
     ],
-    students: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-      },
-    ],
+    faculty: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Faculty',
+    },
+    department: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Department',
+    },
+    
     semester: {
       type: String,
       enum: ['First', 'Second'],
       required: true,
     },
-    department: {
-      type: String,
-      required: true,
-    },
-    faculty: {
-      type: String,
-      required: true,
-    },
+
     level: {
       type: String,
       required: true,
@@ -49,9 +45,13 @@ const courseSchema = new Schema(
       type: String,
       required: true, // Example: "2024/2025"
     },
+    // schoolID: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: 'School',
+    // },
   },
   { timestamps: true }
 );
 
-// To create a collection of users (Table of users)
+
 mongoose.model('Course', courseSchema); // two arguments means we are trying to create a collection

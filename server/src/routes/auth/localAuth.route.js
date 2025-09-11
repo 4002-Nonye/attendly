@@ -4,6 +4,7 @@ const {
   signup,
   login,
   logout,
+  completeProfile
   // linkAccount,
   // forgotPassword,
   // resetPassword,
@@ -15,6 +16,7 @@ const localAuthRoute = express.Router();
 localAuthRoute.post('/signup', signup);
 localAuthRoute.post('/login', login);
 localAuthRoute.get('/logout', logout);
+localAuthRoute.put('/complete-profile',requireLogin,completeProfile)
 // localAuthRoute.post('/link-account', linkAccount);
 // localAuthRoute.post('/forgot-password', requireLogin, forgotPassword);
 // localAuthRoute.post('/reset-password', requireLogin, resetPassword);

@@ -23,8 +23,19 @@ exports.authGoogleCallback = (req, res, next) =>
         `${process.env.CLIENT_URL}/link-account/?token=${token}`
       );
     }
+    
+    // profile is incomplete if schoolID or role is missing
+    const profileIncomplete =
+      !user.schoolID || !user.role || (user.role === 'student' && !user.matricNo);
+
     // Set auth cookie
     setAuthCookie(res, user);
 
+    if (profileIncomplete) {
+      // Redirect user to complete profile page
+      return res.redirect(`${process.env.CLIENT_URL}/complete-profile`);
+    }
+
+    // Otherwise, redirect to homepage/dashboard
     return res.redirect('/');
   })(req, res, next);

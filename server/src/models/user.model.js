@@ -12,8 +12,7 @@ const userSchema = new Schema(
     role: {
       type: String,
       enum: ['student', 'admin', 'lecturer'],
-      default: 'student',
-      required: true,
+      
     },
     googleID: {
       type: String,
@@ -22,7 +21,6 @@ const userSchema = new Schema(
     },
     matricNo: {
       type: String,
-      unique: true,
       trim: true,
       sparse: true,
     },
@@ -39,12 +37,16 @@ const userSchema = new Schema(
       select: false,
     },
     faculty: {
-      type: String,
-      
+      type: mongoose.Schema.Types.ObjectId,
+       ref: 'Faculty',
     },
     department: {
-      type: String,
-      
+      type: mongoose.Schema.Types.ObjectId,
+       ref: 'Department',
+    },
+    schoolID: {
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: 'School',
     },
   },
   { timestamps: true }
