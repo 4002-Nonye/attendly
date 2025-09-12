@@ -147,7 +147,7 @@ exports.deleteFaculty = async (req, res) => {
     if (!faculty) {
       return res
         .status(404)
-        .json({ error: 'Faculty not found or not in your school' });
+        .json({ error: 'Faculty not found' });
     }
 
     // Find all departments under this faculty

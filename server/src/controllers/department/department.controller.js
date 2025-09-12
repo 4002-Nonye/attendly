@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const Department = mongoose.model('Department');
+const Course = mongoose.model('Course');
 
 exports.addDepartment = async (req, res) => {
   try {
@@ -129,11 +130,15 @@ exports.deleteDepartment = async (req, res) => {
       return res.status(404).json({ error: 'Department not found' });
     }
 
+    // Delete all courses linked to this department
+   await Course.deleteMany({department:departmentID})
+
+
     // Delete department
     await Department.findByIdAndDelete(departmentID);
 
     return res.status(200).json({
-      message: 'Department deleted successfully',
+      message: 'Department and its courses deleted successfully',
       departmentID,
     });
   } catch (error) {
