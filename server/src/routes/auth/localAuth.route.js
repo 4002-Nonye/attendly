@@ -4,11 +4,11 @@ const {
   signup,
   login,
   logout,
-  completeProfile
-  // linkAccount,
-  // forgotPassword,
-  // resetPassword,
-  // getUser,
+  completeProfile,
+  linkAccount,
+  forgotPassword,
+  resetPassword,
+   getUser,
 } = require('../../controllers/auth/localAuth.controller');
 
 const localAuthRoute = express.Router();
@@ -17,9 +17,8 @@ localAuthRoute.post('/signup', signup);
 localAuthRoute.post('/login', login);
 localAuthRoute.get('/logout', logout);
 localAuthRoute.put('/complete-profile',requireLogin,completeProfile)
-// localAuthRoute.post('/link-account', linkAccount);
-// localAuthRoute.post('/forgot-password', requireLogin, forgotPassword);
-// localAuthRoute.post('/reset-password', requireLogin, resetPassword);
-// localAuthRoute.get('/user',requireLogin, getUser);
+localAuthRoute.post('/link-account', linkAccount);
+localAuthRoute.post('/forgot-password', requireLogin, forgotPassword);
+localAuthRoute.post('/reset-password', requireLogin, resetPassword); localAuthRoute.get('/user',requireLogin, getUser);
 
 module.exports = localAuthRoute;

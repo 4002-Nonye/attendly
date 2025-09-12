@@ -37,7 +37,7 @@ module.exports = passport.use(
         if (existingUser && !existingUser.googleID) {
           // store user information in a token
           const token = jwt.sign(
-            { userEmail, googleID: id, displayName },
+            { email:userEmail, googleID: id, displayName },
             process.env.JWT_SECRET,
             { expiresIn: '10m' }
           );

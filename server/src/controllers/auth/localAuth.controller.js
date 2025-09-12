@@ -2,18 +2,27 @@ const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const setAuthCookie = require('../../utils/setAuthCookie');
 const sanitizeUser = require('../../utils/sanitizeUser');
-const jwt = require('jsonwebtoken');
-// const sendEmail = require('../lib/sendEmail');
+const jwt = require('jsonwebtoken')
+const sendEmail = require('../../lib/sendEmail');
 require('dotenv').config();
-// const crypto = require('crypto');
-// const html = require('../utils/emailTemplates/resetPasswordTemplate');
+const crypto = require('crypto');
+const html = require('../../utils/emailTemplates/resetPasswordTemplate');
 
 const User = mongoose.model('User');
 const School = mongoose.model('School');
 exports.signup = async (req, res) => {
   try {
     // Destructure fields from the request body
-    const { fullName, email, password, role, matricNo, faculty, department, schoolName } = req.body;
+    const {
+      fullName,
+      email,
+      password,
+      role,
+      matricNo,
+      faculty,
+      department,
+      schoolName,
+    } = req.body;
 
     // Basic validation: required fields
     if (!fullName || !email || !password || !role) {
@@ -21,7 +30,7 @@ exports.signup = async (req, res) => {
         error: 'All fields are required',
       });
     }
-    
+
     //School creation / retrieval
     // Check if a school with the given name already exists
     const school = await School.findOne({ schoolName: schoolName.trim() });
@@ -36,14 +45,16 @@ exports.signup = async (req, res) => {
       // Students must have matricNo, faculty, and department
       if (!matricNo || !faculty || !department) {
         return res.status(400).json({
-          error: 'Matric number, faculty, and department are required for students',
+          error:
+            'Matric number, faculty, and department are required for students',
         });
       }
     } else {
       // Non-students should NOT provide these fields
       if (matricNo || faculty || department) {
         return res.status(400).json({
-          error: 'Matric number, faculty, and department should only be provided for students',
+          error:
+            'Matric number, faculty, and department should only be provided for students',
         });
       }
     }
@@ -74,7 +85,7 @@ exports.signup = async (req, res) => {
       password: hashedPassword,
       email,
       role,
-      matricNo,          // only for students
+      matricNo, // only for students
       schoolID: school._id, // Link the user to the school
     }).save();
 
@@ -90,7 +101,6 @@ exports.signup = async (req, res) => {
       message: 'User successfully registered',
       user: safeToSendUser,
     });
-
   } catch (error) {
     // Catch any server errors
     console.log(error);
@@ -100,6 +110,46 @@ exports.signup = async (req, res) => {
   }
 };
 
+// complete user profile if sign up with google
+exports.completeProfile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { role, schoolID, faculty, department, matricNo } = req.body;
+
+    // Validate role
+    if (!role) {
+      return res.status(400).json({ error: 'Role is required' });
+    }
+
+    // role-specific validation
+    if (role === 'student' && (!faculty || !department || !matricNo)) {
+      return res.status(400).json({
+        error: 'Student must have faculty, department, and matric number',
+      });
+    }
+    // role-specific validation
+    if (role === 'lecturer' && (!faculty || !department)) {
+      return res.status(400).json({
+        error: 'Lecturer must have faculty and department',
+      });
+    }
+
+    // Update the user
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { role, schoolID, faculty, department, matricNo },
+      { new: true }
+    );
+
+    return res.status(200).json({
+      message: 'Profile completed successfully',
+      user: updatedUser,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
 
 exports.login = async (req, res) => {
   const { email, password } = req.body;
@@ -163,145 +213,108 @@ exports.logout = async (_, res) => {
   }
 };
 
-// exports.linkAccount = async (req, res) => {
-//   const { token, password } = req.body;
-//   if (!password) {
-//     return res.status(404).json({ error: 'Password is required' });
-//   }
+exports.linkAccount = async (req, res) => {
+  const { token, password } = req.body;
+  if (!password) {
+    return res.status(404).json({ error: 'Password is required' });
+  }
 
-//   try {
-//     // retrieve the user stored from the token and decode it
-//     const payload = jwt.verify(token, process.env.JWT_SECRET);
-//     const { userEmail, googleID } = payload;
+  try {
+    // retrieve the user stored from the token and decode it
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    const { email, googleID } = payload;
 
-//     const existingUser = await User.findOne({ email: userEmail }).select('+password');
-//     if (!existingUser) {
-//       return res.status(404).json({ error: 'User does not exist' });
-//     }
 
-//     const comparePassword = bcrypt.compareSync(password, existingUser.password);
+    const existingUser = await User.findOne({ email}).select('+password');
+    if (!existingUser) {
+      return res.status(404).json({ error: 'User does not exist' });
+    }
 
-//     if (!comparePassword) {
-//       return res.status(401).json({ error: 'Invalid credentials' });
-//     }
+    const comparePassword = bcrypt.compareSync(password, existingUser.password);
 
-//     // add google ID to link account that initially signed in with email and password
-//     existingUser.googleID = googleID;
-//     await existingUser.save();
+    if (!comparePassword) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
 
-//     setAuthCookie(res, existingUser);
-//     return res.status(200).json({ message: 'Account linked successfully' });
-//   } catch (error) {
-//     return res.status(500).json({ error: 'Internal server error' });
-//   }
-// };
+    // add google ID to link account that initially signed in with email and password
+    existingUser.googleID = googleID;
+    await existingUser.save();
 
-// exports.forgotPassword = async (req, res) => {
-//   const { email } = req.body;
-//   if (!email) {
-//     return res.status(400).json({ error: 'All fields are required' });
-//   }
+    setAuthCookie(res, existingUser);
+    return res.status(200).json({ message: 'Account linked successfully' });
+  } catch (error) {
+    console.log(error)
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
 
-//   try {
-//     const existingUser = await User.findOne({ email });
-//     if (!existingUser) {
-//       return res.status(401).json({ error: 'User does not exist' });
-//     }
+exports.forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
 
-//     // if there is a user trying to reset password, go ahead and generate a token
+  try {
+    const existingUser = await User.findOne({ email });
+    if (!existingUser) {
+      return res.status(401).json({ error: 'User does not exist' });
+    }
 
-//     const token = crypto.randomBytes(32).toString('hex');
+    // if there is a user trying to reset password, go ahead and generate a token
 
-//     //save token to db
-//     existingUser.resetPasswordToken = token;
-//     existingUser.resetPasswordExpires = new Date(Date.now() + 3600000); // token expires in 1hr
-//     await existingUser.save();
+    const token = crypto.randomBytes(32).toString('hex');
 
-//     // Send email with token
-//     const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${token}&email=${email}`;
+    //save token to db
+    existingUser.resetPasswordToken = token;
+    existingUser.resetPasswordExpires = new Date(Date.now() + 3600000); // token expires in 1hr
+    await existingUser.save();
 
-//     try {
-//       await sendEmail(email, 'Password Reset', html(resetLink));
-//       return res
-//         .status(200)
-//         .json({ message: 'Reset link sent to your email.' });
-//     } catch (error) {
+    // Send email with token
+    const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${token}&email=${email}`;
 
-//       return res.status(500).json({ error: 'Failed to send reset email' });
-//     }
-//   } catch (error) {
-//     return res.status(500).json({ error: 'Internal server error' });
-//   }
-// };
+    try {
+      await sendEmail(email, 'Password Reset', html(resetLink));
+      return res
+        .status(200)
+        .json({ message: 'Reset link sent to your email.' });
+    } catch (error) {
 
-// exports.resetPassword = async (req, res) => {
-//   const { token, email, newPassword } = req.body;
+      return res.status(500).json({ error: 'Failed to send reset email' });
+    }
+  } catch (error) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
 
-//   try {
-//     // fetch the user if the token is still valid
-//     const existingUser = await User.findOne({
-//       email,
-//       resetPasswordToken: token,
-//       resetPasswordExpires: { $gt: Date.now() },
-//     }).select('+password');
-//     if (!existingUser) {
-//       return res.status(400).json({ error: 'Invalid token' });
-//     }
+exports.resetPassword = async (req, res) => {
+  const { token, email, newPassword } = req.body;
 
-//     const salt = await bcrypt.genSalt(10);
-//     const hashedPassword = await bcrypt.hash(newPassword, salt);
-//     existingUser.password = hashedPassword; //reset password
-//     existingUser.resetPasswordToken = undefined; // clear token
-//     existingUser.resetPasswordExpires = undefined;
-//     await existingUser.save();
+  try {
+    // fetch the user if the token is still valid
+    const existingUser = await User.findOne({
+      email,
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() },
+    }).select('+password');
+    if (!existingUser) {
+      
+      return res.status(400).json({ error: 'Invalid token' });
+    }
 
-//     res.status(200).json({ message: 'Password reset successful' });
-//   } catch (error) {
-//     return res.status(500).json({ error: 'Internal server error' });
-//   }
-// };
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    existingUser.password = hashedPassword; //reset password
+    existingUser.resetPasswordToken = undefined; // clear token
+    existingUser.resetPasswordExpires = undefined;
+    await existingUser.save();
+
+    res.status(200).json({ message: 'Password reset successful' });
+  } catch (error) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
 
 exports.getUser = async (req, res) => {
   res.status(200).json({ user: req.user });
 };
 
-// complete user profile if sign up with google
-exports.completeProfile = async (req, res) => {
-  try {
-    const userId = req.user.id; 
-    const { role, schoolID, faculty, department, matricNo } = req.body;
-
-    // Validate role
-    if (!role) {
-      return res.status(400).json({ error: 'Role is required' });
-    }
-
-    // role-specific validation
-    if (role === 'student' && (!faculty || !department || !matricNo)) {
-      return res.status(400).json({
-        error: 'Student must have faculty, department, and matric number',
-      });
-    }
-     // role-specific validation
-    if (role === 'lecturer' && (!faculty || !department )) {
-      return res.status(400).json({
-        error: 'Lecturer must have faculty and department',
-      });
-    }
-
-    // Update the user
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { role, schoolID, faculty, department, matricNo },
-      { new: true }
-    );
-
-    return res.status(200).json({
-      message: 'Profile completed successfully',
-      user: updatedUser,
-    });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: 'Internal server error' });
-  }
-};

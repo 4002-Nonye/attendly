@@ -12,7 +12,6 @@ const userSchema = new Schema(
     role: {
       type: String,
       enum: ['student', 'admin', 'lecturer'],
-      
     },
     googleID: {
       type: String,
@@ -38,16 +37,18 @@ const userSchema = new Schema(
     },
     faculty: {
       type: mongoose.Schema.Types.ObjectId,
-       ref: 'Faculty',
+      ref: 'Faculty',
     },
     department: {
       type: mongoose.Schema.Types.ObjectId,
-       ref: 'Department',
+      ref: 'Department',
     },
     schoolID: {
-      type: mongoose.Schema.Types.ObjectId, 
+      type: mongoose.Schema.Types.ObjectId,
       ref: 'School',
     },
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
   },
   { timestamps: true }
 );

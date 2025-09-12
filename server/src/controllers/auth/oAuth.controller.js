@@ -23,10 +23,12 @@ exports.authGoogleCallback = (req, res, next) =>
         `${process.env.CLIENT_URL}/link-account/?token=${token}`
       );
     }
-    
+
     // profile is incomplete if schoolID or role is missing
     const profileIncomplete =
-      !user.schoolID || !user.role || (user.role === 'student' && !user.matricNo);
+      !user.schoolID ||
+      !user.role ||
+      (user.role === 'student' && !user.matricNo);
 
     // Set auth cookie
     setAuthCookie(res, user);
