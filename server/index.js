@@ -16,6 +16,7 @@ const passport = require('passport');
 const connectDB = require('./src/lib/db');
 const courseRoute = require('./src/routes/course/course.route');
 const facultyRoute = require('./src/routes/faculty/faculty.route');
+const departmentRoute = require('./src/routes/department/department.route');
 
 require('./src/lib/passport');
 
@@ -24,6 +25,7 @@ require('dotenv').config();
 
 
 const cors = require('cors');
+
 
 const app = express();
 app.use(
@@ -45,6 +47,7 @@ app.use('/api/auth', localAuthRoute);
 app.use('/auth/google', oAuthRoute);
 app.use('/api/courses',courseRoute)
 app.use('/api/faculties',facultyRoute)
+app.use('/api/departments',departmentRoute)
 
 
 

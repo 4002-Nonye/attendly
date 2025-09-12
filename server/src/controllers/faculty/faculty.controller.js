@@ -2,35 +2,53 @@ const mongoose = require('mongoose');
 
 const Faculty = mongoose.model('Faculty');
 const Department = mongoose.model('Department');
+const Course = mongoose.model('Course');
 
 exports.getFaculties = async (req, res) => {
   try {
-    const faculties = await Faculty.find().lean(); // get all faculties
+    const schoolID = req.user.schoolID; // get school ID from logged-in user
+
+    if (!schoolID) {
+      return res
+        .status(400)
+        .json({ error: 'School ID not found in user data' });
+    }
+
+    const faculties = await Faculty.find({ schoolID }).lean(); // get faculties within a school
+    if (!faculties.length) {
+      return res
+        .status(404)
+        .json({ message: 'No faculties found for this school' });
+    }
+
     res.status(200).json(faculties);
   } catch (error) {
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
-// GET faculty by ID + its departments
+// get faculty by ID + its departments
 exports.getFacultyByID = async (req, res) => {
   try {
     const facultyId = req.params.id;
 
     // Fetch faculty
-    const faculty = await Faculty.findById(facultyId).lean();
+    const faculty = await Faculty.findById(facultyId)
+      .select('-userID')
+      .populate('schoolID', 'schoolName')
+      .lean();
     if (!faculty) return res.status(404).json({ error: 'Faculty not found' });
 
     // Fetch departments that belong to this faculty
-    const departments = await Department.find({ faculty: facultyId }).lean();
+    const departments = await Department.find({ faculty: facultyId }).select(
+      '_id name'
+    );
 
-    // Send response
-    res.json({
+    res.status(200).json({
       ...faculty,
-      departments, 
+      departments,
     });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: 'Server error' });
   }
 };
@@ -115,6 +133,7 @@ exports.editFaculty = async (req, res) => {
   }
 };
 
+// in deleting a faculty, you delete the departments and courses tied to it
 exports.deleteFaculty = async (req, res) => {
   try {
     const { facultyID } = req.params;
@@ -123,22 +142,37 @@ exports.deleteFaculty = async (req, res) => {
       return res.status(400).json({ error: 'Faculty ID is required' });
     }
 
-    // delete faculty in a school
-    const deletedFaculty = await Faculty.findOneAndDelete({
-      _id: facultyID,
-      schoolID,
-    });
+    // Verify faculty exists in the user's school
+    const faculty = await Faculty.findOne({ _id: facultyID, schoolID });
+    if (!faculty) {
+      return res
+        .status(404)
+        .json({ error: 'Faculty not found or not in your school' });
+    }
+
+    // Find all departments under this faculty
+    const departments = await Department.find({ faculty: facultyID }).select(
+      '_id'
+    );
+    const departmentIDs = departments.map((dep) => dep._id);
+
+    // Delete all courses linked to these departments
+    await Course.deleteMany({ department: { $in: departmentIDs } });
+
+    // Delete all departments under this faculty
+    await Department.deleteMany({ faculty: facultyID });
+
+    // Delete the faculty itself and capture the result
+    const deletedFaculty = await Faculty.findByIdAndDelete(facultyID);
+
     if (!deletedFaculty) {
       return res.status(404).json({ error: 'Failed to delete faculty' });
     }
-    return res.status(200).json({ message: 'Faculty deleted successfully' });
+    return res.status(200).json({
+      message:
+        'Faculty, its departments, and linked courses deleted successfully',
+    });
   } catch (error) {
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
-
-exports.addDepartment = async (req, res) => {};
-
-exports.editDepartment = async (req, res) => {};
-
-exports.deleteDepartment = async (req, res) => {};

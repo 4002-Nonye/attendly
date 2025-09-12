@@ -2,9 +2,17 @@ const mongoose = require('mongoose');
 
 const { Schema } = mongoose;
 
-const departmentSchema = new Schema({
-  name: { type: String, required: true, trim: true },
-  faculty: { type: Schema.Types.ObjectId, ref: 'Faculty', required: true }, 
-}, { timestamps: true });
+const departmentSchema = new Schema(
+  {
+    name: { type: String, required: true, trim: true },
+    faculty: { type: Schema.Types.ObjectId, ref: 'Faculty', required: true },
+    schoolID: {
+      type: Schema.Types.ObjectId,
+      ref: 'School',
+      required: true,
+    },
+  },
+  { timestamps: true }
+);
 
-const Department = mongoose.model('Department', departmentSchema);
+mongoose.model('Department', departmentSchema);
