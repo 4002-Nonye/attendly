@@ -1,11 +1,44 @@
 const mongoose = require('mongoose');
 
 const Faculty = mongoose.model('Faculty');
+const Department = mongoose.model('Department');
+
+exports.getFaculties = async (req, res) => {
+  try {
+    const faculties = await Faculty.find().lean(); // get all faculties
+    res.status(200).json(faculties);
+  } catch (error) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// GET faculty by ID + its departments
+exports.getFacultyByID = async (req, res) => {
+  try {
+    const facultyId = req.params.id;
+
+    // Fetch faculty
+    const faculty = await Faculty.findById(facultyId).lean();
+    if (!faculty) return res.status(404).json({ error: 'Faculty not found' });
+
+    // Fetch departments that belong to this faculty
+    const departments = await Department.find({ faculty: facultyId }).lean();
+
+    // Send response
+    res.json({
+      ...faculty,
+      departments, 
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
 
 exports.createFaculty = async (req, res) => {
   try {
     const { name: facultyName } = req.body;
-    const { schoolID, id:userID } = req.user;
+    const { schoolID, id: userID } = req.user;
 
     // ensure no empty fields
     if (!facultyName) {
@@ -35,7 +68,6 @@ exports.createFaculty = async (req, res) => {
       .status(201)
       .json({ message: 'Faculty created successfully', faculty: newFaculty });
   } catch (error) {
-   
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -79,7 +111,6 @@ exports.editFaculty = async (req, res) => {
       faculty: updatedData,
     });
   } catch (error) {
-   
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
