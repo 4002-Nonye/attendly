@@ -24,6 +24,8 @@ exports.signup = async (req, res) => {
       schoolName,
     } = req.body;
 
+  
+
     // Basic validation: required fields
     if (!fullName || !email || !password || !role) {
       return res.status(400).json({
@@ -34,11 +36,16 @@ exports.signup = async (req, res) => {
     //School creation / retrieval
     // Check if a school with the given name already exists
     const school = await School.findOne({ schoolName: schoolName.trim() });
-    if (!school) {
-      // If school doesn't exist, create a new school
-      school = new School({ schoolName: schoolName.trim() });
-      await school.save();
+    if (school) {
+     return res.status(409).json({error:"School name already exists, pick another"})
     }
+
+
+ // If school doesn't exist, create a new school
+    const newSchool= await new School({ schoolName: schoolName.trim() });
+      await newSchool.save();
+
+
 
     //Role-specific validation
     if (role === 'student') {
@@ -86,7 +93,7 @@ exports.signup = async (req, res) => {
       email,
       role,
       matricNo, // only for students
-      schoolID: school._id, // Link the user to the school
+      schoolID: newSchool._id, // Link the user to the school
     }).save();
 
     //Set authentication cookie with JWT
@@ -131,6 +138,12 @@ exports.completeProfile = async (req, res) => {
     if (role === 'lecturer' && (!faculty || !department)) {
       return res.status(400).json({
         error: 'Lecturer must have faculty and department',
+      });
+    }
+     // role-specific validation
+    if (role === 'admin' && !schoolID) {
+      return res.status(400).json({
+        error: 'Admin must have school ID',
       });
     }
 
