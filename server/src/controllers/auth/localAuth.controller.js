@@ -2,7 +2,7 @@ const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const setAuthCookie = require('../../utils/setAuthCookie');
 const sanitizeUser = require('../../utils/sanitizeUser');
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
 const sendEmail = require('../../lib/sendEmail');
 require('dotenv').config();
 const crypto = require('crypto');
@@ -24,10 +24,8 @@ exports.signup = async (req, res) => {
       schoolName,
     } = req.body;
 
-  
-
     // Basic validation: required fields
-    if (!fullName || !email || !password || !role) {
+    if (!fullName || !email || !password || !role || !schoolName) {
       return res.status(400).json({
         error: 'All fields are required',
       });
@@ -35,17 +33,20 @@ exports.signup = async (req, res) => {
 
     //School creation / retrieval
     // Check if a school with the given name already exists
-    const school = await School.findOne({ schoolName: schoolName.trim() });
-    if (school) {
-     return res.status(409).json({error:"School name already exists, pick another"})
+    let school = await School.findOne({ schoolName: schoolName });
+
+   if (school && role === 'admin'){
+      return res
+        .status(409)
+        .json({ error: 'School name already exists, pick another' });
     }
 
-
+  
+    if(!school){
  // If school doesn't exist, create a new school
-    const newSchool= await new School({ schoolName: schoolName.trim() });
-      await newSchool.save();
-
-
+     school = await new School({ schoolName: schoolName }).save();
+    }
+   
 
     //Role-specific validation
     if (role === 'student') {
@@ -93,7 +94,7 @@ exports.signup = async (req, res) => {
       email,
       role,
       matricNo, // only for students
-      schoolID: newSchool._id, // Link the user to the school
+      schoolID: school._id, // Link the user to the school
     }).save();
 
     //Set authentication cookie with JWT
@@ -123,36 +124,40 @@ exports.completeProfile = async (req, res) => {
     const userId = req.user.id;
     const { role, schoolID, faculty, department, matricNo } = req.body;
 
-    // Validate role
     if (!role) {
       return res.status(400).json({ error: 'Role is required' });
     }
 
-    // role-specific validation
-    if (role === 'student' && (!faculty || !department || !matricNo)) {
-      return res.status(400).json({
-        error: 'Student must have faculty, department, and matric number',
-      });
-    }
-    // role-specific validation
-    if (role === 'lecturer' && (!faculty || !department)) {
-      return res.status(400).json({
-        error: 'Lecturer must have faculty and department',
-      });
-    }
-     // role-specific validation
-    if (role === 'admin' && !schoolID) {
-      return res.status(400).json({
-        error: 'Admin must have school ID',
-      });
+    // Always update role
+    let updateData = { role };
+    if (role === 'student') {
+      if (!faculty || !department || !matricNo) {
+        return res.status(400).json({
+          error: 'Student must have faculty, department, and matric number',
+        });
+      }
+      updateData = { ...updateData, faculty, department, matricNo };
     }
 
-    // Update the user
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { role, schoolID, faculty, department, matricNo },
-      { new: true }
-    );
+    if (role === 'lecturer') {
+      if (!faculty || !department) {
+        return res.status(400).json({
+          error: 'Lecturer must have faculty and department',
+        });
+      }
+      updateData = { ...updateData, faculty, department };
+    }
+
+    if (role === 'admin') {
+      if (!schoolID) {
+        return res.status(400).json({ error: 'Admin must have school ID' });
+      }
+      updateData = { ...updateData, schoolID };
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
+      new: true,
+    });
 
     return res.status(200).json({
       message: 'Profile completed successfully',
@@ -237,8 +242,7 @@ exports.linkAccount = async (req, res) => {
     const payload = jwt.verify(token, process.env.JWT_SECRET);
     const { email, googleID } = payload;
 
-
-    const existingUser = await User.findOne({ email}).select('+password');
+    const existingUser = await User.findOne({ email }).select('+password');
     if (!existingUser) {
       return res.status(404).json({ error: 'User does not exist' });
     }
@@ -256,7 +260,7 @@ exports.linkAccount = async (req, res) => {
     setAuthCookie(res, existingUser);
     return res.status(200).json({ message: 'Account linked successfully' });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -291,7 +295,6 @@ exports.forgotPassword = async (req, res) => {
         .status(200)
         .json({ message: 'Reset link sent to your email.' });
     } catch (error) {
-
       return res.status(500).json({ error: 'Failed to send reset email' });
     }
   } catch (error) {
@@ -310,7 +313,6 @@ exports.resetPassword = async (req, res) => {
       resetPasswordExpires: { $gt: Date.now() },
     }).select('+password');
     if (!existingUser) {
-      
       return res.status(400).json({ error: 'Invalid token' });
     }
 
@@ -330,4 +332,3 @@ exports.resetPassword = async (req, res) => {
 exports.getUser = async (req, res) => {
   res.status(200).json({ user: req.user });
 };
-

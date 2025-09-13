@@ -45,10 +45,10 @@ const courseSchema = new Schema(
       type: String,
       required: true, // Example: "2024/2025"
     },
-    // schoolID: {
-    //   type: mongoose.Schema.Types.ObjectId,
-    //   ref: 'School',
-    // },
+    schoolID: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'School',
+    },
   },
   { timestamps: true }
 );

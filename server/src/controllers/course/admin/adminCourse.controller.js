@@ -42,23 +42,7 @@ exports.createCourse = async (req, res) => {
   }
 };
 
-exports.getCoursesForAdmin = async (req, res) => {
-  try {
-    // Optionally filter by faculty, department, level, or session using query params
-    const filter = {};
-    if (req.query.faculty) filter.faculty = req.query.faculty;
-    if (req.query.department) filter.department = req.query.department;
-    if (req.query.level) filter.level = req.query.level;
-    if (req.query.session) filter.session = req.query.session;
-    const courses = await Course.find(filter)
-      .populate('lecturers', 'fullName email')
-      .populate('students', 'fullName email');
 
-    return res.status(200).json({ courses });
-  } catch (error) {
-    return res.status(500).json({ error: 'Internal server error' });
-  }
-};
 
 exports.editCourse = async (req, res) => {};
 exports.deleteCourse = async (req, res) => {};

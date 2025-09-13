@@ -78,8 +78,7 @@ exports.getDepartmentByID = async (req, res) => {
   }
 };
 exports.editDepartment = async (req, res) => {
-
-    // allow faculty update too
+  // allow faculty update too
   try {
     const { id: departmentID } = req.params;
     const { name, facultyID } = req.body;
@@ -98,14 +97,11 @@ exports.editDepartment = async (req, res) => {
         .json({ error: 'Department name already exists in this faculty' });
     }
 
-
-
     const updatedDepartment = await Department.findByIdAndUpdate(
       departmentID,
-      { name: name.trim(),faculty:facultyID },
+      { name: name.trim(), faculty: facultyID },
       { new: true }
-    ).populate('faculty','name');
-
+    ).populate('faculty', 'name');
 
     if (!updatedDepartment) {
       return res.status(404).json({ error: 'Failed to update department' });
@@ -113,7 +109,7 @@ exports.editDepartment = async (req, res) => {
 
     return res.status(200).json({
       message: 'Department updated successfully',
-      department: updatedDepartment
+      department: updatedDepartment,
     });
   } catch (error) {
     return res.status(500).json({ error: 'Internal server error' });
@@ -131,15 +127,14 @@ exports.deleteDepartment = async (req, res) => {
     }
 
     // Delete all courses linked to this department
-   await Course.deleteMany({department:departmentID})
-
+    await Course.deleteMany({ department: departmentID });
 
     // Delete department
     await Department.findByIdAndDelete(departmentID);
 
     return res.status(200).json({
       message: 'Department and its courses deleted successfully',
-      departmentID,
+     
     });
   } catch (error) {
     console.error(error);
