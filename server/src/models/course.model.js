@@ -8,13 +8,13 @@ const courseSchema = new Schema(
       type: String,
       required: true,
       trim: true,
-      unique: true,
+      
     },
 
     courseTitle: {
       type: String,
       trim: true,
-      unique: true,
+      
     },
     lecturers: [
       {
@@ -52,6 +52,12 @@ const courseSchema = new Schema(
   },
   { timestamps: true }
 );
+
+// courseCode must be unique within a department + school
+courseSchema.index({ courseCode: 1, department: 1, schoolID: 1 }, { unique: true });
+
+// courseTitle must be unique within a department + school
+courseSchema.index({ courseTitle: 1, department: 1, schoolID: 1 }, { unique: true });
 
 
 mongoose.model('Course', courseSchema); // two arguments means we are trying to create a collection

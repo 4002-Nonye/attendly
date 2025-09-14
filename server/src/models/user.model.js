@@ -47,6 +47,11 @@ const userSchema = new Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'School',
     },
+    level: {
+      type: String,
+      enum: ['100', '200', '300', '400', '500']
+    },
+
     resetPasswordToken: String,
     resetPasswordExpires: Date,
   },

@@ -7,6 +7,7 @@ const sendEmail = require('../../lib/sendEmail');
 require('dotenv').config();
 const crypto = require('crypto');
 const html = require('../../utils/emailTemplates/resetPasswordTemplate');
+const validateFields = require('../../utils/validateSignup');
 
 const User = mongoose.model('User');
 const School = mongoose.model('School');
@@ -19,55 +20,16 @@ exports.signup = async (req, res) => {
       password,
       role,
       matricNo,
-      faculty,
-      department,
       schoolName,
+      department,
+      faculty,
+      level,
     } = req.body;
 
-    // Basic validation: required fields
-    if (!fullName || !email || !password || !role || !schoolName) {
-      return res.status(400).json({
-        error: 'All fields are required',
-      });
-    }
+    // 1. Validate inputs
+    validateFields(role, req.body, res);
 
-    //School creation / retrieval
-    // Check if a school with the given name already exists
-    let school = await School.findOne({ schoolName: schoolName });
-
-   if (school && role === 'admin'){
-      return res
-        .status(409)
-        .json({ error: 'School name already exists, pick another' });
-    }
-
-  
-    if(!school){
- // If school doesn't exist, create a new school
-     school = await new School({ schoolName: schoolName }).save();
-    }
-   
-
-    //Role-specific validation
-    if (role === 'student') {
-      // Students must have matricNo, faculty, and department
-      if (!matricNo || !faculty || !department) {
-        return res.status(400).json({
-          error:
-            'Matric number, faculty, and department are required for students',
-        });
-      }
-    } else {
-      // Non-students should NOT provide these fields
-      if (matricNo || faculty || department) {
-        return res.status(400).json({
-          error:
-            'Matric number, faculty, and department should only be provided for students',
-        });
-      }
-    }
-
-    //Email validation
+    // 2. Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({
@@ -75,42 +37,55 @@ exports.signup = async (req, res) => {
       });
     }
 
-    //Check for existing user
+    // 3. Check for existing user
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(409).json({
-        message: 'User already exists',
+        error: 'User already exists',
       });
     }
 
-    // Password hashing
+    // 4. Get or create school
+    let school = await School.findOne({ schoolName: schoolName });
+
+    if (school && role === 'admin') {
+      return res
+        .status(409)
+        .json({ error: 'School name already exists, pick another' });
+    }
+
+    if (!school) {
+      school = await new School({ schoolName: schoolName }).save();
+    }
+
+    // 5. Password hashing
     const salt = await bcrypt.genSalt(10); // Generate salt
     const hashedPassword = await bcrypt.hash(password, salt); // Hash the password
 
-    //Create new user
+    // 6. Create new user
     const newUser = await new User({
       fullName,
       password: hashedPassword,
       email,
       role,
+      department,
+      faculty,
+      level,
       matricNo, // only for students
       schoolID: school._id, // Link the user to the school
     }).save();
 
-    //Set authentication cookie with JWT
+    // 7. Set authentication cookie with JWT
     setAuthCookie(res, newUser);
 
-    //Sanitize user object before sending to client
-    // Removes sensitive info like password
+    // 8. Sanitize user object before sending to client: Removes sensitive info like password
     const safeToSendUser = sanitizeUser(newUser._doc);
 
-    //Send success response
     return res.status(201).json({
       message: 'User successfully registered',
       user: safeToSendUser,
     });
   } catch (error) {
-    // Catch any server errors
     console.log(error);
     return res.status(500).json({
       error: 'Internal server error',
