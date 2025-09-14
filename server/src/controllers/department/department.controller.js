@@ -71,7 +71,7 @@ exports.getDepartmentByID = async (req, res) => {
       return res.status(404).json({ error: 'Department not found' });
 
     res.status(200).json({
-      department,
+      department
     });
   } catch (error) {
     return res.status(500).json({ error: 'Internal server error' });
@@ -82,11 +82,13 @@ exports.editDepartment = async (req, res) => {
   try {
     const { id: departmentID } = req.params;
     const { name, facultyID } = req.body;
+    const {schoolID}=req.user
 
     // check if the department name already exist before assigning new name
     const existingDepartment = await Department.findOne({
       name,
       faculty: facultyID,
+      schoolID
     });
     if (
       existingDepartment &&
@@ -117,15 +119,18 @@ exports.editDepartment = async (req, res) => {
 };
 
 exports.deleteDepartment = async (req, res) => {
+
   try {
     const { id: departmentID } = req.params;
+    const { schoolID } = req.user;
 
     // Check if department exists
-    const department = await Department.findById(departmentID);
+    const department = await Department.findOne(departmentID,schoolID);
     if (!department) {
       return res.status(404).json({ error: 'Department not found' });
     }
 
+    
     // Delete all courses linked to this department
     await Course.deleteMany({ department: departmentID });
 

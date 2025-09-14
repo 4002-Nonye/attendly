@@ -4,6 +4,11 @@ const { Schema } = mongoose;
 
 const schoolSchema = new Schema(
   {
+     createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+    
+  },
     schoolName: {
       type: String,
       required: true,

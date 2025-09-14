@@ -151,11 +151,12 @@ exports.deleteFaculty = async (req, res) => {
     }
 
     // Find all departments under this faculty
-    const departments = await Department.find({ faculty: facultyID }).select(
+    const departments = await Department.find({ faculty: facultyID,schoolID }).select(
       '_id'
     );
     const departmentIDs = departments.map((dep) => dep._id);
 
+    
     // Delete all courses linked to these departments
     await Course.deleteMany({ department: { $in: departmentIDs } });
 

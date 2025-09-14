@@ -55,7 +55,7 @@ exports.signup = async (req, res) => {
     }
 
     if (!school) {
-      school = await new School({ schoolName: schoolName }).save();
+      school = await new School({ schoolName: schoolName,createdBy:null}).save(); // at this point, the user is yet to be created
     }
 
     // 5. Password hashing
@@ -75,10 +75,17 @@ exports.signup = async (req, res) => {
       schoolID: school._id, // Link the user to the school
     }).save();
 
-    // 7. Set authentication cookie with JWT
+    // 7. If the school has no creator, set this user as the creator
+    if (!school.createdBy) {
+  school.createdBy = newUser._id;
+  await school.save();
+}
+
+
+    // 8. Set authentication cookie with JWT
     setAuthCookie(res, newUser);
 
-    // 8. Sanitize user object before sending to client: Removes sensitive info like password
+    // 9. Sanitize user object before sending to client: Removes sensitive info like password
     const safeToSendUser = sanitizeUser(newUser._doc);
 
     return res.status(201).json({
