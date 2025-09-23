@@ -2,22 +2,11 @@ const mongoose = require('mongoose');
 
 const { Schema } = mongoose;
 
-const studentRegSchema = new Schema(
-  {
-    courseID: {
-      type: String,
-      required: true,
-      trim: true,
-      unique: true,
-    },
-    faculty: { type: Schema.Types.ObjectId, ref: 'Faculty', required: true },
-    department: {
-      type: Schema.Types.ObjectId,
-      ref: 'Department',
-      required: true,
-    },
-  },
-  { timestamps: true }
-);
+const studentCourseSchema = new Schema({
+  student: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  course: { type: Schema.Types.ObjectId, ref: 'Course', required: true },
+}, { timestamps: true });
 
-mongoose.model('StudentReg', studentRegSchema); // two arguments means we are trying to create a collection
+studentCourseSchema.index({ student: 1, course: 1 }, { unique: true });
+
+mongoose.model('StudentReg', studentCourseSchema); // two arguments means we are trying to create a collection

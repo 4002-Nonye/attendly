@@ -3,9 +3,9 @@ const Course = mongoose.model('Course');
 
 exports.getAssignedCoursesForLecturer = async (req, res) => {
   try {
-    const lecturerID = req.user.id
+    const lecturerID = req.user.id;
 
-    const courses= await Course.find({lecturers:lecturerID}).populate(
+    const courses = await Course.find({ lecturers: lecturerID }).populate(
       'lecturers',
       'fullName'
     );
@@ -16,7 +16,7 @@ exports.getAssignedCoursesForLecturer = async (req, res) => {
 
     res.status(200).json({ courses });
   } catch (error) {
-     return res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -36,6 +36,15 @@ exports.assignLecturer = async (req, res) => {
     );
     if (validIds.length !== courseIDs.length) {
       return res.status(400).json({ message: 'Some course IDs are invalid' });
+    }
+
+    // check if courses exist
+    const existingCourses = await Course.find({ _id: { $in: courseIDs } });
+
+    if (!existingCourses.length) {
+      return res
+        .status(404)
+        .json({ message: 'No courses found with the provided IDs' });
     }
 
     // Prepare bulk operations
@@ -68,4 +77,4 @@ exports.assignLecturer = async (req, res) => {
   }
 };
 
-exports.unassignLecturer=async(req,res)=>{}
+exports.unassignLecturer = async (req, res) => {};

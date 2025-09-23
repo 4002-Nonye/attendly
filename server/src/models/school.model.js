@@ -4,7 +4,7 @@ const { Schema } = mongoose;
 
 const schoolSchema = new Schema(
   {
-     createdBy: {
+     admin: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
     

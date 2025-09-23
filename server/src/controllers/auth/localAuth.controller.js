@@ -8,6 +8,7 @@ require('dotenv').config();
 const crypto = require('crypto');
 const html = require('../../utils/emailTemplates/resetPasswordTemplate');
 const validateFields = require('../../utils/validateSignup');
+const hashPassword = require('../../utils/hashPassword');
 
 const User = mongoose.model('User');
 const School = mongoose.model('School');
@@ -20,7 +21,7 @@ exports.signup = async (req, res) => {
       password,
       role,
       matricNo,
-      schoolName,
+      schoolInput,
       department,
       faculty,
       level,
@@ -45,22 +46,34 @@ exports.signup = async (req, res) => {
       });
     }
 
-    // 4. Get or create school
-    let school = await School.findOne({ schoolName: schoolName });
+    //Admins: send name as input - backend creates/finds the school.
+    //Students && Lecturers: send _id as inputb- backend just validates the ID.
 
-    if (school && role === 'admin') {
-      return res
-        .status(409)
-        .json({ error: 'School name already exists, pick another' });
-    }
-
-    if (!school) {
-      school = await new School({ schoolName: schoolName,createdBy:null}).save(); // at this point, the user is yet to be created
+    // 4. Get or create school based on role
+    let schoolDoc;
+    if (role === 'admin') {
+      const existingSchool = await School.findOne({ schoolInput });
+      if (existingSchool) {
+        return res
+          .status(409)
+          .json({ error: 'School name already exists, pick another' });
+      }
+      // School doesn't exist - create new school
+      schoolDoc = await new School({
+        schoolName: schoolInput,
+        admin: null,
+      }).save();
+    } else {
+      // If the user is not an admin
+      // Student: school must exist (selected from dropdown)
+      const schoolDoc = await School.findById(schoolInput);
+      if (!schoolDoc) {
+        return res.status(404).json({ error: 'School not found' });
+      }
     }
 
     // 5. Password hashing
-    const salt = await bcrypt.genSalt(10); // Generate salt
-    const hashedPassword = await bcrypt.hash(password, salt); // Hash the password
+    const hashedPassword = await hashPassword(password);
 
     // 6. Create new user
     const newUser = await new User({
@@ -72,15 +85,14 @@ exports.signup = async (req, res) => {
       faculty,
       level,
       matricNo, // only for students
-      schoolID: school._id, // Link the user to the school
+      schoolID: schoolDoc._id, // Link the user to the school
     }).save();
 
-    // 7. If the school has no creator, set this user as the creator
-    if (!school.createdBy) {
-  school.createdBy = newUser._id;
-  await school.save();
-}
-
+    // 7. If the school has no admin, set this user as the creator if he is an admin
+    if (role === 'admin' && !schoolDoc.admin) {
+      schoolDoc.admin = newUser._id;
+      await schoolDoc.save();
+    }
 
     // 8. Set authentication cookie with JWT
     setAuthCookie(res, newUser);
@@ -175,7 +187,7 @@ exports.login = async (req, res) => {
         });
       }
       // compare password to allow login if there is a user
-      const comparePassword = bcrypt.compareSync(
+      const comparePassword = await bcrypt.compare(
         password,
         existingUser.password
       );
@@ -229,7 +241,10 @@ exports.linkAccount = async (req, res) => {
       return res.status(404).json({ error: 'User does not exist' });
     }
 
-    const comparePassword = bcrypt.compareSync(password, existingUser.password);
+    const comparePassword = await bcrypt.compare(
+      password,
+      existingUser.password
+    );
 
     if (!comparePassword) {
       return res.status(401).json({ error: 'Invalid credentials' });
@@ -298,8 +313,7 @@ exports.resetPassword = async (req, res) => {
       return res.status(400).json({ error: 'Invalid token' });
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    const hashedPassword = await hashPassword(newPassword);
     existingUser.password = hashedPassword; //reset password
     existingUser.resetPasswordToken = undefined; // clear token
     existingUser.resetPasswordExpires = undefined;

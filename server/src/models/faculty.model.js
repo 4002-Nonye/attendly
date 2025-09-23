@@ -14,12 +14,7 @@ const facultySchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: 'School',
       required: true,
-    },
-     userID: {
-      type: Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-    },
+    }
   },
   { timestamps: true }
 );
