@@ -1,15 +1,14 @@
 const mongoose = require('mongoose');
-const Course = mongoose.model('Course');
+const StudentEnrollment = mongoose.model('StudentEnrollment');
 
 exports.getRegisteredCoursesForStudent = async (req, res) => {
   try {
     const studentID = req.user.id;
 
     // do not fetch enrolled students here
-    const courses = await Course.find({ students: studentID })
-      .select('-students')
-      .populate('lecturers', 'fullName');
-
+    const courses = await StudentEnrollment.find({ student: studentID })
+      .populate('course', 'courseTitle courseCode')
+      .populate('student', 'fullName');
     if (!courses || courses.length === 0) {
       return res.status(404).json({ message: 'No courses found' });
     }
@@ -38,35 +37,46 @@ exports.registerCourse = async (req, res) => {
       return res.status(400).json({ message: 'Some course IDs are invalid' });
     }
 
-    // Prepare bulk operations
-    // For each valid course ID, create an update operation
-    const bulkOps = validIds.map((courseID) => ({
-      updateOne: {
-        // $ne ensures we only update courses where lecturer is NOT already assigned
-        filter: {
-          _id: courseID,
-          students: { $ne: studentID },
-        },
-        update: { $addToSet: { students: studentID } },
-        // $addToSet ensures we don't add duplicate IDs in the array
-      },
+    // Prepare documents
+  //  todo: in frontend, we block registering courses that are already registered
+    const enrollments = validIds.map((courseID) => ({
+      student: studentID,
+      course: courseID,
     }));
 
-    //Execute bulk update
-    const result = await Course.bulkWrite(bulkOps);
+    // insert with duplicate skip
+    const result = await StudentEnrollment.insertMany(enrollments, {
+      ordered: false,
+    }).catch((err) => {
+      if (err.code === 11000) return;
+      throw err;
+    });
 
-    // fetch updated data for response
-    const updatedCourses = await Course.find({
-      _id: { $in: validIds },
-    }).populate('students', 'fullName email matricNo');
-    res.status(200).json({
+    res.status(201).json({
       message: 'Courses registered successfully',
-      updatedCourses,
+      registered: result,
     });
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
-exports.unregisterCourse = async (req, res) => {};
+exports.unregisterCourse = async (req, res) => {
+  try {
+    const { id: courseID } = req.params;
+    const { id: studentID } = req.user;
+    const deleted = await StudentEnrollment.findOneAndDelete({
+      student: studentID,
+      course: courseID,
+    });
+    if (!deleted) {
+      return res
+        .status(404)
+        .json({ message: 'You are not enrolled in this course' });
+    }
 
+    return res.status(200).json({ message: 'Unregistered successfully' });
+  } catch (error) {
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};

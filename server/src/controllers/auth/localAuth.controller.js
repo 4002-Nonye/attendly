@@ -66,7 +66,7 @@ exports.signup = async (req, res) => {
     } else {
       // If the user is not an admin
       // Student: school must exist (selected from dropdown)
-      const schoolDoc = await School.findById(schoolInput);
+       schoolDoc = await School.findById(schoolInput);
       if (!schoolDoc) {
         return res.status(404).json({ error: 'School not found' });
       }

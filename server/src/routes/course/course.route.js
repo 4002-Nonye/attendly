@@ -19,9 +19,13 @@ const {
 } = require('../../controllers/course/admin/adminCourse.controller');
 const {
   assignLecturer,
+  unassignLecturer,
+  getAssignedCoursesForLecturer,
 } = require('../../controllers/course/lecturer/lecturerCourse.controller');
 const {
   registerCourse,
+  getRegisteredCoursesForStudent,
+  unregisterCourse,
 } = require('../../controllers/course/student/studentCourse.controller');
 
 const courseRoute = express.Router();
@@ -37,10 +41,22 @@ courseRoute.delete('/:id', requireLogin, requireAdminAccess, deleteCourse); // d
 
 // Lecturer roles
 courseRoute.post(
-  '/assign-lecturer',
+  '/assign',
   requireLogin,
   requireLecturerAccess,
   assignLecturer
+);
+courseRoute.delete(
+  '/:id/unassign',
+  requireLogin,
+  requireLecturerAccess,
+  unassignLecturer
+);
+courseRoute.get(
+  '/lecturer/courses',
+  requireLogin,
+  requireLecturerAccess,
+  getAssignedCoursesForLecturer
 );
 
 // Student roles
@@ -49,6 +65,18 @@ courseRoute.post(
   requireLogin,
   requireStudentAccess,
   registerCourse
+);
+courseRoute.get(
+  '/student/courses',
+  requireLogin,
+  requireStudentAccess,
+  getRegisteredCoursesForStudent
+);
+courseRoute.delete(
+  '/enrollments/:id/unregister',
+  requireLogin,
+  requireStudentAccess,
+  unregisterCourse
 );
 
 module.exports = courseRoute;

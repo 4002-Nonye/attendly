@@ -29,9 +29,8 @@ exports.getAllUsers = async (req, res) => {
     if (faculty) filter.faculty = faculty;
     if (department) filter.department = department;
     if (searchQuery) {
-           // Search by id, fullName, email, or matricNo (case-insensitive)
+           // Search by fullName, email, or matricNo (case-insensitive)
       filter.$or = [
-        { _id: { $regex: searchQuery, $options: 'i' } },
         { fullName: { $regex: searchQuery, $options: 'i' } },
         { email: { $regex: searchQuery, $options: 'i' } },
         { matricNo: { $regex: searchQuery, $options: 'i' } },
@@ -68,6 +67,7 @@ exports.getAllUsers = async (req, res) => {
     const total = await User.countDocuments(filter);
     return res.status(200).json({ users, total });
   } catch (error) {
+    console.log(error)
     return res.status(500).json({ error: 'Internal server error' });
   }
 };

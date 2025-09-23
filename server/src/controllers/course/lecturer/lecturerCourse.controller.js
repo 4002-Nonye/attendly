@@ -16,6 +16,7 @@ exports.getAssignedCoursesForLecturer = async (req, res) => {
 
     res.status(200).json({ courses });
   } catch (error) {
+    console.log(error)
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
@@ -77,4 +78,28 @@ exports.assignLecturer = async (req, res) => {
   }
 };
 
-exports.unassignLecturer = async (req, res) => {};
+exports.unassignLecturer = async (req, res) => {
+  try {
+    const { id: courseID } = req.params;
+    const { id: lecturerID } = req.user;
+
+    const updatedCourse = await Course.findOneAndUpdate(
+      { _id: courseID, lecturers: lecturerID }, // find all courses where the lecturerID is in the course.lecturer
+      { $pull: { lecturers: lecturerID } }, // remove the lecturerID from the array
+      { new: true }
+    );
+
+    if (!updatedCourse) {
+      return res.status(404).json({
+        message: 'Course not found or you are not assigned to this course',
+      });
+    }
+
+    return res.status(200).json({
+      message: 'Unassigned successfully',
+      course: updatedCourse,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};

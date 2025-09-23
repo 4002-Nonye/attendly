@@ -5,8 +5,8 @@ require('./src/models/course.model');
 require('./src/models/faculty.model')
 require('./src/models/department.model')
 require('./src/models/school.model')
-require('./src/models/studentReg.model')
-//require('./src/models/attendanceReg.model')
+require('./src/models/studentEnrollment.model')
+
 
 const localAuthRoute = require('./src/routes/auth/localAuth.route');
 const oAuthRoute = require('./src/routes/auth/oAuth.route');
