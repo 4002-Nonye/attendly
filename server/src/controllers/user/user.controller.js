@@ -6,7 +6,7 @@ exports.getAllUsers = async (req, res) => {
     const { id, schoolID } = req.user;
     const {
       role,
-      searchQuery,
+      searchQuery = '',
       startDate,
       endDate,
       dateOption = 'latest', // earliest | latest | custom
@@ -29,7 +29,7 @@ exports.getAllUsers = async (req, res) => {
     if (faculty) filter.faculty = faculty;
     if (department) filter.department = department;
     if (searchQuery) {
-           // Search by fullName, email, or matricNo (case-insensitive)
+      // Search by fullName, email, or matricNo (case-insensitive)
       filter.$or = [
         { fullName: { $regex: searchQuery, $options: 'i' } },
         { email: { $regex: searchQuery, $options: 'i' } },
@@ -65,9 +65,10 @@ exports.getAllUsers = async (req, res) => {
 
     // return total count for pagination
     const total = await User.countDocuments(filter);
-    return res.status(200).json({ users, total });
+    const pages = Math.ceil(total / limit);
+    return res.status(200).json({ users, total, pages });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };

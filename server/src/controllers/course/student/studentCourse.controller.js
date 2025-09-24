@@ -38,7 +38,7 @@ exports.registerCourse = async (req, res) => {
     }
 
     // Prepare documents
-  //  todo: in frontend, we block registering courses that are already registered
+  //  todo: in frontend, we block receiving ids of courses that are already registered
     const enrollments = validIds.map((courseID) => ({
       student: studentID,
       course: courseID,

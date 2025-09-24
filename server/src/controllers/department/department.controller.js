@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const Department = mongoose.model('Department');
 const Course = mongoose.model('Course');
+const User = mongoose.model('User');
 
 exports.addDepartment = async (req, res) => {
   try {
@@ -37,58 +38,83 @@ exports.addDepartment = async (req, res) => {
   }
 };
 
-exports.getDepartments = async (req, res) => {
+exports.getDepartmentStats = async (req, res) => {
   try {
     const { schoolID } = req.user;
+    const { searchQuery = '', page = 1, limit = 10 } = req.query;
 
-    // get all departments in a school
-    const departments = await Department.find({
-      schoolID,
-    })
-      .populate('faculty', 'name')
-      .lean();
+ 
+    const filter = { schoolID };
 
-    if (!departments.length) {
-      return res
-        .status(404)
-        .json({ message: 'No departments found for this school' });
+       // OPTIONAL FILTERING
+    if (searchQuery) {
+      // search by department 
+      filter.name = { $regex: searchQuery, $options: 'i' };
     }
 
-    return res.status(200).json({ departments });
-  } catch (error) {
-    return res.status(500).json({ error: 'Internal server error' });
-  }
-};
-exports.getDepartmentByID = async (req, res) => {
-  try {
-    const { id: departmentID } = req.params;
+    // PAGINATION
+    const skip = (page - 1) * limit;
+    // Count total documents for pagination info
+    const totalDepartments = await Department.countDocuments(filter);
 
-    const department = await Department.findById(departmentID).populate(
-      'faculty',
-      'name'
+    // 1. Fetch all departments for a given school, and populate name of faculty they belong to
+    const departments = await Department.find(filter)
+      .populate('faculty', 'name')
+      .skip(skip)
+      .limit(Number(limit))
+      .lean();
+
+    // 2. For each department, calculate totals
+    //    Promise.all for parallel execution
+    const departmentStats = await Promise.all(
+      departments.map(async (dept) => {
+        // total students in each department
+        const totalStudents = await User.countDocuments({
+          department: dept._id,
+          role: 'student',
+        });
+        // total lecturers in each department
+        const totalLecturers = await User.countDocuments({
+          department: dept._id,
+          role: 'lecturer',
+        });
+        // total courses in each department
+        const totalCourses = await Course.countDocuments({
+          department: dept._id,
+        });
+
+        // store the department and totals
+        return {
+          ...dept,
+          totalDepartments,
+          totalStudents,
+          totalLecturers,
+          totalCourses,
+        };
+      })
     );
-    if (!department)
-      return res.status(404).json({ error: 'Department not found' });
 
     res.status(200).json({
-      department
+      departmentStats,
+      totalPages: Math.ceil(totalDepartments / limit),
     });
   } catch (error) {
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
+
 exports.editDepartment = async (req, res) => {
   // allow faculty update too
   try {
     const { id: departmentID } = req.params;
     const { name, facultyID } = req.body;
-    const {schoolID}=req.user
+    const { schoolID } = req.user;
 
     // check if the department name already exist before assigning new name
     const existingDepartment = await Department.findOne({
       name,
       faculty: facultyID,
-      schoolID
+      schoolID,
     });
     if (
       existingDepartment &&
@@ -119,18 +145,16 @@ exports.editDepartment = async (req, res) => {
 };
 
 exports.deleteDepartment = async (req, res) => {
-
   try {
     const { id: departmentID } = req.params;
     const { schoolID } = req.user;
 
     // Check if department exists
-    const department = await Department.findOne(departmentID,schoolID);
+    const department = await Department.findOne(departmentID, schoolID);
     if (!department) {
       return res.status(404).json({ error: 'Department not found' });
     }
 
-    
     // Delete all courses linked to this department
     await Course.deleteMany({ department: departmentID });
 
@@ -139,7 +163,6 @@ exports.deleteDepartment = async (req, res) => {
 
     return res.status(200).json({
       message: 'Department and its courses deleted successfully',
-     
     });
   } catch (error) {
     console.error(error);

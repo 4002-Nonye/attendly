@@ -3,10 +3,12 @@ const mongoose = require('mongoose');
 const Faculty = mongoose.model('Faculty');
 const Department = mongoose.model('Department');
 const Course = mongoose.model('Course');
+const User = mongoose.model('User');
 
-exports.getFaculties = async (req, res) => {
+// FOR DROPDOWNS
+exports.getFacultiesAndDepartmentsBySchool = async (req, res) => {
   try {
-    const schoolID = req.user.schoolID; // get school ID from logged-in user
+    const { id: schoolID } = req.params;
 
     if (!schoolID) {
       return res
@@ -14,44 +16,27 @@ exports.getFaculties = async (req, res) => {
         .json({ error: 'School ID not found in user data' });
     }
 
-    const faculties = await Faculty.find({ schoolID }).lean(); // get faculties within a school
+    const faculties = await Faculty.find({ schoolID }).select('name id').lean(); // get faculties within a school
+    const departments = await Department.find({ schoolID })
+      .select('name id')
+      .lean();
     if (!faculties.length) {
       return res
         .status(404)
         .json({ message: 'No faculties found for this school' });
     }
+    if (!departments.length) {
+      return res
+        .status(404)
+        .json({ message: 'No departments found for this school' });
+    }
 
-    res.status(200).json(faculties);
+    res.status(200).json({ faculties, departments });
   } catch (error) {
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
-// get faculty by ID + its departments
-exports.getFacultyByID = async (req, res) => {
-  try {
-    const facultyId = req.params.id;
-
-    // Fetch faculty
-    const faculty = await Faculty.findById(facultyId)
-      .select('-userID')
-      .populate('schoolID', 'schoolName')
-      .lean();
-    if (!faculty) return res.status(404).json({ error: 'Faculty not found' });
-
-    // Fetch departments that belong to this faculty
-    const departments = await Department.find({ faculty: facultyId }).select(
-      '_id name'
-    );
-
-    res.status(200).json({
-      ...faculty,
-      departments,
-    });
-  } catch (err) {
-    res.status(500).json({ error: 'Server error' });
-  }
-};
 
 exports.createFaculty = async (req, res) => {
   try {
@@ -145,18 +130,16 @@ exports.deleteFaculty = async (req, res) => {
     // Verify faculty exists in the user's school
     const faculty = await Faculty.findOne({ _id: facultyID, schoolID });
     if (!faculty) {
-      return res
-        .status(404)
-        .json({ error: 'Faculty not found' });
+      return res.status(404).json({ error: 'Faculty not found' });
     }
 
     // Find all departments under this faculty
-    const departments = await Department.find({ faculty: facultyID,schoolID }).select(
-      '_id'
-    );
+    const departments = await Department.find({
+      faculty: facultyID,
+      schoolID,
+    }).select('_id');
     const departmentIDs = departments.map((dep) => dep._id);
 
-    
     // Delete all courses linked to these departments
     await Course.deleteMany({ department: { $in: departmentIDs } });
 
@@ -174,6 +157,47 @@ exports.deleteFaculty = async (req, res) => {
         'Faculty, its departments, and linked courses deleted successfully',
     });
   } catch (error) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+exports.getFacultyStats = async (req, res) => {
+  try {
+    const { schoolID } = req.user;
+
+    // 1. Fetch all faculties
+    const faculties = await Faculty.find({ schoolID }).lean();
+
+    const facultyStats = await Promise.all(
+      faculties.map(async (faculty) => {
+        // 2. Go through each faculty and calculate total
+        //  Promise.all for parallel execution
+        const [totalDepartments, totalCourses, totalStudents, totalLecturers] =
+          await Promise.all([
+            // check how many departments exist in each faculty
+            Department.countDocuments({ faculty: faculty._id }),
+            // check how many courses are existent in each faculty
+            Course.countDocuments({ faculty: faculty._id }),
+            // check how many students are in the faculty
+            User.countDocuments({ faculty: faculty._id, role: 'student' }),
+            // check how many lecturers exist in the faculty
+            User.countDocuments({ faculty: faculty._id, role: 'lecturer' }),
+          ]);
+
+        // send back faculties and totals
+        return {
+          ...faculty,
+          totalDepartments,
+          totalCourses,
+          totalStudents,
+          totalLecturers,
+        };
+      })
+    );
+
+    res.status(200).json({ facultyStats });
+  } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
