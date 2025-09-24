@@ -16,7 +16,7 @@ exports.getAssignedCoursesForLecturer = async (req, res) => {
 
     res.status(200).json({ courses });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
@@ -40,7 +40,7 @@ exports.assignLecturer = async (req, res) => {
     }
 
     // check if courses exist
-    const existingCourses = await Course.find({ _id: { $in: courseIDs } });
+    const existingCourses = await Course.find({ _id: { $in: validIds } });
 
     if (!existingCourses.length) {
       return res
@@ -48,30 +48,16 @@ exports.assignLecturer = async (req, res) => {
         .json({ message: 'No courses found with the provided IDs' });
     }
 
-    // Prepare bulk operations
-    // For each valid course ID, create an update operation
-    const bulkOps = validIds.map((courseID) => ({
-      updateOne: {
-        // $ne ensures we only update courses where lecturer is NOT already assigned
-        filter: {
-          _id: courseID,
-          lecturers: { $ne: lecturerID },
-        },
-        update: { $addToSet: { lecturers: lecturerID } },
-        // $addToSet ensures we don't add duplicate IDs in the array
-      },
-    }));
+    // Update all courses in one go
+     await Course.updateMany(
+      { _id: { $in: validIds } },
+      { $addToSet: { lecturers: lecturerID } }
+    );
 
-    //Execute bulk update
-    const result = await Course.bulkWrite(bulkOps);
+    
 
-    // fetch updated data for response
-    const updatedCourses = await Course.find({
-      _id: { $in: validIds },
-    }).populate('lecturers', 'fullName email');
     res.status(200).json({
-      message: 'Courses assigned successfully',
-      updatedCourses,
+      message: 'Courses assigned successfully'
     });
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });
@@ -96,8 +82,7 @@ exports.unassignLecturer = async (req, res) => {
     }
 
     return res.status(200).json({
-      message: 'Unassigned successfully',
-      course: updatedCourse,
+      message: 'Unassigned successfully'
     });
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });

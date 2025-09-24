@@ -45,7 +45,7 @@ exports.registerCourse = async (req, res) => {
     }));
 
     // insert with duplicate skip
-    const result = await StudentEnrollment.insertMany(enrollments, {
+   await StudentEnrollment.insertMany(enrollments, {
       ordered: false,
     }).catch((err) => {
       if (err.code === 11000) return;
@@ -54,7 +54,7 @@ exports.registerCourse = async (req, res) => {
 
     res.status(201).json({
       message: 'Courses registered successfully',
-      registered: result,
+     
     });
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });
