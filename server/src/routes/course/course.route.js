@@ -27,6 +27,10 @@ const {
   getRegisteredCoursesForStudent,
   unregisterCourse,
 } = require('../../controllers/course/student/studentCourse.controller');
+const {
+  createSession,
+  endSession,
+} = require('../../controllers/session/session.controller');
 
 const courseRoute = express.Router();
 
@@ -77,6 +81,25 @@ courseRoute.delete(
   requireLogin,
   requireStudentAccess,
   unregisterCourse
+);
+
+// SESSIONS //
+// lecturer roles
+
+// start attendance session
+courseRoute.post(
+  '/:id/session',
+  requireLogin,
+  requireLecturerAccess,
+  createSession
+);
+
+// end attendance session
+courseRoute.patch(
+  '/:id/session/end',
+  requireLogin,
+  requireLecturerAccess,
+  endSession
 );
 
 module.exports = courseRoute;

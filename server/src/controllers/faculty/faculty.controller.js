@@ -37,7 +37,6 @@ exports.getFacultiesAndDepartmentsBySchool = async (req, res) => {
   }
 };
 
-
 exports.createFaculty = async (req, res) => {
   try {
     const { name: facultyName } = req.body;
@@ -164,9 +163,17 @@ exports.deleteFaculty = async (req, res) => {
 exports.getFacultyStats = async (req, res) => {
   try {
     const { schoolID } = req.user;
+    const { searchQuery } = req.query;
+
+    const filter = { schoolID }; // base filter
+
+    // OPTIONAL FILTER
+    if (searchQuery) {
+      filter.name = { $regex: searchQuery, $options: 'i' };
+    }
 
     // 1. Fetch all faculties
-    const faculties = await Faculty.find({ schoolID }).lean();
+    const faculties = await Faculty.find(filter).lean();
 
     const facultyStats = await Promise.all(
       faculties.map(async (faculty) => {

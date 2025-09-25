@@ -41,14 +41,14 @@ exports.addDepartment = async (req, res) => {
 exports.getDepartmentStats = async (req, res) => {
   try {
     const { schoolID } = req.user;
-    const { searchQuery = '', page = 1, limit = 10 } = req.query;
+    const { searchQuery = '', page = 1, limit = 10, facultyID } = req.query;
 
- 
-    const filter = { schoolID };
+    const filter = { schoolID }; // Base filter
 
-       // OPTIONAL FILTERING
+    // OPTIONAL FILTERING
+    if (facultyID) filter.faculty = facultyID; // Filter by faculy id (dropdown)
     if (searchQuery) {
-      // search by department 
+      // search by department
       filter.name = { $regex: searchQuery, $options: 'i' };
     }
 
