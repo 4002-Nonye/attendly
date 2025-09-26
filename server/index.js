@@ -7,6 +7,7 @@ require('./src/models/department.model');
 require('./src/models/school.model');
 require('./src/models/studentEnrollment.model');
 require('./src/models/session.model');
+require('./src/models/attendance.model')
 
 const localAuthRoute = require('./src/routes/auth/localAuth.route');
 const oAuthRoute = require('./src/routes/auth/oAuth.route');
@@ -19,6 +20,7 @@ const courseRoute = require('./src/routes/course/course.route');
 const facultyRoute = require('./src/routes/faculty/faculty.route');
 const departmentRoute = require('./src/routes/department/department.route');
 const userRoute = require('./src/routes/user/user.route');
+
 
 
 require('./src/lib/passport');
@@ -44,6 +46,7 @@ app.use('/api/courses', courseRoute);
 app.use('/api/faculties', facultyRoute);
 app.use('/api/departments', departmentRoute);
 app.use('/api/users', userRoute);
+
 
 
 app.listen(process.env.PORT, () => {

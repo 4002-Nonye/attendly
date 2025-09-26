@@ -31,6 +31,7 @@ const {
   createSession,
   endSession,
 } = require('../../controllers/session/session.controller');
+const { markAttendance } = require('../../controllers/attendance/attendance.controller');
 
 const courseRoute = express.Router();
 
@@ -101,5 +102,8 @@ courseRoute.patch(
   requireLecturerAccess,
   endSession
 );
+
+// MARKING ATTENDANCE // (students)
+courseRoute.post('/:courseId/sessions/:sessionId/attendance',requireLogin,requireStudentAccess,markAttendance)
 
 module.exports = courseRoute;
