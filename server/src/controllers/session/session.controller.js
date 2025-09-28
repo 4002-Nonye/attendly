@@ -1,7 +1,10 @@
+const crypto = require('crypto');
+const QRCode = require('qrcode');
 const mongoose = require('mongoose');
 const Session = mongoose.model('Session');
 const StudentEnrollment = mongoose.model('StudentEnrollment');
 const Attendance = mongoose.model('Attendance');
+
 exports.createSession = async (req, res) => {
   try {
     const { id: courseID } = req.params;
@@ -23,13 +26,26 @@ exports.createSession = async (req, res) => {
         error: 'There is already an active session for this course',
       });
     }
+
+// Generate random token for a session    
+    const sessionToken = crypto.randomBytes(8).toString('hex');
+
     const session = await new Session({
       course: courseID,
       lecturer: lecturerID,
       date: new Date(),
       status: 'active',
+      token: sessionToken,
+      expiredAt: Date.now() + 5 * 60 * 1000, // 5 mins
     }).save();
-    res.status(201).json({ message: 'Session started', session });
+
+    // Build QR data for frontend 
+    const qrData = `${process.env.CLIENT_URL}/attendance?sessionId=${session._id}&token=${sessionToken}`;
+   
+    // Generate QR code as base64 string  <img src="" />
+    const qrCode = await QRCode.toDataURL(qrData);
+
+    res.status(201).json({ message: 'Session started', session ,qrCode});
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });
   }

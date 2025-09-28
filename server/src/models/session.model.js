@@ -11,6 +11,8 @@ const sessionSchema = new Schema(
       enum: ['active', 'ended'],
       default: 'active',
     },
+    token: { type: String, required: true },
+    expiredAt: { type: Date },
   },
   { timestamps: true }
 );
