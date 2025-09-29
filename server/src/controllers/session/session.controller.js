@@ -4,20 +4,32 @@ const mongoose = require('mongoose');
 const Session = mongoose.model('Session');
 const StudentEnrollment = mongoose.model('StudentEnrollment');
 const Attendance = mongoose.model('Attendance');
+const Course = mongoose.model('Course');
 
 exports.createSession = async (req, res) => {
   try {
-    const { id: courseID } = req.params;
+    const { id: courseId } = req.params;
     const { id: lecturerID } = req.user;
 
-    if (!courseID)
+    if (!courseId)
       return res
         .status(404)
         .json({ error: 'A course ID is required to start a session' });
 
+    // check if the lecturer is assigned to a course before he can start a session
+    const isAssigned = await Course.findOne({
+      _id: courseId,
+      lecturers: lecturerID,
+    });
+
+    if (!isAssigned)
+      return res
+        .status(403)
+        .json({ error: 'Lecturer not assigned to this course' });
+
     // Prevent duplicate active session for same course
     const existingSession = await Session.findOne({
-      course: courseID,
+      course: courseId,
       status: 'active',
     });
 
@@ -27,63 +39,87 @@ exports.createSession = async (req, res) => {
       });
     }
 
-// Generate random token for a session    
+    // Generate random token for a session
     const sessionToken = crypto.randomBytes(8).toString('hex');
 
     const session = await new Session({
-      course: courseID,
-      lecturer: lecturerID,
+      course: courseId,
+      startedBy: lecturerID,
       date: new Date(),
       status: 'active',
       token: sessionToken,
-      expiredAt: Date.now() + 5 * 60 * 1000, // 5 mins
     }).save();
 
-    // Build QR data for frontend 
+    // Build QR data for frontend
     const qrData = `${process.env.CLIENT_URL}/attendance?sessionId=${session._id}&token=${sessionToken}`;
-   
+
     // Generate QR code as base64 string  <img src="" />
     const qrCode = await QRCode.toDataURL(qrData);
 
-    res.status(201).json({ message: 'Session started', session ,qrCode});
+    res.status(201).json({ message: 'Session started', session, qrCode });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
 exports.endSession = async (req, res) => {
   try {
-    const { id: courseId } = req.params;
-    const { sessionId } = req.body;
+    const { id: sessionId } = req.params;
+    const { id: userId } = req.user;
+
     //  Validate IDs
-    if (
-      !mongoose.Types.ObjectId.isValid(courseId) ||
-      !mongoose.Types.ObjectId.isValid(sessionId)
-    ) {
-      return res.status(400).json({ message: 'Invalid courseId or sessionId' });
+    if (!mongoose.Types.ObjectId.isValid(sessionId)) {
+      return res.status(400).json({ message: 'Invalid sessionId' });
+    }
+
+    // 1. Find the session
+    const session = await Session.findById(sessionId);
+    if (!session || session.status !== 'active') {
+      return res.status(404).json({ error: 'No active session found' });
+    }
+
+    // 2. access course id to find students enrolled in the course and lecturers assigned to the course
+    const courseId = session.course;
+
+    // 3. make sure only lecturers assigned to a course can end it
+    const course = await Course.findById(courseId);
+
+    if (!course) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+
+    const isLecturerAssigned = course.lecturers.some(
+      (lecId) => lecId.toString() === userId.toString()
+    );
+
+    if (!isLecturerAssigned) {
+      return res
+        .status(403)
+        .json({ error: 'You are not assigned to this course' });
     }
 
     // MARK STUDENTS THAT DIDNT MARK THE ATTENDANCE AS ABSENT
 
-    // 1. get all students enrolled in the course
+    // 4. get all students enrolled in the course
     const enrolledStudents = await StudentEnrollment.find({
       course: courseId,
     }).select('student');
 
-    // 2. get students that marked attendance
+    // 5. get students that marked attendance
     const markedAttendance = await Attendance.find({
       session: sessionId,
     }).select('student');
 
-    // 3. Get enrolled & marked students
+    // 6. Get enrolled & marked students
     const enrolledIds = enrolledStudents.map((e) => e.student.toString()); // array of strings
     const markedIds = markedAttendance.map((e) => e.student.toString()); //array of strings
 
-    // 4. filter the absent students from enrolled students
+    // 7. filter the absent students from enrolled students
     const absentStudentsId = enrolledIds.filter(
       (id) => !markedIds.includes(id)
     );
 
-    // 5. if there are absent students, mark as 'absent' in attendance
+    // 8. if there are absent students, mark as 'absent' in attendance
     if (absentStudentsId.length) {
       await Attendance.insertMany(
         absentStudentsId.map((studentId) => ({
@@ -96,20 +132,60 @@ exports.endSession = async (req, res) => {
     }
 
     // CLOSE THE SESSION
-    const closedSession = await Session.findOneAndUpdate(
-      {
-        _id: sessionId,
-        course: courseId,
-        status: 'active',
-      },
-      { status: 'ended' }
-    );
-    if (!closedSession)
-      return res
-        .status(404)
-        .json({ error: 'No active session found for this course' });
+    session.status = 'ended';
+    session.endedBy = userId;
+    await session.save();
 
-    return res.status(200).json({ message: 'Session ended successfully' });
+    return res.status(200).json({ message: 'Session ended successfully'});
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+exports.getActiveSessionsForStudent = async (req, res) => {
+  try {
+    const { id } = req.user;
+
+    // 1. Get student's registered courses
+    const enrollments = await StudentEnrollment.find({ student: id }).select(
+      'course'
+    );
+
+    const courseIds = enrollments.map((enrollment) => enrollment.course);
+
+    // 2. Find active sessions for the courses
+    const activeSession = await Session.find({
+      course: { $in: courseIds },
+      status: 'active',
+    })
+      .select('-token')
+      .populate('course', 'courseTitle courseCode')
+      .populate('lecturer', 'fullName');
+
+    return res.status(200).json({ session: activeSession });
+  } catch (error) {
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+exports.getActiveSessionsForLecturer = async (req, res) => {
+  try {
+    const { id } = req.user;
+
+    // Find all courses this lecturer is assigned to
+    const courses = await Course.find({ lecturers: id }).select('_id');
+
+    const courseIds = courses.map((c) => c._id);
+
+    // Find active sessions for those courses
+    const sessions = await Session.find({
+      course: { $in: courseIds },
+      status: 'active',
+    })
+      .populate('course', 'courseCode courseTitle')
+      .populate('startedBy', 'fullName');
+    return res.status(200).json({ session: sessions });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: 'Internal server error' });

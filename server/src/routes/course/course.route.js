@@ -86,22 +86,14 @@ courseRoute.delete(
 
 // SESSIONS //
 // lecturer roles
-
 // start attendance session
 courseRoute.post(
-  '/:id/session',
+  '/:id/session/start',
   requireLogin,
   requireLecturerAccess,
   createSession
 );
 
-// end attendance session
-courseRoute.patch(
-  '/:id/session/end',
-  requireLogin,
-  requireLecturerAccess,
-  endSession
-);
 
 // MARKING ATTENDANCE // (students)
 courseRoute.post('/:courseId/sessions/:sessionId/attendance',requireLogin,requireStudentAccess,markAttendance)

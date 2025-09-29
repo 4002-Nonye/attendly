@@ -4,17 +4,25 @@ const { Schema } = mongoose;
 const sessionSchema = new Schema(
   {
     course: { type: Schema.Types.ObjectId, ref: 'Course', required: true },
-    lecturer: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    date: { type: Date, required: true },
+
+    startedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    endedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
     status: {
       type: String,
       enum: ['active', 'ended'],
       default: 'active',
     },
-    token: { type: String, required: true },
-    expiredAt: { type: Date },
+    token: String,
   },
   { timestamps: true }
 );
 
-mongoose.model('Session',sessionSchema)
+mongoose.model('Session', sessionSchema);

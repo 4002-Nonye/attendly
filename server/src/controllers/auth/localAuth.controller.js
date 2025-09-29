@@ -45,6 +45,18 @@ exports.signup = async (req, res) => {
         error: 'User already exists',
       });
     }
+    // Check for existing matric No in a school
+    const existingMatricNo = await User.findOne({
+      matricNo,
+      schoolID: schoolInput,
+      role: 'student',
+    });
+
+    if (existingMatricNo) {
+      return res
+        .status(400)
+        .json({ error: 'Matric number already in use in this school' });
+    }
 
     //Admins: send name as input - backend creates/finds the school.
     //Students && Lecturers: send _id as inputb- backend just validates the ID.
@@ -66,7 +78,7 @@ exports.signup = async (req, res) => {
     } else {
       // If the user is not an admin
       // Student: school must exist (selected from dropdown)
-       schoolDoc = await School.findById(schoolInput);
+      schoolDoc = await School.findById(schoolInput);
       if (!schoolDoc) {
         return res.status(404).json({ error: 'School not found' });
       }

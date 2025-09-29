@@ -22,6 +22,7 @@ const userSchema = new Schema(
       type: String,
       trim: true,
       sparse: true,
+      unique: true,
     },
     email: {
       type: String,
@@ -49,13 +50,22 @@ const userSchema = new Schema(
     },
     level: {
       type: String,
-      enum: ['100', '200', '300', '400', '500']
+      enum: ['100', '200', '300', '400', '500'],
     },
 
     resetPasswordToken: String,
     resetPasswordExpires: Date,
   },
   { timestamps: true }
+);
+
+// if user is a student, enforce uniqueness in matric number within a school
+userSchema.index(
+  { schoolID: 1, matricNo: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { role: 'student', matricNo: { $type: 'string' } },
+  }
 );
 
 // To create a collection of users (Table of users)
