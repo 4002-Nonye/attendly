@@ -81,7 +81,7 @@ exports.getLecturerAttendanceOverview = async (req, res) => {
       // 1. find all courses where the lecturer is assigned to
       {
         $match: {
-          lecturers: new ObjectId(id),
+          lecturers: mongoose.Types.ObjectId.createFromHexString(id),
         },
       },
 
@@ -216,6 +216,7 @@ exports.getLecturerAttendanceOverview = async (req, res) => {
 
     return res.status(200).json({ overview });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };

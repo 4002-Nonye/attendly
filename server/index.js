@@ -21,6 +21,7 @@ const facultyRoute = require('./src/routes/faculty/faculty.route');
 const departmentRoute = require('./src/routes/department/department.route');
 const userRoute = require('./src/routes/user/user.route');
 const sessionRoute = require('./src/routes/session/session.route');
+const attendanceRoute = require('./src/routes/attendance/attendance.route');
 
 
 
@@ -49,6 +50,7 @@ app.use('/api/faculties', facultyRoute);
 app.use('/api/departments', departmentRoute);
 app.use('/api/users', userRoute);
 app.use('/api/sessions',sessionRoute)
+app.use('/api/attendance',attendanceRoute)
 
 
 
