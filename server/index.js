@@ -24,6 +24,7 @@ const sessionRoute = require('./src/routes/session/session.route');
 
 
 
+
 require('./src/lib/passport');
 
 // CONFIGURATION
