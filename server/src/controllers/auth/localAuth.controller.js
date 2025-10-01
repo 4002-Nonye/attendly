@@ -34,7 +34,7 @@ exports.signup = async (req, res) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({
-        message: 'Invalid email format',
+        error: 'Invalid email format',
       });
     }
 
@@ -42,7 +42,7 @@ exports.signup = async (req, res) => {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(409).json({
-        message: 'User already exists',
+        error: 'User already exists',
       });
     }
     // Check for existing matric No in a school
@@ -55,7 +55,7 @@ exports.signup = async (req, res) => {
     if (existingMatricNo) {
       return res
         .status(400)
-        .json({ message: 'Matric number already in use in this school' });
+        .json({ error: 'Matric number already in use in this school' });
     }
 
     //Admins: send name as input - backend creates/finds the school.
@@ -68,7 +68,7 @@ exports.signup = async (req, res) => {
       if (existingSchool) {
         return res
           .status(409)
-          .json({ message: 'School name already exists, pick another' });
+          .json({ error: 'School name already exists, pick another' });
       }
       // School doesn't exist - create new school
       schoolDoc = await new School({
@@ -80,7 +80,7 @@ exports.signup = async (req, res) => {
       // Student: school must exist (selected from dropdown)
       schoolDoc = await School.findById(schoolInput);
       if (!schoolDoc) {
-        return res.status(404).json({ message: 'School not found' });
+        return res.status(404).json({ error: 'School not found' });
       }
     }
 
@@ -131,7 +131,7 @@ exports.completeProfile = async (req, res) => {
     const { role, schoolId, faculty, department, matricNo } = req.body;
 
     if (!role) {
-      return res.status(400).json({ message: 'Role is required' });
+      return res.status(400).json({ error: 'Role is required' });
     }
 
     // Always update role
@@ -139,7 +139,7 @@ exports.completeProfile = async (req, res) => {
     if (role === 'student') {
       if (!faculty || !department || !matricNo) {
         return res.status(400).json({
-          message: 'Student must have faculty, department, and matric number',
+          error: 'Student must have faculty, department, and matric number',
         });
       }
       updateData = { ...updateData, faculty, department, matricNo };
@@ -148,7 +148,7 @@ exports.completeProfile = async (req, res) => {
     if (role === 'lecturer') {
       if (!faculty || !department) {
         return res.status(400).json({
-          message: 'Lecturer must have faculty and department',
+          error: 'Lecturer must have faculty and department',
         });
       }
       updateData = { ...updateData, faculty, department };
@@ -180,7 +180,7 @@ exports.login = async (req, res) => {
 
   //Basic validation
   if (!email || !password) {
-    return res.status(400).json({ message: 'All fields are required' });
+    return res.status(400).json({ error: 'All fields are required' });
   }
   try {
     const existingUser = await User.findOne({ email }).select('+password');
@@ -188,13 +188,13 @@ exports.login = async (req, res) => {
     if (!existingUser) {
       return res
         .status(401)
-        .json({ message: 'User does not exist! Create an account to continue' });
+        .json({ error: 'User does not exist! Create an account to continue' });
     }
 
     if (existingUser) {
       if (!existingUser.password) {
         return res.status(401).json({
-          message:
+          error:
             'This account was created using Google. Please sign in with Google instead.',
         });
       }
@@ -206,7 +206,7 @@ exports.login = async (req, res) => {
 
       // if passwords do not match
       if (!comparePassword) {
-        return res.status(401).json({ message: 'Invalid credentials' });
+        return res.status(401).json({ error: 'Invalid credentials' });
       }
 
       setAuthCookie(res, existingUser);
@@ -240,7 +240,7 @@ exports.logout = async (_, res) => {
 exports.linkAccount = async (req, res) => {
   const { token, password } = req.body;
   if (!password) {
-    return res.status(404).json({ message: 'Password is required' });
+    return res.status(404).json({ error: 'Password is required' });
   }
 
   try {
@@ -250,7 +250,7 @@ exports.linkAccount = async (req, res) => {
 
     const existingUser = await User.findOne({ email }).select('+password');
     if (!existingUser) {
-      return res.status(404).json({ message: 'User does not exist' });
+      return res.status(404).json({ error: 'User does not exist' });
     }
 
     const comparePassword = await bcrypt.compare(
@@ -259,7 +259,7 @@ exports.linkAccount = async (req, res) => {
     );
 
     if (!comparePassword) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     // add google ID to link account that initially signed in with email and password
@@ -277,13 +277,13 @@ exports.linkAccount = async (req, res) => {
 exports.forgotPassword = async (req, res) => {
   const { email } = req.body;
   if (!email) {
-    return res.status(400).json({ message: 'All fields are required' });
+    return res.status(400).json({ error: 'All fields are required' });
   }
 
   try {
     const existingUser = await User.findOne({ email });
     if (!existingUser) {
-      return res.status(401).json({ message: 'User does not exist' });
+      return res.status(401).json({ error: 'User does not exist' });
     }
 
     // if there is a user trying to reset password, go ahead and generate a token
@@ -322,7 +322,7 @@ exports.resetPassword = async (req, res) => {
       resetPasswordExpires: { $gt: Date.now() },
     }).select('+password');
     if (!existingUser) {
-      return res.status(400).json({ message: 'Invalid token' });
+      return res.status(400).json({ error: 'Invalid token' });
     }
 
     const hashedPassword = await hashPassword(newPassword);

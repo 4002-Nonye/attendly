@@ -9,7 +9,7 @@ exports.addDepartment = async (req, res) => {
     const { name, faculty: facultyId } = req.body;
     const { schoolId } = req.user;
     if (!name || !facultyId) {
-      return res.status(400).json({ message: 'Name and Faculty are required' });
+      return res.status(400).json({ error: 'Name and Faculty are required' });
     }
 
     // Check if department already exists in this faculty & school
@@ -20,7 +20,7 @@ exports.addDepartment = async (req, res) => {
     });
 
     if (existingDepartment) {
-      return res.status(400).json({ message: 'Department already exists' });
+      return res.status(400).json({ error: 'Department already exists' });
     }
 
     const newDepartment = await new Department({
@@ -122,7 +122,7 @@ exports.editDepartment = async (req, res) => {
     ) {
       return res
         .status(409)
-        .json({ message: 'Department name already exists in this faculty' });
+        .json({ error: 'Department name already exists in this faculty' });
     }
 
     const updatedDepartment = await Department.findByIdAndUpdate(
@@ -132,7 +132,7 @@ exports.editDepartment = async (req, res) => {
     ).populate('faculty', 'name');
 
     if (!updatedDepartment) {
-      return res.status(404).json({ message: 'Failed to update department' });
+      return res.status(404).json({ error: 'Failed to update department' });
     }
 
     return res.status(200).json({
@@ -152,7 +152,7 @@ exports.deleteDepartment = async (req, res) => {
     // Check if department exists
     const department = await Department.findOne(departmentId, schoolId);
     if (!department) {
-      return res.status(404).json({ message: 'Department not found' });
+      return res.status(404).json({ error: 'Department not found' });
     }
 
     // Delete all courses linked to this department

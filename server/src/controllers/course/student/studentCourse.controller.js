@@ -10,7 +10,7 @@ exports.getRegisteredCoursesForStudent = async (req, res) => {
       .populate('course', 'courseTitle courseCode')
       .populate('student', 'fullName');
     if (!courses || courses.length === 0) {
-      return res.status(404).json({ message: 'No courses found' });
+      return res.status(404).json({ error: 'No courses found' });
     }
 
     res.status(200).json({ courses });
@@ -26,7 +26,7 @@ exports.registerCourse = async (req, res) => {
 
     // Validate IDs
     if (!courseIds || !Array.isArray(courseIds) || courseIds.length === 0) {
-      return res.status(400).json({ message: 'No courses selected' });
+      return res.status(400).json({ error: 'No courses selected' });
     }
 
     // Filter out invalid MongoDB ObjectIds
@@ -34,7 +34,7 @@ exports.registerCourse = async (req, res) => {
       mongoose.Types.ObjectId.isValid(id)
     );
     if (validIds.length !== courseIds.length) {
-      return res.status(400).json({ message: 'Some course IDs are invalid' });
+      return res.status(400).json({ error: 'Some course IDs are invalid' });
     }
 
     // Prepare documents
@@ -57,7 +57,7 @@ exports.registerCourse = async (req, res) => {
      
     });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
@@ -72,11 +72,11 @@ exports.unregisterCourse = async (req, res) => {
     if (!deleted) {
       return res
         .status(404)
-        .json({ message: 'You are not enrolled in this course' });
+        .json({ error: 'You are not enrolled in this course' });
     }
 
     return res.status(200).json({ message: 'Unregistered successfully' });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };

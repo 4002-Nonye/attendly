@@ -13,7 +13,7 @@ exports.getFacultiesAndDepartmentsBySchool = async (req, res) => {
     if (!schoolId) {
       return res
         .status(400)
-        .json({ message: 'School ID not found in user data' });
+        .json({ error: 'School ID not found in user data' });
     }
 
     const faculties = await Faculty.find({ schoolId }).select('name id').lean(); // get faculties within a school
@@ -23,12 +23,12 @@ exports.getFacultiesAndDepartmentsBySchool = async (req, res) => {
     if (!faculties.length) {
       return res
         .status(404)
-        .json({ message: 'No faculties found for this school' });
+        .json({ error: 'No faculties found for this school' });
     }
     if (!departments.length) {
       return res
         .status(404)
-        .json({ message: 'No departments found for this school' });
+        .json({ error: 'No departments found for this school' });
     }
 
     res.status(200).json({ faculties, departments });
@@ -44,7 +44,7 @@ exports.createFaculty = async (req, res) => {
 
     // ensure no empty fields
     if (!facultyName) {
-      return res.status(400).json({ message: 'All fields are required' });
+      return res.status(400).json({ error: 'All fields are required' });
     }
 
     // prevent duplicates within a school
@@ -54,7 +54,7 @@ exports.createFaculty = async (req, res) => {
     });
 
     if (existingFaculty) {
-      return res.status(400).json({ message: 'Faculty already exists' });
+      return res.status(400).json({ error: 'Faculty already exists' });
     }
 
     // create and save new faculty
@@ -64,7 +64,7 @@ exports.createFaculty = async (req, res) => {
       userId,
     }).save();
     if (!newFaculty) {
-      return res.status(404).json({ message: 'Failed to create faculty' });
+      return res.status(404).json({ error: 'Failed to create faculty' });
     }
     return res
       .status(201)
@@ -81,11 +81,11 @@ exports.editFaculty = async (req, res) => {
     const { schoolId } = req.user;
 
     if (!facultyId) {
-      return res.status(400).json({ message: 'Faculty ID is required' });
+      return res.status(400).json({ error: 'Faculty ID is required' });
     }
 
     if (!facultyName) {
-      return res.status(400).json({ message: 'Faculty name is required' });
+      return res.status(400).json({ error: 'Faculty name is required' });
     }
 
     // Check if another faculty already uses this name within a school
@@ -94,7 +94,7 @@ exports.editFaculty = async (req, res) => {
       schoolId,
     });
     if (existingFaculty && existingFaculty._id.toString() !== facultyId) {
-      return res.status(409).json({ message: 'Faculty name already exists' });
+      return res.status(409).json({ error: 'Faculty name already exists' });
     }
 
     // update faculty name
@@ -105,7 +105,7 @@ exports.editFaculty = async (req, res) => {
     );
 
     if (!updatedData) {
-      return res.status(404).json({ message: 'Failed to update faculty' });
+      return res.status(404).json({ error: 'Failed to update faculty' });
     }
 
     return res.status(200).json({
@@ -123,13 +123,13 @@ exports.deleteFaculty = async (req, res) => {
     const { facultyId } = req.params;
     const { schoolId } = req.user;
     if (!facultyId) {
-      return res.status(400).json({ message: 'Faculty ID is required' });
+      return res.status(400).json({ error: 'Faculty ID is required' });
     }
 
     // Verify faculty exists in the user's school
     const faculty = await Faculty.findOne({ _id: facultyId, schoolId });
     if (!faculty) {
-      return res.status(404).json({ message: 'Faculty not found' });
+      return res.status(404).json({ error: 'Faculty not found' });
     }
 
     // Find all departments under this faculty
@@ -149,7 +149,7 @@ exports.deleteFaculty = async (req, res) => {
     const deletedFaculty = await Faculty.findByIdAndDelete(facultyId);
 
     if (!deletedFaculty) {
-      return res.status(404).json({ message: 'Failed to delete faculty' });
+      return res.status(404).json({ error: 'Failed to delete faculty' });
     }
     return res.status(200).json({
       message:

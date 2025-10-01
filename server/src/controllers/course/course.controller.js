@@ -44,7 +44,7 @@ exports.getCourseById= async (req, res) => {
       .populate('lecturers', 'fullName email'); 
 
     if (!course) {
-      return res.status(404).json({ message: 'Course not found' });
+      return res.status(404).json({ error: 'Course not found' });
     }
 
     return res.status(200).json({ course });

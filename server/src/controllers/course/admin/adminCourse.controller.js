@@ -16,7 +16,7 @@ exports.createCourse = async (req, res) => {
     // prettier-ignore
     if ( !courseCode || !courseTitle || !semester || !department || !faculty || !session|| !level) {
       return res.status(400).json({
-        message: 'All fields are required',
+        error: 'All fields are required',
       });
 
     }
@@ -29,17 +29,17 @@ exports.createCourse = async (req, res) => {
     });
 
     if (existingCourse) {
-      // If the title matches, send a title specific message
+      // If the title matches, send a title specific error
       if (existingCourse.courseTitle === courseTitle) {
         return res
           .status(409)
-          .json({ message: 'Course title already exists in this department' });
+          .json({ error: 'Course title already exists in this department' });
       }
-      // If the code matches, send a code specific message
+      // If the code matches, send a code specific error
       if (existingCourse.courseCode === courseCode) {
         return res
           .status(409)
-          .json({ message: 'Course code already exists in this department' });
+          .json({ error: 'Course code already exists in this department' });
       }
     }
 
@@ -80,12 +80,12 @@ exports.editCourse = async (req, res) => {
       if (existingCourse.courseCode === req.body.courseCode) {
         return res
           .status(409)
-          .json({ message: 'Course code already exists in this department' });
+          .json({ error: 'Course code already exists in this department' });
       }
       if (existingCourse.courseTitle === req.body.courseTitle) {
         return res
           .status(409)
-          .json({ message: 'Course title already exists in this department' });
+          .json({ error: 'Course title already exists in this department' });
       }
     }
 
@@ -97,7 +97,7 @@ exports.editCourse = async (req, res) => {
     );
 
     if (!updatedCourse) {
-      return res.status(404).json({ message: 'Course not found' });
+      return res.status(404).json({ error: 'Failed to update course' });
     }
 
     return res.status(200).json({
@@ -117,7 +117,7 @@ exports.deleteCourse = async (req, res) => {
 
     const course = await Course.findOneAndDelete({ courseId, schoolId });
     if (!course) {
-      return res.status(404).json({ message: 'Course not found' });
+      return res.status(404).json({ error: 'Course not found' });
     }
     return res.status(200).json({ message: 'Course deleted successfully' });
   } catch (error) {
