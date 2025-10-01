@@ -8,7 +8,7 @@ const Course = mongoose.model('Course');
 
 exports.createSession = async (req, res) => {
   try {
-    const { id: courseId } = req.params;
+    const { courseId } = req.params;
     const { id: lecturerId } = req.user;
 
     if (!courseId)
@@ -64,7 +64,7 @@ exports.createSession = async (req, res) => {
 };
 exports.endSession = async (req, res) => {
   try {
-    const { id: sessionId } = req.params;
+    const { sessionId } = req.params;
     const { id: userId } = req.user;
 
     //  Validate IDs
@@ -161,10 +161,11 @@ exports.getActiveSessionsForStudent = async (req, res) => {
     })
       .select('-token')
       .populate('course', 'courseTitle courseCode')
-      .populate('lecturer', 'fullName');
+      .populate('startedBy', 'fullName');
 
     return res.status(200).json({ session: activeSession });
   } catch (error) {
+    console.log(error)
     return res.status(500).json({ error: 'Internal server error' });
   }
 };

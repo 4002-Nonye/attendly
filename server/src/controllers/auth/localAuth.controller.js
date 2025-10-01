@@ -14,7 +14,6 @@ const User = mongoose.model('User');
 const School = mongoose.model('School');
 exports.signup = async (req, res) => {
   try {
-    // Destructure fields from the request body
     const {
       fullName,
       email,
@@ -27,68 +26,56 @@ exports.signup = async (req, res) => {
       level,
     } = req.body;
 
-    // 1. Validate inputs
+    // 1. Validate required fields
     validateFields(role, req.body, res);
 
-    // 2. Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({
-        error: 'Invalid email format',
-      });
+    // 2. Validate email format
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: 'Invalid email format' });
     }
 
-    // 3. Check for existing user
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(409).json({
-        error: 'User already exists',
-      });
-    }
-    // Check for existing matric No in a school
-    const existingMatricNo = await User.findOne({
-      matricNo,
-      schoolId: schoolInput,
-      role: 'student',
-    });
-
-    if (existingMatricNo) {
-      return res
-        .status(400)
-        .json({ error: 'Matric number already in use in this school' });
+    // 3. Check if email already exists
+    if (await User.findOne({ email })) {
+      return res.status(409).json({ error: 'User already exists' });
     }
 
-    //Admins: send name as input - backend creates/finds the school.
-    //Students && Lecturers: send _id as inputb- backend just validates the ID.
-
-    // 4. Get or create school based on role
     let schoolDoc;
+
+    // 4. Admin creates a new school if school does not exist
     if (role === 'admin') {
-      const existingSchool = await School.findOne({ schoolInput });
-      if (existingSchool) {
-        return res
-          .status(409)
-          .json({ error: 'School name already exists, pick another' });
+      schoolDoc = await School.findOne({ schoolName: schoolInput });
+      if (schoolDoc) {
+        return res.status(409).json({ error: 'School name already exists' });
       }
-      // School doesn't exist - create new school
-      schoolDoc = await new School({
-        schoolName: schoolInput,
-        admin: null,
-      }).save();
+      schoolDoc = await School.create({ schoolName: schoolInput, admin: null });
     } else {
-      // If the user is not an admin
-      // Student: school must exist (selected from dropdown)
+      // 5. Student/Lecturer must provide valid school ID
+      if (!mongoose.Types.ObjectId.isValid(schoolInput)) {
+        return res.status(400).json({ error: 'Invalid school ID' });
+      }
       schoolDoc = await School.findById(schoolInput);
       if (!schoolDoc) {
         return res.status(404).json({ error: 'School not found' });
       }
+
+      // 6. Check matric number for students
+      if (role === 'student') {
+        const existingMatricNo = await User.findOne({
+          matricNo,
+          schoolId: schoolDoc._id,
+          role: 'student',
+        });
+        if (existingMatricNo) {
+          return res.status(400).json({ error: 'Matric number already in use' });
+        }
+      }
     }
 
-    // 5. Password hashing
+    // 7. Hash password
     const hashedPassword = await hashPassword(password);
 
-    // 6. Create new user
-    const newUser = await new User({
+    // 8. Create new user
+    const newUser = await User.create({
       fullName,
       password: hashedPassword,
       email,
@@ -96,20 +83,20 @@ exports.signup = async (req, res) => {
       department,
       faculty,
       level,
-      matricNo, // only for students
-      schoolId: schoolDoc._id, // Link the user to the school
-    }).save();
+      matricNo:  matricNo,
+      schoolId: schoolDoc._id,
+    });
 
-    // 7. If the school has no admin, set this user as the creator if he is an admin
+    // 9. Set admin for new school if needed
     if (role === 'admin' && !schoolDoc.admin) {
       schoolDoc.admin = newUser._id;
       await schoolDoc.save();
     }
 
-    // 8. Set authentication cookie with JWT
+    // 10. Set auth cookie
     setAuthCookie(res, newUser);
 
-    // 9. Sanitize user object before sending to client: Removes sensitive info like password
+    // 11. Sanitize user object
     const safeToSendUser = sanitizeUser(newUser._doc);
 
     return res.status(201).json({
@@ -117,10 +104,8 @@ exports.signup = async (req, res) => {
       user: safeToSendUser,
     });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      error: 'Internal server error',
-    });
+    console.log(error.message);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
@@ -220,6 +205,7 @@ exports.login = async (req, res) => {
       });
     }
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };

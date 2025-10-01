@@ -29,9 +29,10 @@ const {
 } = require('../../controllers/course/student/studentCourse.controller');
 const {
   createSession,
-  endSession,
 } = require('../../controllers/session/session.controller');
-const { markAttendance } = require('../../controllers/attendance/attendance.controller');
+const { getStudentSessionDetails, getStudentAttendanceReport, markAttendance } = require('../../controllers/attendance/student/studentAttendance.controller');
+const { getLecturerAttendanceReport, getLecturerSessionDetails, getLecturerAttendanceOverview } = require('../../controllers/attendance/lecturer/lecturerAttendance.controller');
+
 
 const courseRoute = express.Router();
 
@@ -52,7 +53,7 @@ courseRoute.post(
   assignLecturer
 );
 courseRoute.delete(
-  '/:id/unassign',
+  '/:courseId/unassign',
   requireLogin,
   requireLecturerAccess,
   unassignLecturer
@@ -78,7 +79,7 @@ courseRoute.get(
   getRegisteredCoursesForStudent
 );
 courseRoute.delete(
-  '/enrollments/:id/unregister',
+  '/:courseId/unregister',
   requireLogin,
   requireStudentAccess,
   unregisterCourse
@@ -88,14 +89,57 @@ courseRoute.delete(
 // lecturer roles
 // start attendance session
 courseRoute.post(
-  '/:id/session/start',
+  '/:courseId/session/start',
   requireLogin,
   requireLecturerAccess,
   createSession
 );
 
-
 // MARKING ATTENDANCE // (students)
-courseRoute.post('/:courseId/sessions/:sessionId/attendance',requireLogin,requireStudentAccess,markAttendance)
+courseRoute.post(
+  '/:courseId/sessions/:sessionId/attendance/mark',
+  requireLogin,
+  requireStudentAccess,
+  markAttendance
+);
 
+// LECTURER ATTENDANCE OVERVIEW
+courseRoute.get(
+  '/attendance/overview',
+  requireLogin,
+  requireLecturerAccess,
+  getLecturerAttendanceOverview
+);
+
+// Lecturer get all sessions for a course
+courseRoute.get(
+  '/:courseId/sessions',
+  requireLogin,
+  requireLecturerAccess,
+  getLecturerSessionDetails
+);
+
+// Lecturer get course attendance report
+courseRoute.get(
+  '/:courseId/report',
+  requireLogin,
+  requireLecturerAccess,
+  getLecturerAttendanceReport
+);
+
+// Student get attendance report
+courseRoute.get(
+  '/student/attendance-report',
+  requireLogin,
+  requireStudentAccess,
+  getStudentAttendanceReport
+);
+
+// student get report details
+courseRoute.get(
+  '/:courseId/student/attendance-details',
+  requireLogin,
+  requireStudentAccess,
+  getStudentSessionDetails
+);
 module.exports = courseRoute;

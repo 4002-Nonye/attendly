@@ -1,81 +1,11 @@
 const mongoose = require('mongoose');
-const Attendance = mongoose.model('Attendance');
-const Session = mongoose.model('Session');
-const StudentEnrollment = mongoose.model('StudentEnrollment');
 const Course = mongoose.model('Course');
-
-exports.markAttendance = async (req, res) => {
-  // SUPPORTS BOTH QR CODE SCANNING AND BUTTON MARKING
-
-  try {
-    const { courseId, sessionId } = req.params;
-    const { id: userId } = req.user;
-    // Access token sent to frontend when session was created
-    const { token } = req.body || {}; // For just QR flow
-
-    // 1. check if class exists
-    const activeSession = await Session.findById(sessionId);
-    if (!activeSession) {
-      return res.status(404).json({ error: 'Session does not exist' });
-    }
-
-    // 2. check if session matches course
-    if (activeSession.course.toString() !== courseId) {
-      return res
-        .status(400)
-        .json({ error: 'Course does not match this session' });
-    }
-    // 3. check if class is still ongoing
-    if (activeSession.status !== 'active')
-      return res.status(400).json({ error: 'Class already ended' });
-
-    // 4. check if token is valid for qr scan
-    if (token && activeSession.token !== token) {
-      return res.status(401).json({ error: 'Invalid token' });
-    }
-
-    // 5. only enrolled students can mark attendance
-    const isEnrolled = await StudentEnrollment.findOne({
-      student: userId,
-      course: courseId,
-    });
-
-    if (!isEnrolled) {
-      return res
-        .status(403)
-        .json({ error: 'Student is not enrolled in this course' });
-    }
-
-    // 6. prevent duplicate attendance
-    const existingAttendance = await Attendance.findOne({
-      course: courseId,
-      session: sessionId,
-      student: userId,
-    });
-    if (existingAttendance) {
-      return res.status(400).json({ error: 'Attendance already marked' });
-    }
-
-    // 7. mark attendance
-    const markedAttendance = await new Attendance({
-      course: courseId,
-      session: sessionId,
-      student: userId,
-      status: 'Present',
-    });
-    await markedAttendance.save();
-    return res
-      .status(201)
-      .json({ message: 'Attendance taken', markedAttendance });
-  } catch (error) {
-    return res.status(500).json({ error: 'Internal server error' });
-  }
-};
 
 exports.getLecturerAttendanceOverview = async (req, res) => {
   // returns course -> total sessions -> total students -> average attendance
   try {
     const { id } = req.user;
+
     const overview = await Course.aggregate([
       // 1. find all courses where the lecturer is assigned to
       {
@@ -211,6 +141,7 @@ exports.getLecturerAttendanceOverview = async (req, res) => {
 
     return res.status(200).json({ overview });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -410,7 +341,7 @@ exports.getLecturerAttendanceReport = async (req, res) => {
     const report = await Course.aggregate([
       {
         $match: {
-          _id: new ObjectId('68d9b8d46d672b70990be513'),
+          _id: mongoose.Types.ObjectId.createFromHexString(courseId),
         },
       },
       {
@@ -460,7 +391,6 @@ exports.getLecturerAttendanceReport = async (req, res) => {
                 _id: 1,
                 fullName: 1,
                 matricNo: 1,
-                email: 1,
               },
             },
           ],
@@ -551,39 +481,3 @@ exports.getLecturerAttendanceReport = async (req, res) => {
 exports.downloadLecturerAttendanceReport = async (req, res) => {
   // returns downloadable PDF for a course
 };
-
-exports.getStudentAttendanceReport = async (req, res) => {
-  // returns course -> total sessions -> total attended -> eligibile -> view details
-};
-
-exports.getStudentSessionDetails = async (req, res) => {
-  // returns session date -> lecturer -> Time -> status (present/absent)
-};
-
-exports.getAdminAttendanceReport = async (req, res) => {
-  // accepts filters: facultyId, departmentId, level, courseId
-  // returns student id -> name -> sessions total -> attended total -> % attended -> eligible
-};
-
-exports.downloadAdminAttendanceReport = async (req, res) => {
-  // accepts filters: facultyId, departmentId, level, courseId
-  // returns downloadable PDF across chosen scope
-};
-
-// ✅ Should use aggregate
-
-// getLecturerAttendanceOverview
-
-// getLecturerSessionDetails
-
-// getLecturerAttendanceReport
-
-// getAdminAttendanceReport
-
-// 🚫 Doesn’t strictly need aggregate
-
-// getLecturerSessionStudentDetails
-
-// getStudentAttendanceReport (optional)
-
-// getStudentSessionDetails

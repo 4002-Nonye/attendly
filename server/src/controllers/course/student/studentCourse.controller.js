@@ -63,7 +63,7 @@ exports.registerCourse = async (req, res) => {
 
 exports.unregisterCourse = async (req, res) => {
   try {
-    const { id: courseId } = req.params;
+    const { courseId } = req.params;
     const { id: studentId } = req.user;
     const deleted = await StudentEnrollment.findOneAndDelete({
       student: studentId,

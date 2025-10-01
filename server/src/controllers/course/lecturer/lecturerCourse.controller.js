@@ -25,6 +25,7 @@ exports.assignLecturer = async (req, res) => {
   try {
     const { courseIds } = req.body;
     const lecturerId = req.user.id;
+    const { schoolId } = req.user;
 
     // Validate IDs
     if (!courseIds || !Array.isArray(courseIds) || courseIds.length === 0) {
@@ -40,7 +41,10 @@ exports.assignLecturer = async (req, res) => {
     }
 
     // check if courses exist
-    const existingCourses = await Course.find({ _id: { $in: validIds } });
+    const existingCourses = await Course.find({
+      _id: { $in: validIds },
+      schoolId,
+    });
 
     if (!existingCourses.length) {
       return res
@@ -49,24 +53,23 @@ exports.assignLecturer = async (req, res) => {
     }
 
     // Update all courses in one go
-     await Course.updateMany(
-      { _id: { $in: validIds } },
+    await Course.updateMany(
+      { _id: { $in: validIds }, schoolId },
       { $addToSet: { lecturers: lecturerId } }
     );
 
-    
-
     res.status(200).json({
-      message: 'Courses assigned successfully'
+      message: 'Courses assigned successfully',
     });
   } catch (error) {
+    console.log(error.message);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
 exports.unassignLecturer = async (req, res) => {
   try {
-    const { id: courseId } = req.params;
+    const { courseId } = req.params;
     const { id: lecturerId } = req.user;
 
     const updatedCourse = await Course.findOneAndUpdate(
@@ -82,9 +85,11 @@ exports.unassignLecturer = async (req, res) => {
     }
 
     return res.status(200).json({
-      message: 'Unassigned successfully'
+      message: 'Unassigned successfully',
     });
   } catch (error) {
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+
