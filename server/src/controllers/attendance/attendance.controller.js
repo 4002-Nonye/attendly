@@ -134,18 +134,8 @@ exports.getLecturerAttendanceOverview = async (req, res) => {
       },
 
       // 7. Calculate average attendance
-      //  averageAttendance (%) = Number of "Present" attendance records
-      //                          ---------------------------------------- ×100
-      //                          Total possible attendances
-      //
-      // 	​
+      //  averageAttendance (%) = (Number of "Present" attendance records / Total possible attendances) ×100
 
-      /*Where:
-
-       Number of "Present" attendance records → count of attendance documents with status: "Present" for the course.
-       Total possible attendances → totalSessions × totalStudents
-       totalSessions = number of sessions for the course
-       totalStudents = number of enrolled students in the course */
       {
         $addFields: {
           // - add a field of "averageAttendance" to store computed average attendance
@@ -161,36 +151,42 @@ exports.getLecturerAttendanceOverview = async (req, res) => {
                 ],
               },
               {
-                // - if the condiion is met, proceed to calculate avg attendance
-                $multiply: [
+                $round: [
+                  // round off result to whole number
                   {
-                    $divide: [
+                    // - if the condiion is met, proceed to calculate avg attendance
+                    $multiply: [
                       {
-                        // -  go into the attendance record and count how many 'Present' exist (this is the numerator)
-                        $size: {
-                          $filter: {
-                            input: '$attendances',
-                            as: 'att',
-                            cond: {
-                              $eq: ['$$att.status', 'Present'],
+                        $divide: [
+                          {
+                            // -  go into the attendance record and count how many 'Present' exist (this is the numerator)
+                            $size: {
+                              $filter: {
+                                input: '$attendances',
+                                as: 'att',
+                                cond: {
+                                  $eq: ['$$att.status', 'Present'],
+                                },
+                              },
                             },
                           },
-                        },
-                      },
-                      {
-                        // - compute total possible attendance - this is the denominator
-                        $multiply: [
                           {
-                            $size: '$sessions', // total sessions held
-                          },
-                          {
-                            $size: '$studentenrollments', // total students enrolled in a course
+                            // - compute total possible attendance - this is the denominator
+                            $multiply: [
+                              {
+                                $size: '$sessions', // total sessions held
+                              },
+                              {
+                                $size: '$studentenrollments', // total students enrolled in a course
+                              },
+                            ],
                           },
                         ],
                       },
+                      100, // convert to percentage
                     ],
                   },
-                  100, // convert to percentage
+                  0,
                 ],
               },
 
@@ -204,7 +200,7 @@ exports.getLecturerAttendanceOverview = async (req, res) => {
       // Final result
       {
         $project: {
-          _id: 0,
+          _id: 1,
           courseCode: 1,
           courseTitle: 1,
           totalSessions: 1,
@@ -216,17 +212,190 @@ exports.getLecturerAttendanceOverview = async (req, res) => {
 
     return res.status(200).json({ overview });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
 exports.getLecturerSessionDetails = async (req, res) => {
-  // returns session date -> total students -> total present -> total absent -> % present ->view details
+  // returns session date -> total students -> total present -> total absent -> average attendance (% present) ->view details
+  try {
+    const { courseId } = req.params;
+
+    const sessionDetails = await Course.aggregate([
+      {
+        // 1. Find course that was clicked
+        $match: {
+          _id: mongoose.Types.ObjectId.createFromHexString(courseId),
+        },
+      },
+
+      // 2. Go into student enrollments and find all enrolled students for that course
+      {
+        $lookup: {
+          from: 'studentenrollments',
+          localField: '_id',
+          foreignField: 'course',
+          as: 'studentenrollments',
+        },
+      },
+
+      // 3. Go into sessions and find all sessions tied to that course
+      {
+        $lookup: {
+          from: 'sessions',
+          localField: '_id',
+          foreignField: 'course',
+          as: 'sessions',
+        },
+      },
+
+      // 4. Unpack the sessions found (array) so each session becomes a separate doc (makes it easier to perform actions)
+      {
+        $unwind: {
+          path: '$sessions',
+        },
+      },
+
+      // 5. Store Date and time of each session
+      {
+        $addFields: {
+          'sessions.date': {
+            $dateToString: {
+              format: '%Y-%m-%d',
+              date: '$sessions.createdAt',
+            },
+          },
+          'sessions.time': {
+            $dateToString: {
+              format: '%H:%M',
+              date: '$sessions.createdAt',
+            },
+          },
+        },
+      },
+
+      // 6. Go into attandance and look for all docs for each session
+      {
+        $lookup: {
+          from: 'attendances',
+          localField: 'sessions._id',
+          foreignField: 'session',
+          as: 'attendances',
+        },
+      },
+
+      // 7. Compute total students enrolled in that course
+      {
+        $addFields: {
+          totalStudents: {
+            $size: '$studentenrollments',
+          },
+        },
+      },
+
+      // 8. Compute total present for each session
+      {
+        $addFields: {
+          totalPresent: {
+            $size: {
+              $filter: {
+                input: '$attendances',
+                as: 'att',
+                cond: {
+                  $eq: ['$$att.status', 'Present'],
+                },
+              },
+            },
+          },
+        },
+      },
+
+      // 9. Compute total absent for each session
+      {
+        $addFields: {
+          totalAbsent: {
+            $subtract: ['$totalStudents', '$totalPresent'],
+          },
+        },
+      },
+
+      // 10. Calculate average attendance per session
+      //  averageAttendance (%) = (Number of "Present" students in session / Total students enrolled in session) × 100
+      {
+        $addFields: {
+          averageAttendance: {
+            $cond: [
+              {
+                $gt: ['$totalStudents', 0], // only calculate if there are students enrolled in that course
+              },
+              {
+                $round: [
+                  // round final result to a whole number
+                  {
+                    $multiply: [
+                      {
+                        $divide: ['$totalPresent', '$totalStudents'],
+                      },
+                      100, // convert to percentage
+                    ],
+                  },
+                  0, // round to whole number
+                ],
+              },
+              0, // else if no students enrolled in the course, avg attendance is 0
+            ],
+          },
+        },
+      },
+
+      // 11. Final result
+      {
+        $project: {
+          _id: 1,
+          courseCode: 1,
+          courseTitle: 1,
+          'sessions._id': 1,
+          'sessions.date': 1,
+          'sessions.time': 1,
+          totalStudents: 1,
+          totalPresent: 1,
+          totalAbsent: 1,
+          averageAttendance: 1,
+          session: 1,
+        },
+      },
+    ]);
+    return res.status(200).json({ sessionDetails });
+  } catch (error) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
 };
 
 exports.getLecturerSessionStudentDetails = async (req, res) => {
   // returns id -> matric number -> name -> status (present/absent) -> time marked (optional)
+  try {
+    const { sessionId } = req.params;
+
+    // Validate sessionId
+    if (!mongoose.Types.ObjectId.isValid(sessionId)) {
+      return res.status(400).json({ error: 'Invalid session ID' });
+    }
+
+    const details = await Attendance.find({
+      session: sessionId,
+    })
+      .select('status createdAt')
+      .populate('student', 'matricNo fullName');
+
+    if (!details || details.length === 0) {
+      return res
+        .status(404)
+        .json({ message: 'No attendance record found for this session' });
+    }
+    res.status(200).json({ sessionDetails: details });
+  } catch (error) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
 };
 
 exports.getLecturerAttendanceReport = async (req, res) => {
