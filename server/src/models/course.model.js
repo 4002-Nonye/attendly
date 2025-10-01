@@ -45,7 +45,7 @@ const courseSchema = new Schema(
       type: String,
       required: true, // Example: "2024/2025"
     },
-    schoolID: {
+    schoolId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'School',
     },
@@ -54,10 +54,10 @@ const courseSchema = new Schema(
 );
 
 // courseCode must be unique within a department + school
-courseSchema.index({ courseCode: 1, department: 1, schoolID: 1 }, { unique: true });
+courseSchema.index({ courseCode: 1, department: 1, schoolId: 1 }, { unique: true });
 
 // courseTitle must be unique within a department + school
-courseSchema.index({ courseTitle: 1, department: 1, schoolID: 1 }, { unique: true });
+courseSchema.index({ courseTitle: 1, department: 1, schoolId: 1 }, { unique: true });
 
 
 mongoose.model('Course', courseSchema); // two arguments means we are trying to create a collection

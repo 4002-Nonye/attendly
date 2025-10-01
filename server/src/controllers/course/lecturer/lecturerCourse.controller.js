@@ -3,9 +3,9 @@ const Course = mongoose.model('Course');
 
 exports.getAssignedCoursesForLecturer = async (req, res) => {
   try {
-    const lecturerID = req.user.id;
+    const lecturerId = req.user.id;
 
-    const courses = await Course.find({ lecturers: lecturerID }).populate(
+    const courses = await Course.find({ lecturers: lecturerId }).populate(
       'lecturers',
       'fullName'
     );
@@ -23,19 +23,19 @@ exports.getAssignedCoursesForLecturer = async (req, res) => {
 
 exports.assignLecturer = async (req, res) => {
   try {
-    const { courseIDs } = req.body;
-    const lecturerID = req.user.id;
+    const { courseIds } = req.body;
+    const lecturerId = req.user.id;
 
     // Validate IDs
-    if (!courseIDs || !Array.isArray(courseIDs) || courseIDs.length === 0) {
+    if (!courseIds || !Array.isArray(courseIds) || courseIds.length === 0) {
       return res.status(400).json({ message: 'No courses selected' });
     }
 
     // Filter out invalid MongoDB ObjectIds
-    const validIds = courseIDs.filter((id) =>
+    const validIds = courseIds.filter((id) =>
       mongoose.Types.ObjectId.isValid(id)
     );
-    if (validIds.length !== courseIDs.length) {
+    if (validIds.length !== courseIds.length) {
       return res.status(400).json({ message: 'Some course IDs are invalid' });
     }
 
@@ -51,7 +51,7 @@ exports.assignLecturer = async (req, res) => {
     // Update all courses in one go
      await Course.updateMany(
       { _id: { $in: validIds } },
-      { $addToSet: { lecturers: lecturerID } }
+      { $addToSet: { lecturers: lecturerId } }
     );
 
     
@@ -66,12 +66,12 @@ exports.assignLecturer = async (req, res) => {
 
 exports.unassignLecturer = async (req, res) => {
   try {
-    const { id: courseID } = req.params;
-    const { id: lecturerID } = req.user;
+    const { id: courseId } = req.params;
+    const { id: lecturerId } = req.user;
 
     const updatedCourse = await Course.findOneAndUpdate(
-      { _id: courseID, lecturers: lecturerID }, // find all courses where the lecturerID is in the course.lecturer
-      { $pull: { lecturers: lecturerID } }, // remove the lecturerID from the array
+      { _id: courseId, lecturers: lecturerId }, // find all courses where the lecturerId is in the course.lecturer
+      { $pull: { lecturers: lecturerId } }, // remove the lecturerId from the array
       { new: true }
     );
 

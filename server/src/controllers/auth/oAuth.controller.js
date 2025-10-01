@@ -24,9 +24,9 @@ exports.authGoogleCallback = (req, res, next) =>
       );
     }
 
-    // profile is incomplete if schoolID or role is missing
+    // profile is incomplete if schoolId or role is missing
     const profileIncomplete =
-      !user.schoolID ||
+      !user.schoolId ||
       !user.role ||
       (user.role === 'student' && !user.matricNo);
 

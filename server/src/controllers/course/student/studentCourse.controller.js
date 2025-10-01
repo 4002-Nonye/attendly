@@ -3,10 +3,10 @@ const StudentEnrollment = mongoose.model('StudentEnrollment');
 
 exports.getRegisteredCoursesForStudent = async (req, res) => {
   try {
-    const studentID = req.user.id;
+    const studentId = req.user.id;
 
     // do not fetch enrolled students here
-    const courses = await StudentEnrollment.find({ student: studentID })
+    const courses = await StudentEnrollment.find({ student: studentId })
       .populate('course', 'courseTitle courseCode')
       .populate('student', 'fullName');
     if (!courses || courses.length === 0) {
@@ -21,27 +21,27 @@ exports.getRegisteredCoursesForStudent = async (req, res) => {
 
 exports.registerCourse = async (req, res) => {
   try {
-    const { courseIDs } = req.body;
-    const studentID = req.user.id;
+    const { courseIds } = req.body;
+    const studentId = req.user.id;
 
     // Validate IDs
-    if (!courseIDs || !Array.isArray(courseIDs) || courseIDs.length === 0) {
+    if (!courseIds || !Array.isArray(courseIds) || courseIds.length === 0) {
       return res.status(400).json({ message: 'No courses selected' });
     }
 
     // Filter out invalid MongoDB ObjectIds
-    const validIds = courseIDs.filter((id) =>
+    const validIds = courseIds.filter((id) =>
       mongoose.Types.ObjectId.isValid(id)
     );
-    if (validIds.length !== courseIDs.length) {
+    if (validIds.length !== courseIds.length) {
       return res.status(400).json({ message: 'Some course IDs are invalid' });
     }
 
     // Prepare documents
   //  todo: in frontend, we block receiving ids of courses that are already registered
-    const enrollments = validIds.map((courseID) => ({
-      student: studentID,
-      course: courseID,
+    const enrollments = validIds.map((courseId) => ({
+      student: studentId,
+      course: courseId,
     }));
 
     // insert with duplicate skip
@@ -63,11 +63,11 @@ exports.registerCourse = async (req, res) => {
 
 exports.unregisterCourse = async (req, res) => {
   try {
-    const { id: courseID } = req.params;
-    const { id: studentID } = req.user;
+    const { id: courseId } = req.params;
+    const { id: studentId } = req.user;
     const deleted = await StudentEnrollment.findOneAndDelete({
-      student: studentID,
-      course: courseID,
+      student: studentId,
+      course: courseId,
     });
     if (!deleted) {
       return res

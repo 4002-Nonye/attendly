@@ -9,23 +9,23 @@ const Course = mongoose.model('Course');
 exports.createSession = async (req, res) => {
   try {
     const { id: courseId } = req.params;
-    const { id: lecturerID } = req.user;
+    const { id: lecturerId } = req.user;
 
     if (!courseId)
       return res
         .status(404)
-        .json({ error: 'A course ID is required to start a session' });
+        .json({ message: 'A course ID is required to start a session' });
 
     // check if the lecturer is assigned to a course before he can start a session
     const isAssigned = await Course.findOne({
       _id: courseId,
-      lecturers: lecturerID,
+      lecturers: lecturerId,
     });
 
     if (!isAssigned)
       return res
         .status(403)
-        .json({ error: 'Lecturer not assigned to this course' });
+        .json({ message: 'Lecturer not assigned to this course' });
 
     // Prevent duplicate active session for same course
     const existingSession = await Session.findOne({
@@ -35,7 +35,7 @@ exports.createSession = async (req, res) => {
 
     if (existingSession) {
       return res.status(400).json({
-        error: 'There is already an active session for this course',
+        message: 'There is already an active session for this course',
       });
     }
 
@@ -44,7 +44,7 @@ exports.createSession = async (req, res) => {
 
     const session = await new Session({
       course: courseId,
-      startedBy: lecturerID,
+      startedBy: lecturerId,
       date: new Date(),
       status: 'active',
       token: sessionToken,
@@ -75,7 +75,7 @@ exports.endSession = async (req, res) => {
     // 1. Find the session
     const session = await Session.findById(sessionId);
     if (!session || session.status !== 'active') {
-      return res.status(404).json({ error: 'No active session found' });
+      return res.status(404).json({ message: 'No active session found' });
     }
 
     // 2. access course id to find students enrolled in the course and lecturers assigned to the course
@@ -85,7 +85,7 @@ exports.endSession = async (req, res) => {
     const course = await Course.findById(courseId);
 
     if (!course) {
-      return res.status(404).json({ error: 'Course not found' });
+      return res.status(404).json({ message: 'Course not found' });
     }
 
     const isLecturerAssigned = course.lecturers.some(
@@ -95,7 +95,7 @@ exports.endSession = async (req, res) => {
     if (!isLecturerAssigned) {
       return res
         .status(403)
-        .json({ error: 'You are not assigned to this course' });
+        .json({ message: 'You are not assigned to this course' });
     }
 
     // MARK STUDENTS THAT DIDNT MARK THE ATTENDANCE AS ABSENT

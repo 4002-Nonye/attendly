@@ -3,7 +3,7 @@ const User = mongoose.model('User');
 
 exports.getAllUsers = async (req, res) => {
   try {
-    const { id, schoolID } = req.user;
+    const { id, schoolId } = req.user;
     const {
       role,
       searchQuery = '',
@@ -20,7 +20,7 @@ exports.getAllUsers = async (req, res) => {
     // Base filter
     const filter = {
       _id: { $ne: id }, // exclude current user
-      schoolID, // get only users for the school
+      schoolId, // get only users for the school
     };
 
     // optional filter
@@ -58,7 +58,7 @@ exports.getAllUsers = async (req, res) => {
     const users = await User.find(filter)
       .populate('faculty', 'name')
       .populate('department', 'name')
-      .populate('schoolID', 'schoolName')
+      .populate('schoolId', 'schoolName')
       .sort(sortOption)
       .skip(parseInt(skip))
       .limit(parseInt(limit));

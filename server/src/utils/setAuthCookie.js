@@ -8,7 +8,7 @@ const setAuthCookie = (res, user) => {
       id: user._id,
       email: user.email,
       role: user.role,
-      schoolID: user.schoolID,
+      schoolId: user.schoolId,
     },
     process.env.JWT_SECRET,
     {

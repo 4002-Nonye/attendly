@@ -6,27 +6,27 @@ const User = mongoose.model('User');
 
 exports.addDepartment = async (req, res) => {
   try {
-    const { name, faculty: facultyID } = req.body;
-    const { schoolID } = req.user;
-    if (!name || !facultyID) {
-      return res.status(400).json({ error: 'Name and Faculty are required' });
+    const { name, faculty: facultyId } = req.body;
+    const { schoolId } = req.user;
+    if (!name || !facultyId) {
+      return res.status(400).json({ message: 'Name and Faculty are required' });
     }
 
     // Check if department already exists in this faculty & school
     const existingDepartment = await Department.findOne({
       name,
-      faculty: facultyID,
-      schoolID,
+      faculty: facultyId,
+      schoolId,
     });
 
     if (existingDepartment) {
-      return res.status(400).json({ error: 'Department already exists' });
+      return res.status(400).json({ message: 'Department already exists' });
     }
 
     const newDepartment = await new Department({
       name,
-      faculty: facultyID,
-      schoolID,
+      faculty: facultyId,
+      schoolId,
     });
     await newDepartment.save();
     return res.status(201).json({
@@ -40,13 +40,13 @@ exports.addDepartment = async (req, res) => {
 
 exports.getDepartmentStats = async (req, res) => {
   try {
-    const { schoolID } = req.user;
-    const { searchQuery = '', page = 1, limit = 10, facultyID } = req.query;
+    const { schoolId } = req.user;
+    const { searchQuery = '', page = 1, limit = 10, facultyId } = req.query;
 
-    const filter = { schoolID }; // Base filter
+    const filter = { schoolId }; // Base filter
 
     // OPTIONAL FILTERING
-    if (facultyID) filter.faculty = facultyID; // Filter by faculy id (dropdown)
+    if (facultyId) filter.faculty = facultyId; // Filter by faculy id (dropdown)
     if (searchQuery) {
       // search by department
       filter.name = { $regex: searchQuery, $options: 'i' };
@@ -106,33 +106,33 @@ exports.getDepartmentStats = async (req, res) => {
 exports.editDepartment = async (req, res) => {
   // allow faculty update too
   try {
-    const { id: departmentID } = req.params;
-    const { name, facultyID } = req.body;
-    const { schoolID } = req.user;
+    const { id: departmentId } = req.params;
+    const { name, facultyId } = req.body;
+    const { schoolId } = req.user;
 
     // check if the department name already exist before assigning new name
     const existingDepartment = await Department.findOne({
       name,
-      faculty: facultyID,
-      schoolID,
+      faculty: facultyId,
+      schoolId,
     });
     if (
       existingDepartment &&
-      existingDepartment._id.toString() !== departmentID
+      existingDepartment._id.toString() !== departmentId
     ) {
       return res
         .status(409)
-        .json({ error: 'Department name already exists in this faculty' });
+        .json({ message: 'Department name already exists in this faculty' });
     }
 
     const updatedDepartment = await Department.findByIdAndUpdate(
-      departmentID,
-      { name: name.trim(), faculty: facultyID },
+      departmentId,
+      { name: name.trim(), faculty: facultyId },
       { new: true }
     ).populate('faculty', 'name');
 
     if (!updatedDepartment) {
-      return res.status(404).json({ error: 'Failed to update department' });
+      return res.status(404).json({ message: 'Failed to update department' });
     }
 
     return res.status(200).json({
@@ -146,20 +146,20 @@ exports.editDepartment = async (req, res) => {
 
 exports.deleteDepartment = async (req, res) => {
   try {
-    const { id: departmentID } = req.params;
-    const { schoolID } = req.user;
+    const { id: departmentId } = req.params;
+    const { schoolId } = req.user;
 
     // Check if department exists
-    const department = await Department.findOne(departmentID, schoolID);
+    const department = await Department.findOne(departmentId, schoolId);
     if (!department) {
-      return res.status(404).json({ error: 'Department not found' });
+      return res.status(404).json({ message: 'Department not found' });
     }
 
     // Delete all courses linked to this department
-    await Course.deleteMany({ department: departmentID });
+    await Course.deleteMany({ department: departmentId });
 
     // Delete department
-    await Department.findByIdAndDelete(departmentID);
+    await Department.findByIdAndDelete(departmentId);
 
     return res.status(200).json({
       message: 'Department and its courses deleted successfully',

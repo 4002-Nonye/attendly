@@ -12,11 +12,11 @@ exports.createCourse = async (req, res) => {
       session,
       level,
     } = req.body;
-    const { schoolID } = req.user;
+    const { schoolId } = req.user;
     // prettier-ignore
     if ( !courseCode || !courseTitle || !semester || !department || !faculty || !session|| !level) {
       return res.status(400).json({
-        error: 'All fields are required',
+        message: 'All fields are required',
       });
 
     }
@@ -24,22 +24,22 @@ exports.createCourse = async (req, res) => {
     // Check if either courseTitle or courseCode already exists in the same department + school
     const existingCourse = await Course.findOne({
       department,
-      schoolID,
+      schoolId,
       $or: [{ courseTitle }, { courseCode }],
     });
 
     if (existingCourse) {
-      // If the title matches, send a title-specific error
+      // If the title matches, send a title specific message
       if (existingCourse.courseTitle === courseTitle) {
         return res
           .status(409)
-          .json({ error: 'Course title already exists in this department' });
+          .json({ message: 'Course title already exists in this department' });
       }
-      // If the code matches, send a code-specific error
+      // If the code matches, send a code specific message
       if (existingCourse.courseCode === courseCode) {
         return res
           .status(409)
-          .json({ error: 'Course code already exists in this department' });
+          .json({ message: 'Course code already exists in this department' });
       }
     }
 
@@ -51,7 +51,7 @@ exports.createCourse = async (req, res) => {
       faculty,
       session,
       level,
-      schoolID,
+      schoolId,
     }).save();
     return res.status(201).json({ message: 'Course created', newCourse });
   } catch (error) {
@@ -62,14 +62,14 @@ exports.createCourse = async (req, res) => {
 
 exports.editCourse = async (req, res) => {
   try {
-    const { schoolID } = req.user;
-    const { id: courseID } = req.params;
+    const { schoolId } = req.user;
+    const { id: courseId } = req.params;
 
     // check if any course in the department has the code or title before updating
     const existingCourse = await Course.findOne({
-      _id: { $ne: courseID }, // exclude the current course
+      _id: { $ne: courseId }, // exclude the current course
       department: req.body.department,
-      schoolID,
+      schoolId,
       $or: [
         { courseCode: req.body.courseCode },
         { courseTitle: req.body.courseTitle },
@@ -80,24 +80,24 @@ exports.editCourse = async (req, res) => {
       if (existingCourse.courseCode === req.body.courseCode) {
         return res
           .status(409)
-          .json({ error: 'Course code already exists in this department' });
+          .json({ message: 'Course code already exists in this department' });
       }
       if (existingCourse.courseTitle === req.body.courseTitle) {
         return res
           .status(409)
-          .json({ error: 'Course title already exists in this department' });
+          .json({ message: 'Course title already exists in this department' });
       }
     }
 
     // update the course in one step
     const updatedCourse = await Course.findOneAndUpdate(
-      { _id: courseID, schoolID }, // Ensure the course belongs to the user's school and department
+      { _id: courseId, schoolId }, // Ensure the course belongs to the user's school and department
       { $set: req.body },
       { new: true, runValidators: true } // Return updated doc & validate
     );
 
     if (!updatedCourse) {
-      return res.status(404).json({ error: 'Course not found' });
+      return res.status(404).json({ message: 'Course not found' });
     }
 
     return res.status(200).json({
@@ -112,12 +112,12 @@ exports.editCourse = async (req, res) => {
 };
 exports.deleteCourse = async (req, res) => {
   try {
-    const { schoolID } = req.user;
-    const { courseID } = req.params;
+    const { schoolId } = req.user;
+    const { courseId } = req.params;
 
-    const course = await Course.findOneAndDelete({ courseID, schoolID });
+    const course = await Course.findOneAndDelete({ courseId, schoolId });
     if (!course) {
-      return res.status(404).json({ error: 'Course not found' });
+      return res.status(404).json({ message: 'Course not found' });
     }
     return res.status(200).json({ message: 'Course deleted successfully' });
   } catch (error) {

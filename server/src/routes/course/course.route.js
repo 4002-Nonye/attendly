@@ -8,7 +8,7 @@ const {
 } = require('../../middlewares/roleAccess');
 
 const {
-  getCourseByID,
+  getCourseById,
   getCourses,
 } = require('../../controllers/course/course.controller');
 
@@ -36,7 +36,7 @@ const { markAttendance } = require('../../controllers/attendance/attendance.cont
 const courseRoute = express.Router();
 
 // General roles
-courseRoute.get('/:id', requireLogin, getCourseByID); // get a single course
+courseRoute.get('/:id', requireLogin, getCourseById); // get a single course
 courseRoute.get('/', requireLogin, getCourses);
 
 // Admin roles

@@ -16,22 +16,22 @@ exports.markAttendance = async (req, res) => {
     // 1. check if class exists
     const activeSession = await Session.findById(sessionId);
     if (!activeSession) {
-      return res.status(404).json({ error: 'Session does not exist' });
+      return res.status(404).json({ message: 'Session does not exist' });
     }
 
     // 2. check if session matches course
     if (activeSession.course.toString() !== courseId) {
       return res
         .status(400)
-        .json({ error: 'Course does not match this session' });
+        .json({ message: 'Course does not match this session' });
     }
     // 3. check if class is still ongoing
     if (activeSession.status !== 'active')
-      return res.status(400).json({ error: 'Class already ended' });
+      return res.status(400).json({ message: 'Class already ended' });
 
     // 4. check if token is valid for qr scan
     if (token && activeSession.token !== token) {
-      return res.status(401).json({ error: 'Invalid token' });
+      return res.status(401).json({ message: 'Invalid token' });
     }
 
     // 5. only enrolled students can mark attendance
@@ -43,7 +43,7 @@ exports.markAttendance = async (req, res) => {
     if (!isEnrolled) {
       return res
         .status(403)
-        .json({ error: 'Student is not enrolled in this course' });
+        .json({ message: 'Student is not enrolled in this course' });
     }
 
     // 6. prevent duplicate attendance
@@ -53,7 +53,7 @@ exports.markAttendance = async (req, res) => {
       student: userId,
     });
     if (existingAttendance) {
-      return res.status(400).json({ error: 'Attendance already marked' });
+      return res.status(400).json({ message: 'Attendance already marked' });
     }
 
     // 7. mark attendance
@@ -68,7 +68,6 @@ exports.markAttendance = async (req, res) => {
       .status(201)
       .json({ message: 'Attendance taken', markedAttendance });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -378,7 +377,7 @@ exports.getLecturerSessionStudentDetails = async (req, res) => {
 
     // Validate sessionId
     if (!mongoose.Types.ObjectId.isValid(sessionId)) {
-      return res.status(400).json({ error: 'Invalid session ID' });
+      return res.status(400).json({ message: 'Invalid session ID' });
     }
 
     const details = await Attendance.find({

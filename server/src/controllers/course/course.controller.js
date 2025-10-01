@@ -5,9 +5,9 @@ const User = mongoose.model('User');
 
 exports.getCourses = async (req, res) => {
   try {
-    const { role, schoolID, id: userID } = req.user;
-    const user = await User.findById(userID).lean();
-    let filter = { schoolID };
+    const { role, schoolId, id: userId } = req.user;
+    const user = await User.findById(userId).lean();
+    let filter = { schoolId };
 
    // Admin sees all courses in their school
     if (role === 'lecturer') {
@@ -32,19 +32,19 @@ exports.getCourses = async (req, res) => {
   }
 };
 
-exports.getCourseByID = async (req, res) => {
+exports.getCourseById= async (req, res) => {
   try {
-    const { schoolID } = req.user;
-    const { id: courseID } = req.params;
+    const { schoolId } = req.user;
+    const { id: courseId } = req.params;
 
     // Fetch the course only if it belongs to the user's school
-    const course = await Course.findOne({ _id: courseID, schoolID })
+    const course = await Course.findOne({ _id: courseId, schoolId })
       .populate('faculty', 'name')       
       .populate('department', 'name')   
       .populate('lecturers', 'fullName email'); 
 
     if (!course) {
-      return res.status(404).json({ error: 'Course not found' });
+      return res.status(404).json({ message: 'Course not found' });
     }
 
     return res.status(200).json({ course });

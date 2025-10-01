@@ -8,16 +8,16 @@ const User = mongoose.model('User');
 // FOR DROPDOWNS
 exports.getFacultiesAndDepartmentsBySchool = async (req, res) => {
   try {
-    const { id: schoolID } = req.params;
+    const { id: schoolId } = req.params;
 
-    if (!schoolID) {
+    if (!schoolId) {
       return res
         .status(400)
-        .json({ error: 'School ID not found in user data' });
+        .json({ message: 'School ID not found in user data' });
     }
 
-    const faculties = await Faculty.find({ schoolID }).select('name id').lean(); // get faculties within a school
-    const departments = await Department.find({ schoolID })
+    const faculties = await Faculty.find({ schoolId }).select('name id').lean(); // get faculties within a school
+    const departments = await Department.find({ schoolId })
       .select('name id')
       .lean();
     if (!faculties.length) {
@@ -40,31 +40,31 @@ exports.getFacultiesAndDepartmentsBySchool = async (req, res) => {
 exports.createFaculty = async (req, res) => {
   try {
     const { name: facultyName } = req.body;
-    const { schoolID, id: userID } = req.user;
+    const { schoolId, id: userId } = req.user;
 
     // ensure no empty fields
     if (!facultyName) {
-      return res.status(400).json({ error: 'All fields are required' });
+      return res.status(400).json({ message: 'All fields are required' });
     }
 
     // prevent duplicates within a school
     const existingFaculty = await Faculty.findOne({
       name: facultyName,
-      schoolID,
+      schoolId,
     });
 
     if (existingFaculty) {
-      return res.status(400).json({ error: 'Faculty already exists' });
+      return res.status(400).json({ message: 'Faculty already exists' });
     }
 
     // create and save new faculty
     const newFaculty = await new Faculty({
       name: facultyName,
-      schoolID,
-      userID,
+      schoolId,
+      userId,
     }).save();
     if (!newFaculty) {
-      return res.status(404).json({ error: 'Failed to create faculty' });
+      return res.status(404).json({ message: 'Failed to create faculty' });
     }
     return res
       .status(201)
@@ -76,36 +76,36 @@ exports.createFaculty = async (req, res) => {
 
 exports.editFaculty = async (req, res) => {
   try {
-    const { facultyID } = req.params;
+    const { facultyId } = req.params;
     const { facultyName } = req.body;
-    const { schoolID } = req.user;
+    const { schoolId } = req.user;
 
-    if (!facultyID) {
-      return res.status(400).json({ error: 'Faculty ID is required' });
+    if (!facultyId) {
+      return res.status(400).json({ message: 'Faculty ID is required' });
     }
 
     if (!facultyName) {
-      return res.status(400).json({ error: 'Faculty name is required' });
+      return res.status(400).json({ message: 'Faculty name is required' });
     }
 
     // Check if another faculty already uses this name within a school
     const existingFaculty = await Faculty.findOne({
       name: facultyName,
-      schoolID,
+      schoolId,
     });
-    if (existingFaculty && existingFaculty._id.toString() !== facultyID) {
-      return res.status(409).json({ error: 'Faculty name already exists' });
+    if (existingFaculty && existingFaculty._id.toString() !== facultyId) {
+      return res.status(409).json({ message: 'Faculty name already exists' });
     }
 
     // update faculty name
     const updatedData = await Faculty.findOneAndUpdate(
-      { _id: facultyID, schoolID }, // restrict to admin's school
+      { _id: facultyId, schoolId }, // restrict to admin's school
       { name: facultyName },
       { new: true }
     );
 
     if (!updatedData) {
-      return res.status(404).json({ error: 'Failed to update faculty' });
+      return res.status(404).json({ message: 'Failed to update faculty' });
     }
 
     return res.status(200).json({
@@ -120,36 +120,36 @@ exports.editFaculty = async (req, res) => {
 // in deleting a faculty, you delete the departments and courses tied to it
 exports.deleteFaculty = async (req, res) => {
   try {
-    const { facultyID } = req.params;
-    const { schoolID } = req.user;
-    if (!facultyID) {
-      return res.status(400).json({ error: 'Faculty ID is required' });
+    const { facultyId } = req.params;
+    const { schoolId } = req.user;
+    if (!facultyId) {
+      return res.status(400).json({ message: 'Faculty ID is required' });
     }
 
     // Verify faculty exists in the user's school
-    const faculty = await Faculty.findOne({ _id: facultyID, schoolID });
+    const faculty = await Faculty.findOne({ _id: facultyId, schoolId });
     if (!faculty) {
-      return res.status(404).json({ error: 'Faculty not found' });
+      return res.status(404).json({ message: 'Faculty not found' });
     }
 
     // Find all departments under this faculty
     const departments = await Department.find({
-      faculty: facultyID,
-      schoolID,
+      faculty: facultyId,
+      schoolId,
     }).select('_id');
-    const departmentIDs = departments.map((dep) => dep._id);
+    const departmentIds = departments.map((dep) => dep._id);
 
     // Delete all courses linked to these departments
-    await Course.deleteMany({ department: { $in: departmentIDs } });
+    await Course.deleteMany({ department: { $in: departmentIds } });
 
     // Delete all departments under this faculty
-    await Department.deleteMany({ faculty: facultyID });
+    await Department.deleteMany({ faculty: facultyId });
 
     // Delete the faculty itself and capture the result
-    const deletedFaculty = await Faculty.findByIdAndDelete(facultyID);
+    const deletedFaculty = await Faculty.findByIdAndDelete(facultyId);
 
     if (!deletedFaculty) {
-      return res.status(404).json({ error: 'Failed to delete faculty' });
+      return res.status(404).json({ message: 'Failed to delete faculty' });
     }
     return res.status(200).json({
       message:
@@ -162,10 +162,10 @@ exports.deleteFaculty = async (req, res) => {
 
 exports.getFacultyStats = async (req, res) => {
   try {
-    const { schoolID } = req.user;
+    const { schoolId } = req.user;
     const { searchQuery } = req.query;
 
-    const filter = { schoolID }; // base filter
+    const filter = { schoolId }; // base filter
 
     // OPTIONAL FILTER
     if (searchQuery) {

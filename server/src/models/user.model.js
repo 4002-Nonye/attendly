@@ -13,7 +13,7 @@ const userSchema = new Schema(
       type: String,
       enum: ['student', 'admin', 'lecturer'],
     },
-    googleID: {
+    googleId: {
       type: String,
       trim: true,
       sparse: true, // Allows multiple docs with null/undefined
@@ -44,7 +44,7 @@ const userSchema = new Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Department',
     },
-    schoolID: {
+    schoolId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'School',
     },
@@ -61,7 +61,7 @@ const userSchema = new Schema(
 
 // if user is a student, enforce uniqueness in matric number within a school
 userSchema.index(
-  { schoolID: 1, matricNo: 1 },
+  { schoolId: 1, matricNo: 1 },
   {
     unique: true,
     partialFilterExpression: { role: 'student', matricNo: { $type: 'string' } },

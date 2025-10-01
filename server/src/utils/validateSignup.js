@@ -12,14 +12,14 @@ module.exports = (role, body, res) => {
 
   // Common required fields for everyone
   if (!fullName || !email || !password || !role || !schoolInput) {
-    return res.status(400).json({ error: 'All fields are required' });
+    return res.status(400).json({ message: 'All fields are required' });
   }
 
   if (role === 'student') {
     // Students need matricNo, faculty, department, level
     if (!matricNo || !faculty || !department || !level) {
       return res.status(400).json({
-        error: 'Matric number, faculty, department, and level are required for students',
+        message: 'Matric number, faculty, department, and level are required for students',
       });
     }
   }
@@ -28,7 +28,7 @@ module.exports = (role, body, res) => {
     // Lecturers need faculty and department 
     if (!faculty || !department) {
       return res.status(400).json({
-        error: 'Faculty and department are required for lecturers',
+        message: 'Faculty and department are required for lecturers',
       });
     }
   }

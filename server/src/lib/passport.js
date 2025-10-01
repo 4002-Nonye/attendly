@@ -34,15 +34,15 @@ module.exports = passport.use(
         // CASE : User initially signed up with email and password,
         // then the user tries to login with google using same email account
         // we prompt the user to link their account (can sign in with both password and google)
-        if (existingUser && !existingUser.googleID) {
+        if (existingUser && !existingUser.googleId) {
           // store user information in a token
           const token = jwt.sign(
-            { email:userEmail, googleID: id, displayName },
+            { email:userEmail, googleId: id, displayName },
             process.env.JWT_SECRET,
             { expiresIn: '10m' }
           );
 
-          // prepare data to be linked (googleID)
+          // prepare data to be linked (googleId)
           return done(null, false, {
             message: 'LINK_ACCOUNT',
             token,
@@ -52,7 +52,7 @@ module.exports = passport.use(
         return done(null, safeToSendUser);
       } else {
         const newUser = await new User({
-          googleID: id,
+          googleId: id,
           email: userEmail,
           fullName: displayName,
         }).save();

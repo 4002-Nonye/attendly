@@ -10,7 +10,7 @@ const facultySchema = new Schema(
       trim: true,
       
     },
-    schoolID: {
+    schoolId: {
       type: Schema.Types.ObjectId,
       ref: 'School',
       required: true,
@@ -21,6 +21,6 @@ const facultySchema = new Schema(
 
 
 
-facultySchema.index({ name: 1, schoolID: 1 }, { unique: true });
+facultySchema.index({ name: 1, schoolId: 1 }, { unique: true });
 
 mongoose.model('Faculty', facultySchema); // two arguments means we are trying to create a collection
