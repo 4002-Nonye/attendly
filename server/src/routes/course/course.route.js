@@ -31,7 +31,7 @@ const {
   createSession,
 } = require('../../controllers/session/session.controller');
 const { getStudentSessionDetails, getStudentAttendanceReport, markAttendance } = require('../../controllers/attendance/student/studentAttendance.controller');
-const { getLecturerAttendanceReport, getLecturerSessionDetails, getLecturerAttendanceOverview } = require('../../controllers/attendance/lecturer/lecturerAttendance.controller');
+const { getLecturerAttendanceReport, getLecturerSessionDetails, getLecturerAttendanceOverview, getLecturerSessionStudentDetails } = require('../../controllers/attendance/lecturer/lecturerAttendance.controller');
 
 
 const courseRoute = express.Router();
@@ -118,6 +118,15 @@ courseRoute.get(
   requireLecturerAccess,
   getLecturerSessionDetails
 );
+
+courseRoute.get(
+  '/:courseId/:sessionId/students',
+  requireLogin,
+  requireLecturerAccess,
+  getLecturerSessionStudentDetails
+);
+
+
 
 // Lecturer get course attendance report
 courseRoute.get(

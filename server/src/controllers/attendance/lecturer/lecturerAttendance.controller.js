@@ -1,5 +1,8 @@
 const mongoose = require('mongoose');
 const Course = mongoose.model('Course');
+const Attendance = mongoose.model('Attendance');
+const Session = mongoose.model('Session');
+const StudentEnrollment = mongoose.model('StudentEnrollment');
 
 exports.getLecturerAttendanceOverview = async (req, res) => {
   // returns course -> total sessions -> total students -> average attendance
@@ -150,15 +153,26 @@ exports.getLecturerSessionDetails = async (req, res) => {
   // returns session date -> total students -> total present -> total absent -> average attendance (% present) ->view details
   try {
     const { courseId } = req.params;
+    const { id } = req.user;
 
     if (!mongoose.Types.ObjectId.isValid(courseId)) {
       return res.status(400).json({ error: 'Invalid course ID' });
+    }
+
+    // check if lecturer is assigned to the course
+    const course = await Course.findOne({
+      _id: courseId,
+      lecturers: { $in: [mongoose.Types.ObjectId.createFromHexString(id)] },
+    });
+    if (!course) {
+      return res.status(403).json({ error: 'Course not found' });
     }
     const sessionDetails = await Course.aggregate([
       {
         // 1. Find course that was clicked
         $match: {
           _id: mongoose.Types.ObjectId.createFromHexString(courseId),
+          lecturers: { $in: [mongoose.Types.ObjectId.createFromHexString(id)] },
         },
       },
 
@@ -305,45 +319,105 @@ exports.getLecturerSessionDetails = async (req, res) => {
 };
 
 exports.getLecturerSessionStudentDetails = async (req, res) => {
-  // returns id -> matric number -> name -> status (present/absent) -> time marked (optional)
+  // returns studentId (matricNo) -> fullName -> status -> time marked
   try {
-    const { sessionId } = req.params;
+    const { sessionId, courseId } = req.params;
+    const { id } = req.user;
 
-    // Validate sessionId
     if (!mongoose.Types.ObjectId.isValid(sessionId)) {
       return res.status(400).json({ error: 'Invalid session ID' });
     }
 
-    const details = await Attendance.find({
-      session: sessionId,
-    })
-      .select('status createdAt')
-      .populate('student', 'matricNo fullName');
-
-    if (!details || details.length === 0) {
+    // Check if lecturer is assigned
+    const course = await Course.findOne({
+      _id: courseId,
+      lecturers: { $in: [mongoose.Types.ObjectId.createFromHexString(id)] },
+    });
+    if (!course) {
       return res
-        .status(404)
-        .json({ error: 'No attendance record found for this session' });
+        .status(403)
+        .json({ error: 'Course not found' });
     }
+
+    // Get the session itself to know if it's ended
+    const session = await Session.findById(sessionId);
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    // Get enrolled students
+    const enrollments = await StudentEnrollment.find({
+      course: courseId,
+    }).populate('student', 'matricNo fullName');
+
+    // Get attendance records for this session
+    const attendances = await Attendance.find({
+      session: sessionId,
+      course: courseId,
+    }).select('status createdAt student');
+
+    // Create a Map for easy look up 
+    const attendanceMap = new Map(
+      attendances.map((a) => [a.student.toString(), a])
+    );
+
+    // Build the details list
+    const details = enrollments.map((enr) => {
+      const record = attendanceMap.get(enr.student._id.toString());
+      if (record) {
+        return {
+          studentId: enr.student._id,
+          matricNo: enr.student.matricNo,
+          fullName: enr.student.fullName,
+          status: record.status, // Present or Absent
+          timeMarked: record.createdAt,
+        };
+      } else {
+        return {
+          studentId: enr.student._id,
+          matricNo: enr.student.matricNo,
+          fullName: enr.student.fullName,
+          status: session.ended ? 'Absent' : 'Pending',
+          timeMarked: null,
+        };
+      }
+    });
+
     res.status(200).json({ sessionDetails: details });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
 exports.getLecturerAttendanceReport = async (req, res) => {
-  // returns total students -> student matricNo -> name -> sessions total -> attended total -> % attended -> eligible
+  // returns total students -> student matricNo -> name -> sessions total -> attended total -> absent total ->  % attended -> eligible
   try {
     const { courseId } = req.params;
+    const { id } = req.user;
+
     if (!mongoose.Types.ObjectId.isValid(courseId)) {
       return res.status(400).json({ error: 'Invalid course ID' });
     }
+
+    // check if lecturer is assigned to the course
+    const course = await Course.findOne({
+      _id: courseId,
+      lecturers: { $in: [mongoose.Types.ObjectId.createFromHexString(id)] },
+    });
+    if (!course) {
+      return res.status(403).json({ error: 'Course not found' });
+    }
+
     const report = await Course.aggregate([
+      // Match course
       {
         $match: {
           _id: mongoose.Types.ObjectId.createFromHexString(courseId),
+          lecturers: { $in: [mongoose.Types.ObjectId.createFromHexString(id)] },
         },
       },
+      // Fetch sessions
       {
         $lookup: {
           from: 'sessions',
@@ -352,13 +426,8 @@ exports.getLecturerAttendanceReport = async (req, res) => {
           as: 'sessions',
         },
       },
-      {
-        $addFields: {
-          totalSessions: {
-            $size: '$sessions',
-          },
-        },
-      },
+      { $addFields: { totalSessions: { $size: '$sessions' } } },
+      // Fetch enrolled students
       {
         $lookup: {
           from: 'studentenrollments',
@@ -367,81 +436,59 @@ exports.getLecturerAttendanceReport = async (req, res) => {
           as: 'studentEnrollments',
         },
       },
-      {
-        $addFields: {
-          totalStudents: {
-            $size: '$studentEnrollments',
-          },
-        },
-      },
-      {
-        $unwind: {
-          path: '$studentEnrollments',
-        },
-      },
+      { $addFields: { totalStudents: { $size: '$studentEnrollments' } } },
+      { $unwind: '$studentEnrollments' },
+      // Student info
       {
         $lookup: {
           from: 'users',
           localField: 'studentEnrollments.student',
           foreignField: '_id',
           as: 'studentInfo',
-          pipeline: [
-            {
-              $project: {
-                _id: 1,
-                fullName: 1,
-                matricNo: 1,
-              },
-            },
-          ],
+          pipeline: [{ $project: { _id: 1, fullName: 1, matricNo: 1 } }],
         },
       },
-      {
-        $unwind: {
-          path: '$studentInfo',
-        },
-      },
+      { $unwind: '$studentInfo' },
+      // Attendance for this student
       {
         $lookup: {
           from: 'attendances',
-          localField: '_id',
-          foreignField: 'course',
-          as: 'attendances',
-        },
-      },
-      {
-        $addFields: {
-          totalAttended: {
-            $size: {
-              $filter: {
-                input: '$attendances',
-                as: 'att',
-                cond: {
+          let: { courseId: '$_id', studentId: '$studentEnrollments.student' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
                   $and: [
-                    { $eq: ['$$att.student', '$studentEnrollments.student'] },
-                    { $eq: ['$$att.status', 'Present'] },
+                    { $eq: ['$course', '$$courseId'] },
+                    { $eq: ['$student', '$$studentId'] },
+                    { $eq: ['$status', 'Present'] },
                   ],
                 },
               },
             },
-          },
+          ],
+          as: 'studentAttendances',
         },
       },
+      // Totals
+      { $addFields: { totalAttended: { $size: '$studentAttendances' } } },
+      {
+        $addFields: {
+          totalAbsent: { $subtract: ['$totalSessions', '$totalAttended'] },
+        },
+      },
+      // Percentage
       {
         $addFields: {
           attendancePercentage: {
             $cond: [
-              {
-                $eq: ['$totalSessions', 0],
-              },
+              { $eq: ['$totalSessions', 0] },
               0,
               {
                 $round: [
                   {
                     $multiply: [
-                      {
-                        $divide: ['$totalAttended', '$totalSessions'],
-                      },
+                      { $divide: ['$totalAttended', '$totalSessions'] },
                       100,
                     ],
                   },
@@ -452,28 +499,27 @@ exports.getLecturerAttendanceReport = async (req, res) => {
           },
         },
       },
-      {
-        $addFields: {
-          eligible: {
-            $gte: ['$attendancePercentage', 70],
-          },
-        },
-      },
+      // Eligibility
+      { $addFields: { eligible: { $gte: ['$attendancePercentage', 70] } } },
+      // Final projection
       {
         $project: {
           _id: 0,
           studentId: '$studentEnrollments.student',
           studentName: '$studentInfo.fullName',
           studentMatricNo: '$studentInfo.matricNo',
-          totalAttended: 1,
-          attendancePercentage: 1,
           totalSessions: 1,
+          totalAttended: 1,
+          totalAbsent: 1,
+          attendancePercentage: 1,
           eligible: 1,
         },
       },
     ]);
+
     return res.status(200).json({ report });
   } catch (error) {
+    console.error(error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
