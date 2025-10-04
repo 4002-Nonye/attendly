@@ -14,6 +14,6 @@ body{
 
 }
 input{
-  @apply border-2 py-4 px-9 rounded-md border-gray-300 w-full outline-0  text-gray-500 text-[15px]
+  @apply border-2 py-4 px-9 rounded-md border-gray-300 w-full outline-0  text-gray-500 text-[15px] 
 }
 
