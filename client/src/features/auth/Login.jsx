@@ -1,21 +1,33 @@
-
+import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
 
-import Box from '../../components/Box';
-
-import { MdOutlineEmail } from 'react-icons/md';
-import { MdLockOutline } from 'react-icons/md';
-import { IoMdEyeOff } from 'react-icons/io';
-import { IoMdEye } from 'react-icons/io';
-
-import googleIcon from '../../assets/icons8-google.svg';
+import { IoMdEye, IoMdEyeOff } from 'react-icons/io';
+import { MdLockOutline, MdOutlineEmail } from 'react-icons/md';
 import logoBlack from '../../assets/logo-black.svg';
 
+import googleIcon from '../../assets/icons8-google.svg';
+
+import Box from '../../components/Box';
+import Err from '../../components/Err';
 import InputField from '../../components/InputField';
+import Divider from '../../components/Divider';
+import Button from '../../components/Button';
+import FormHeader from '../../components/FormHeader';
 
 function Login() {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
 
+  const onSubmit = (data) => {
+    console.log(data);
+  };
 
+  const onError = (err) => {
+    console.log(err);
+  };
   return (
     <div className='lg:w-2/4 w-full h-dvh flex flex-col lg:justify-center  p-3 '>
       {/* LOGO - only mobile  screens */}
@@ -25,11 +37,13 @@ function Login() {
       </div>
 
       {/* FORM */}
-      <form className='w-full md:p-20 lg:p-10 xl:p-40 p-5 mt-18 md:mt-0'>
+      <form
+        onSubmit={handleSubmit(onSubmit, onError)}
+        className='w-full md:p-20 lg:p-10 xl:p-40 p-5 mt-18 md:mt-0'
+        noValidate={true}
+      >
         {/* FORM HEAD */}
-        <h2 className='text-2xl md:2xl font-medium mb-8 '>
-          Log in to your account
-        </h2>
+        <FormHeader text='Log in to your account' />
 
         <div className='flex flex-col gap-6'>
           {/* EMAIL BOX */}
@@ -40,7 +54,19 @@ function Login() {
               icon={MdOutlineEmail}
               placeholder='e.g userexample@gmail.com'
               type='email'
+              autoComplete='email'
+              {...register('email', {
+                required: {
+                  value: true,
+                  message: "Email can't be empty",
+                },
+                pattern: {
+                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                  message: 'Please enter a valid email address.',
+                },
+              })}
             />
+            {errors.email && <Err msg={errors.email.message} />}
           </Box>
 
           {/* PASSWORD BOX */}
@@ -48,35 +74,54 @@ function Login() {
             <InputField
               htmlFor='password'
               label='Password'
-              icon={MdLockOutline }
+              icon={MdLockOutline}
               type='password'
               placeholder='Enter your password'
               eyesOn={IoMdEye}
               eyesOff={IoMdEyeOff}
+              autoComplete='current-password'
+              {...register('password', {
+                required: {
+                  value: true,
+                  message: "Password can't be empty",
+                },
+                minLength: {
+                  value: 8,
+                  message: 'Password must be more than 8 characters',
+                },
+              })}
             />
+            {errors.password && <Err msg={errors.password.message} />}
           </Box>
         </div>
 
         {/* LOGIN CTA */}
-        <button className='bg-blue-950 text-white mb-6 mt-7 rounded-md p-3 md:p-4 w-full'>
+        <Button
+          fullWidth={true}
+          variant='primary'
+          size='lg'
+          className=' mb-6 mt-7'
+          type='submit'
+        >
           Login
-        </button>
+        </Button>
 
         {/* DIVIDER */}
-        <div className='flex items-center mb-5'>
-          <hr className='flex-grow border-t border-gray-300' />
-          <span className='mx-3 text-gray-500 font-medium text-sm'>OR</span>
-          <hr className='flex-grow border-t border-gray-300' />
-        </div>
+        <Divider text='OR' />
 
         {/* LOGIN WITH GOOGLE CTA */}
-        <button className='border-2 border-gray-300 mb-6 mt-7 rounded-md p-3 md:p-4 w-full flex justify-center items-center'>
+        <Button
+          className=' mb-8 mt-7 rounded-md '
+          fullWidth={true}
+          variant='outline'
+          size='lg'
+        >
           <img src={googleIcon} alt='google' className='w-8' /> &nbsp;{' '}
           <span> Login with Google</span>
-        </button>
+        </Button>
 
         {/* DIVIDER */}
-        <hr className='text-gray-300 my-5' />
+        <Divider />
 
         {/*   SIGN UP LINK */}
         <p className='text-center'>

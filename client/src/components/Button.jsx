@@ -1,0 +1,69 @@
+import PropTypes from 'prop-types';
+import clsx from 'clsx';
+
+function Button({
+  children,
+  type = 'button',
+  variant = 'primary',
+  size = 'md',
+  disabled = false,
+  fullWidth = false,
+  onClick,
+  icon: Icon,
+  className = '',
+}) {
+  const baseStyles =
+    'flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
+    
+
+  const variantStyles = {
+    primary:
+      'bg-blue-900 text-white hover:bg-blue-800 focus:ring-blue-500',
+    secondary:
+      'bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-400',
+    danger:
+      'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
+    outline:
+      'border border-gray-300 text-gray-700 hover:bg-gray-100 focus:ring-gray-400',
+  };
+
+  const sizeStyles = {
+    sm: 'px-3 py-1.5 text-sm',
+    md: 'px-4 py-2 text-base',
+    lg: 'px-6 py-4 text-lg',
+  };
+
+  const buttonClass = clsx(
+    baseStyles,
+    variantStyles[variant],
+    sizeStyles[size],
+    fullWidth && 'w-full',
+    className
+  );
+
+  return (
+    <button
+      type={type}
+      disabled={disabled}
+      onClick={onClick}
+      className={buttonClass}
+    >
+      {Icon && <Icon className='mr-2 text-lg' />}
+      {children}
+    </button>
+  );
+}
+
+Button.propTypes = {
+  children: PropTypes.node.isRequired,
+  type: PropTypes.oneOf(['button', 'submit', 'reset']),
+  variant: PropTypes.oneOf(['primary', 'secondary', 'danger', 'outline']),
+  size: PropTypes.oneOf(['sm', 'md', 'lg']),
+  disabled: PropTypes.bool,
+  fullWidth: PropTypes.bool,
+  onClick: PropTypes.func,
+  icon: PropTypes.elementType,
+  className: PropTypes.string,
+};
+
+export default Button;
