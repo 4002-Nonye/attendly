@@ -41,10 +41,7 @@ const courseSchema = new Schema(
       type: String,
       required: true,
     },
-    session: {
-      type: String,
-      required: true, // Example: "2024/2025"
-    },
+   
     schoolId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'School',

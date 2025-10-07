@@ -15,7 +15,7 @@ function AuthOverview() {
         <p className='w-[100%] lg:w-[80%] leading-7'>
           The smart and simple way to track attendance. Start sessions, let
           participants mark their presence with a quick QR scan, and easily
-          generate reports at the end.<br/>Attendance has never been this effortless
+          generate reports at the end. <br/>Attendance has never been this effortless
           and convenient.
         </p>
       </div>

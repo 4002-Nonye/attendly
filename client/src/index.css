@@ -14,9 +14,10 @@ body{
 
 }
 input{
-  @apply border-2 py-4 px-9 rounded-md border-gray-300 w-full outline-0  text-gray-500 text-[15px] 
+  @apply border-2 py-4 rounded-md border-gray-300 w-full outline-0  text-[15px] 
+  focus:ring-2 focus:ring-blue-500 focus:outline-none bg-transparent placeholder:text-gray-400 text-gray-500
 }
 
 button{
-  @apply cursor-pointer
+  @apply  not-disabled:cursor-pointer
 }

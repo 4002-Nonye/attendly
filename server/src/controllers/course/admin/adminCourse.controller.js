@@ -9,12 +9,11 @@ exports.createCourse = async (req, res) => {
       semester,
       department,
       faculty,
-      session,
       level,
     } = req.body;
     const { schoolId } = req.user;
     // prettier-ignore
-    if ( !courseCode || !courseTitle || !semester || !department || !faculty || !session|| !level) {
+    if ( !courseCode || !courseTitle || !semester || !department || !faculty || !level) {
       return res.status(400).json({
         error: 'All fields are required',
       });
@@ -49,7 +48,6 @@ exports.createCourse = async (req, res) => {
       semester,
       department,
       faculty,
-      session,
       level,
       schoolId,
     }).save();

@@ -24,6 +24,7 @@ exports.signup = async (req, res) => {
       department,
       faculty,
       level,
+      session
     } = req.body;
 
     // 1. Validate required fields
@@ -83,6 +84,7 @@ exports.signup = async (req, res) => {
       department,
       faculty,
       level,
+      session,
       matricNo:  matricNo,
       schoolId: schoolDoc._id,
     });

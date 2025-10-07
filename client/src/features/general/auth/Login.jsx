@@ -1,18 +1,16 @@
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
+import { Lock, Eye, EyeOff, Mail } from 'lucide-react';
+import logoBlack from '../../../assets/logo-black.svg';
 
-import { IoMdEye, IoMdEyeOff } from 'react-icons/io';
-import { MdLockOutline, MdOutlineEmail } from 'react-icons/md';
-import logoBlack from '../../assets/logo-black.svg';
+import googleIcon from '../../../assets/icons8-google.svg';
 
-import googleIcon from '../../assets/icons8-google.svg';
-
-import Box from '../../components/Box';
-import Err from '../../components/Err';
-import InputField from '../../components/InputField';
-import Divider from '../../components/Divider';
-import Button from '../../components/Button';
-import FormHeader from '../../components/FormHeader';
+import Box from '../../../components/Box';
+import Err from '../../../components/Err';
+import InputField from '../../../components/InputField';
+import Divider from '../../../components/Divider';
+import Button from '../../../components/Button';
+import FormHeader from '../../../components/FormHeader';
 
 function Login() {
   const {
@@ -47,11 +45,11 @@ function Login() {
 
         <div className='flex flex-col gap-6'>
           {/* EMAIL BOX */}
-          <Box>
+          <Box className='relative'>
             <InputField
               htmlFor='email'
               label='Email'
-              icon={MdOutlineEmail}
+              icon={Mail}
               placeholder='e.g userexample@gmail.com'
               type='email'
               autoComplete='email'
@@ -66,19 +64,22 @@ function Login() {
                 },
               })}
             />
-            {errors.email && <Err msg={errors.email.message} />}
+            <Err
+              msg={errors.email?.message || ' '}
+
+            />
           </Box>
 
           {/* PASSWORD BOX */}
-          <Box>
+          <Box className='relative'>
             <InputField
               htmlFor='password'
               label='Password'
-              icon={MdLockOutline}
+              icon={Lock}
               type='password'
               placeholder='Enter your password'
-              eyesOn={IoMdEye}
-              eyesOff={IoMdEyeOff}
+              eyesOn={Eye}
+              eyesOff={EyeOff}
               autoComplete='current-password'
               {...register('password', {
                 required: {
@@ -91,7 +92,10 @@ function Login() {
                 },
               })}
             />
-            {errors.password && <Err msg={errors.password.message} />}
+            <Err
+              msg={errors.password?.message || ' '}
+
+            />
           </Box>
         </div>
 
