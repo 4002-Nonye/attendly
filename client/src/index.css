@@ -10,7 +10,7 @@
     @apply font-poppins 
 }
 body{
-@apply w-full max-w-[2000px] mx-auto
+@apply w-full max-w-[2000px] mx-auto h-full
 
 }
 input{

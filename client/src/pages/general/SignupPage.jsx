@@ -1,12 +1,10 @@
 import AuthOverview from '../../components/AuthOverview';
-import Signup from '../../features/general/auth/Signup'
-
+import Signup from '../../features/general/auth/Signup';
 
 function SignupPage() {
   return (
-    <div className='flex  '>
+    <div className='flex min-h-screen'>
       <AuthOverview />
-
       <Signup />
     </div>
   );

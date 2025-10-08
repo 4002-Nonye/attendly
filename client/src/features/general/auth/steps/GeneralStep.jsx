@@ -1,15 +1,14 @@
-import Box from '../../../../../components/Box';
-import InputField from '../../../../../components/InputField';
 import { useFormContext } from 'react-hook-form';
+import Box from '../../../../components/Box';
+import InputField from '../../../../components/InputField';
 import { User, Mail } from 'lucide-react';
-import Err from '../../../../../components/Err';
+import Err from '../../../../components/Err';
 
-function AdminStepOne() {
+function GeneralStep() {
   const {
     register,
     formState: { errors },
   } = useFormContext();
-
   return (
     <>
       <Box className='relative'>
@@ -27,7 +26,7 @@ function AdminStepOne() {
             },
           })}
         />
-        <Err msg={errors.name?.message || ' '}  />
+        <Err msg={errors.name?.message || ' '} />
       </Box>
       <Box className='relative'>
         <InputField
@@ -48,10 +47,10 @@ function AdminStepOne() {
             },
           })}
         />
-        <Err msg={errors.email?.message || ' '}  />
+        <Err msg={errors.email?.message || ' '} />
       </Box>
     </>
   );
 }
 
-export default AdminStepOne;
+export default GeneralStep;

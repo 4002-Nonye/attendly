@@ -10,6 +10,9 @@ function InputField({
   autoComplete,
   eyesOff: EyesOff,
   eyesOn: EyesOn,
+  labelClassName,
+  wrapperClassName = 'flex-col',
+  
   ...rest
 }) {
   const isPassword = htmlFor === 'password' || type === 'password';
@@ -17,11 +20,11 @@ function InputField({
   const inputType = isPassword ? (visible ? 'text' : 'password') : type;
 
   return (
-    <div className='flex flex-col gap-1 w-full'>
+    <div className={`flex  gap-1 w-full  ${wrapperClassName}`}>
       {label && (
         <label
           htmlFor={htmlFor}
-          className='text-sm font-medium text-gray-500 '
+          className={`text-sm font-medium text-gray-500 ${labelClassName}`}
         >
           {label}
         </label>
@@ -41,6 +44,7 @@ function InputField({
           id={htmlFor}
           placeholder={placeholder}
           autoComplete={autoComplete}
+          
           className={` py-4 rounded-lg border border-gray-300 ${
             Icon ? 'px-10' : 'px-4'
           }`}
@@ -77,6 +81,10 @@ InputField.propTypes = {
   autoComplete: PropTypes.string,
   eyesOff: PropTypes.elementType,
   eyesOn: PropTypes.elementType,
+  labelClassName: PropTypes.string,
+  wrapperClassName: PropTypes.string,
+  value:PropTypes.string,
+  checked:PropTypes.bool
 };
 
 export default InputField;

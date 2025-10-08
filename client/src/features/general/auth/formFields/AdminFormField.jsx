@@ -1,9 +1,10 @@
 import { useEffect } from 'react';
 import ProgressBar from '../../../../components/ProgressBar';
 import { useFormStep } from '../../../../contexts/useFormStep';
-import AdminStepOne from '../steps/admin/AdminStepOne';
+
 import AdminStepThree from '../steps/admin/AdminStepThree';
 import AdminStepTwo from '../steps/admin/AdminStepTwo';
+import GeneralStep from '../steps/GeneralStep';
 
 function AdminFormField() {
   const { step, setTotalSteps } = useFormStep();
@@ -20,7 +21,7 @@ function AdminFormField() {
 
       <div className='flex flex-col gap-4'>
         {/* STEP 1 */}
-        {step === 1 && <AdminStepOne />}
+        {step === 1 && <GeneralStep />}
 
         {/* STEP 2 */}
 

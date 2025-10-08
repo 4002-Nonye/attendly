@@ -27,7 +27,7 @@ function Login() {
     console.log(err);
   };
   return (
-    <div className='lg:w-2/4 w-full h-dvh flex flex-col lg:justify-center  p-3 '>
+    <div className='lg:w-2/4 w-full flex flex-col lg:justify-center  p-3 '>
       {/* LOGO - only mobile  screens */}
       <div className='md:text-4xl text-xl font-bold flex items-center pt-7 lg:pt-0 lg:hidden md:px-12 md:justify-center'>
         <img src={logoBlack} alt='logo' className='md:w-16' />{' '}
@@ -43,7 +43,7 @@ function Login() {
         {/* FORM HEAD */}
         <FormHeader text='Log in to your account' />
 
-        <div className='flex flex-col gap-6'>
+        <div className='flex flex-col gap-4'>
           {/* EMAIL BOX */}
           <Box className='relative'>
             <InputField

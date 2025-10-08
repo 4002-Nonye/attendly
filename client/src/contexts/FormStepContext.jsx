@@ -4,7 +4,7 @@ import { createContext, useCallback, useReducer } from 'react';
 const FormStepContext = createContext();
 const initialState = {
   step: 1,
-  totalSteps: 1,
+  totalSteps: 3,
  
 };
 
