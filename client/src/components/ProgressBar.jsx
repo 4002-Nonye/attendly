@@ -33,7 +33,7 @@ function ProgressBar({ totalSteps, stepTitles = [] }) {
                 {/* Step title */}
                 {stepTitles[current - 1] && (
                   <p
-                    className={`mt-3 text-sm text-center whitespace-nowrap transition-colors duration-300 ${
+                    className={`mt-3  text-sm text-center whitespace-nowrap transition-colors duration-300 ${
                       isActive
                         ? 'text-blue-950 font-medium'
                         : 'text-gray-400 font-normal'

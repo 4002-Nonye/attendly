@@ -8,7 +8,8 @@ const roles = [
     id: 'admin',
     icon: UserStar,
     title: 'Admin',
-    description: 'You can create a school, faculties, departments, courses and view attendance reports.',
+    description:
+      'You can create a school, faculties, departments, courses and view attendance reports.',
   },
   {
     id: 'lecturer',
@@ -20,14 +21,14 @@ const roles = [
     id: 'student',
     icon: GraduationCap,
     title: 'Student',
-    description: 'Mark attendance for ongoing sessions and view personal attendance reports.',
+    description:
+      'Mark attendance for ongoing sessions and view personal attendance reports.',
   },
 ];
 
 function SelectRole({ selectedRole, onSelect }) {
   // track the selected role within this component
   const [roleLocal, setRoleLocal] = useState(selectedRole || null);
-
 
   const handleContinue = () => {
     if (roleLocal) {
@@ -36,14 +37,14 @@ function SelectRole({ selectedRole, onSelect }) {
   };
 
   return (
-    <div className="my-6 flex flex-col items-center w-full mt-20">
+    <div className='my-6 flex flex-col items-center w-full mt-20'>
       {/* Heading */}
-      <h1 className="text-2xl font-semibold mb-8 text-gray-800">
+      <h1 className='text-2xl font-semibold mb-8 text-gray-800'>
         Select your role
       </h1>
 
       {/* Role selection cards */}
-      <div className="flex flex-wrap justify-center gap-6">
+      <div className='flex flex-wrap justify-center gap-6'>
         {roles.map((role) => {
           const Icon = role.icon;
           const isSelected = roleLocal === role.id;
@@ -59,18 +60,17 @@ function SelectRole({ selectedRole, onSelect }) {
                 text-blue-900
                 ${isSelected ? 'border-2 border-blue-700' : ''}
               `}
-              role="button" 
+              role='button'
               tabIndex={0}
-
             >
               {/* Role icon */}
               <Icon size={50} />
 
               {/* Role title */}
-              <p className="font-medium text-lg mt-5 mb-2">{role.title}</p>
+              <p className='font-medium text-lg mt-5 mb-2'>{role.title}</p>
 
               {/* Role description */}
-              <p className="text-[15px]">{role.description}</p>
+              <p className='text-[15px]'>{role.description}</p>
             </div>
           );
         })}
@@ -78,8 +78,8 @@ function SelectRole({ selectedRole, onSelect }) {
 
       {/* Continue button  */}
       <Button
-        size="lg"
-        className="mt-16"
+        size='lg'
+        className='mt-16'
         disabled={!roleLocal}
         onClick={handleContinue}
       >
@@ -88,7 +88,6 @@ function SelectRole({ selectedRole, onSelect }) {
     </div>
   );
 }
-
 
 SelectRole.propTypes = {
   selectedRole: PropTypes.string,

@@ -1,17 +1,15 @@
+import { Lock, Eye, EyeOff } from 'lucide-react';
 import { useFormContext } from 'react-hook-form';
 import Box from '../../../../../components/Box';
 import InputField from '../../../../../components/InputField';
-
-import { Lock, Eye, EyeOff } from 'lucide-react';
 import Err from '../../../../../components/Err';
 
-function AdminStepThree() {
+function SecurityStep() {
   const {
     register,
     formState: { errors },
     getValues,
   } = useFormContext();
-
   return (
     <>
       <Box className='relative'>
@@ -25,10 +23,7 @@ function AdminStepThree() {
           eyesOff={EyeOff}
           autoComplete='current-password'
           {...register('password', {
-            required: {
-              value: true,
-              message: "Password can't be empty",
-            },
+            required: "Password can't be empty",
             minLength: {
               value: 8,
               message: 'Password must be more than 8 characters',
@@ -48,9 +43,8 @@ function AdminStepThree() {
           eyesOff={EyeOff}
           autoComplete='current-password'
           {...register('confirmPassword', {
-            required: {
-              value: 'Please confirm your password',
-            },
+            required: 'Please confirm your password',
+
             validate: (value) =>
               value === getValues().password || 'Passwords do not match',
           })}
@@ -61,4 +55,4 @@ function AdminStepThree() {
   );
 }
 
-export default AdminStepThree;
+export default SecurityStep;

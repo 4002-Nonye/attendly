@@ -1,15 +1,16 @@
-import { useFormContext } from 'react-hook-form';
-import Box from '../../../../components/Box';
-import InputField from '../../../../components/InputField';
-import { User, Mail } from 'lucide-react';
-import Err from '../../../../components/Err';
 
-function GeneralStep() {
-  const {
-    register,
-    formState: { errors },
-  } = useFormContext();
-  return (
+import { useFormContext } from 'react-hook-form';
+import Box from '../../../../../components/Box';
+import InputField from '../../../../../components/InputField';
+import { User, Mail } from 'lucide-react';
+import Err from '../../../../../components/Err';
+
+function PersonalInfoStep() {
+    const {
+        register,
+        formState: { errors },
+      } = useFormContext();
+ return (
     <>
       <Box className='relative'>
         <InputField
@@ -53,4 +54,4 @@ function GeneralStep() {
   );
 }
 
-export default GeneralStep;
+export default PersonalInfoStep

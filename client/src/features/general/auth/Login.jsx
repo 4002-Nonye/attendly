@@ -1,7 +1,6 @@
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
 import { Lock, Eye, EyeOff, Mail } from 'lucide-react';
-import logoBlack from '../../../assets/logo-black.svg';
 
 import googleIcon from '../../../assets/icons8-google.svg';
 
@@ -11,6 +10,7 @@ import InputField from '../../../components/InputField';
 import Divider from '../../../components/Divider';
 import Button from '../../../components/Button';
 import FormHeader from '../../../components/FormHeader';
+import Logo from '../../../components/Logo';
 
 function Login() {
   const {
@@ -27,21 +27,18 @@ function Login() {
     console.log(err);
   };
   return (
-    <div className='lg:w-2/4 w-full flex flex-col lg:justify-center  p-3 '>
+    <div className='lg:w-2/4 w-full flex flex-col lg:justify-center min-h-screen  p-3 '>
       {/* LOGO - only mobile  screens */}
-      <div className='md:text-4xl text-xl font-bold flex items-center pt-7 lg:pt-0 lg:hidden md:px-12 md:justify-center'>
-        <img src={logoBlack} alt='logo' className='md:w-16' />{' '}
-        <span>Attendly</span>
-      </div>
+      <Logo />
 
       {/* FORM */}
       <form
         onSubmit={handleSubmit(onSubmit, onError)}
-        className='w-full md:p-20 lg:p-10 xl:p-40 p-5 mt-18 md:mt-0'
-        noValidate={true}
+            className='w-full max-w-[40rem] mx-auto px-5 sm:px-8 mt-10 md:mt-15'
+            noValidate={true}
       >
         {/* FORM HEAD */}
-        <FormHeader text='Log in to your account' />
+        <FormHeader text='Sign in to your account' />
 
         <div className='flex flex-col gap-4'>
           {/* EMAIL BOX */}
@@ -64,10 +61,7 @@ function Login() {
                 },
               })}
             />
-            <Err
-              msg={errors.email?.message || ' '}
-
-            />
+            <Err msg={errors.email?.message || ' '} />
           </Box>
 
           {/* PASSWORD BOX */}
@@ -92,10 +86,16 @@ function Login() {
                 },
               })}
             />
-            <Err
-              msg={errors.password?.message || ' '}
-
-            />
+            <div className='flex items-center justify-between mt-0.5'>
+              {' '}
+              <Err msg={errors.password?.message || ' '} />
+              <Link
+                to='/forgot-password'
+                className='text-right text-blue-800 text-sm'
+              >
+                Forgot password?
+              </Link>
+            </div>
           </Box>
         </div>
 
@@ -111,24 +111,21 @@ function Login() {
         </Button>
 
         {/* DIVIDER */}
-        <Divider text='OR' />
+        <Divider text='or login with' />
 
         {/* LOGIN WITH GOOGLE CTA */}
         <Button
-          className=' mb-8 mt-7 rounded-md '
+          className='mb-8 mt-7 rounded-md '
           fullWidth={true}
           variant='outline'
           size='lg'
         >
           <img src={googleIcon} alt='google' className='w-8' /> &nbsp;{' '}
-          <span> Login with Google</span>
+          <span>Google</span>
         </Button>
 
-        {/* DIVIDER */}
-        <Divider />
-
         {/*   SIGN UP LINK */}
-        <p className='text-center'>
+        <p className='text-center text-sm md:text-base'>
           Don't have an account?{' '}
           <Link to='/signup' className=' text-blue-700'>
             Create an account

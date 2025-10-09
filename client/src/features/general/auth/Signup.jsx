@@ -12,6 +12,8 @@ import { useFormStep } from '../../../contexts/useFormStep';
 import { formStepFields } from '../../../utils/formStepFields';
 import Logo from '../../../components/Logo';
 import SelectRole from '../../../components/SelectRole';
+import StudentFormField from './formFields/StudentFormField';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 function Signup() {
   const methods = useForm({
@@ -21,22 +23,29 @@ function Signup() {
   const { handleSubmit, trigger, reset } = methods;
 
   // Load persisted role from localStorage
-  const [role, setRole] = useState(() => localStorage.getItem('signupRole') || '');
+  const [role, setRole] = useState('');
 
   // Multi-step form context
-  const { isFirstStep, isLastStep, handleNextStep, handlePrevStep, step } = useFormStep();
+  const {
+    isFirstStep,
+    isLastStep,
+    handleNextStep,
+    handlePrevStep,
+    step,
+    resetStep,
+  } = useFormStep();
 
   // When user selects a role, persist it
   const handleSelectRole = (selectedRole) => {
     setRole(selectedRole);
-    localStorage.setItem('signupRole', selectedRole);
   };
 
   // Allow user to change their role — reset everything
   const handleChangeRole = () => {
     setRole('');
-    localStorage.removeItem('signupRole');
+
     reset();
+    resetStep();
   };
 
   // Validate step-specific fields before moving forward
@@ -51,7 +60,6 @@ function Signup() {
   // Handle successful form submission
   const onSubmit = (data) => {
     console.log(data);
-    localStorage.removeItem('signupRole'); // clear saved role after successful signup
   };
 
   //  Handle form validation errors
@@ -60,7 +68,7 @@ function Signup() {
   };
 
   return (
-    <div className="lg:w-2/4 w-full flex flex-col lg:justify-center p-3">
+    <div className='lg:w-2/4 w-full flex flex-col lg:justify-center p-3 min-h-screen'>
       {/* LOGO (shown at top on mobile) */}
       <Logo />
 
@@ -72,23 +80,24 @@ function Signup() {
         <FormProvider {...methods}>
           <form
             onSubmit={handleSubmit(onSubmit, onError)}
-            className="w-full md:p-20 lg:p-10 xl:p-32 xl:pt-20 p-5 mt-18 md:mt-0 h-full"
-            noValidate
+            className='w-full max-w-[40rem] mx-auto px-5 sm:px-8 mt-10 md:mt-15'
+            noValidate={true}
           >
             {/* Header showing user’s chosen role + option to change */}
             {role && (
-              <div className="flex items-center justify-between bg-gray-50 rounded-lg p-3 mb-6">
-                <p className="text-sm text-gray-700">
-                  You’re signing up as{' '}
-                  <span className="font-semibold capitalize text-gray-900">
+              <div className='flex items-center justify-between bg-gray-50 rounded-lg p-3 mb-6'>
+                <p className='text-sm text-gray-700'>
+                  You’re signing up as
+                  <span className='font-semibold capitalize text-gray-900'>
+                    {' '}
                     {role}
                   </span>
                 </p>
                 <Button
-                  variant=""
-                  type="button"
-                  size="sm"
-                  className="font-medium text-blue-800 hover:underline"
+                  variant=''
+                  type='button'
+                  size='sm'
+                  className='font-medium text-blue-800 hover:underline'
                   onClick={handleChangeRole}
                 >
                   Change role
@@ -97,58 +106,72 @@ function Signup() {
             )}
 
             {/* FORM HEADER */}
-            <FormHeader text="Create your account" />
+            <FormHeader text='Create your account' />
 
             {/* Dynamic Fields based on selected role */}
-            <div className="flex flex-col">
+            <div className='flex flex-col'>
               {role === 'admin' && <AdminFormField />}
               {role === 'lecturer' && <LecturerFormField />}
-              {/* (Future) You could add StudentFormField here */}
+              {role === 'student' && <StudentFormField />}
             </div>
 
             {/* FORM NAVIGATION BUTTONS */}
-            <div className="flex justify-between my-10">
+            <div className='flex justify-between my-8'>
               {/* Prev button (disabled on first step) */}
               <Button
-                size="md"
-                className="w-28"
+                size='md'
+                className='w-28 text-sm md:text-base'
                 onClick={handlePrevStep}
                 disabled={isFirstStep}
-                variant="outline"
+                variant='outline'
+                icon={ArrowLeft}
               >
                 Prev
               </Button>
 
-              {/* Next or Submit button */}
-              {!isLastStep ? (
-                <Button size="md" className="w-28" onClick={validateSteps}>
+              {/* Next button */}
+              {!isLastStep && (
+                <Button
+                  size='md'
+                  className='w-28'
+                  onClick={validateSteps}
+                  icon={ArrowRight}
+                  iconPosition='afterText'
+                >
                   Next
                 </Button>
-              ) : (
-                <Button variant="primary" size="md" className="w-28" type="submit">
+              )}
+              {/*  Submit button */}
+              {isLastStep && (
+                <Button
+                  variant='primary'
+                  size='md'
+                  className='w-28 text-sm md:text-base'
+                  type='submit'
+                >
                   Sign up
                 </Button>
               )}
             </div>
 
             {/* Divider */}
-            <Divider text="OR" />
+            <Divider text='or login with' />
 
             {/* Google OAuth button */}
             <Button
-              className="mb-8 mt-7 rounded-md"
+              className='mb-8 mt-7 rounded-md  '
               fullWidth
-              variant="outline"
-              size="lg"
+              variant='outline'
+              size='lg'
             >
-              <img src={googleIcon} alt="google" className="w-8" /> &nbsp;
-              <span>Login with Google</span>
+              <img src={googleIcon} alt='google' className='w-8' /> &nbsp;
+              <span> Google</span>
             </Button>
 
             {/* Login redirect link */}
-            <p className="text-center">
+            <p className='text-center text-sm md:text-base'>
               Already have an account?{' '}
-              <Link to="/login" className="text-blue-700">
+              <Link to='/login' className='text-blue-700'>
                 Log in
               </Link>
             </p>

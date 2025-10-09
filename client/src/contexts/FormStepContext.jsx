@@ -5,7 +5,6 @@ const FormStepContext = createContext();
 const initialState = {
   step: 1,
   totalSteps: 3,
- 
 };
 
 function reducer(state, action) {
@@ -19,6 +18,10 @@ function reducer(state, action) {
     case 'PREV':
       if (state.step <= 1) return state;
       return { ...state, step: state.step - 1 };
+
+    case 'RESET':
+      return { ...state, step: 1 };
+
     default:
       return state;
   }
@@ -27,19 +30,23 @@ function reducer(state, action) {
 function FormStepProvider({ children }) {
   const [{ step, totalSteps }, dispatch] = useReducer(reducer, initialState);
 
- const handleNextStep = useCallback(() => {
-  dispatch({ type: 'NEXT' });
-}, []);
+  const handleNextStep = useCallback(() => {
+    dispatch({ type: 'NEXT' });
+  }, []);
 
-const handlePrevStep = useCallback(() => {
-  dispatch({ type: 'PREV' });
-}, []);
+  const handlePrevStep = useCallback(() => {
+    dispatch({ type: 'PREV' });
+  }, []);
 
-const setTotalSteps = useCallback((num) => {
-  dispatch({ type: 'SET_TOTAL_STEPS', payload: num });
-}, []);
+  const setTotalSteps = useCallback((num) => {
+    dispatch({ type: 'SET_TOTAL_STEPS', payload: num });
+  }, []);
 
- 
+  const resetStep = useCallback(() => {
+    dispatch({
+      type: 'RESET',
+    });
+  }, []);
 
   const isFirstStep = step === 1;
   const isLastStep = step === totalSteps;
@@ -54,7 +61,7 @@ const setTotalSteps = useCallback((num) => {
         setTotalSteps,
         isFirstStep,
         isLastStep,
-
+        resetStep,
       }}
     >
       {children}
