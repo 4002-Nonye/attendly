@@ -1,5 +1,5 @@
 import AuthOverview from '../../components/AuthOverview';
-import LinkAccount from '../../features/general/auth/LinkAccount';
+import LinkAccount from '../../features/auth/general/LinkAccount';
 
 function LinkAccountPage() {
   return (

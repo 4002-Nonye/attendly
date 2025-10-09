@@ -1,5 +1,5 @@
 import AuthOverview from '../../components/AuthOverview';
-import Login from '../../features/general/auth/Login';
+import Login from '../../features/auth/general/Login';
 
 function LoginPage() {
   return (

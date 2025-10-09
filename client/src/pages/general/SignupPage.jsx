@@ -1,5 +1,5 @@
 import AuthOverview from '../../components/AuthOverview';
-import Signup from '../../features/general/auth/Signup';
+import Signup from '../../features/auth/general/Signup';
 
 function SignupPage() {
   return (
