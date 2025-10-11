@@ -1,11 +1,11 @@
 export const formStepFields = {
   admin: [
-    [{ name: 'name' }, { name: 'email' }], //step 1
-    [{ name: 'school' }, { name: 'session' }, { name: 'semester' }], // step 2
+    [{ name: 'fullName' }, { name: 'email' }], //step 1
+    [{ name: 'school' }], // step 2
     [{ name: 'password' }, { name: 'confirmPassword' }], // step 3
   ],
   lecturer: [
-   [ { name: 'name' },{ name: 'email' }], //step 1
+   [ { name: 'fullName' },{ name: 'email' }], //step 1
     [
       {
         name: 'school',
@@ -24,7 +24,7 @@ export const formStepFields = {
   ],
 
   student: [
-       [{ name: 'name' }, { name: 'email' }, { name: 'matricNo' }], //step 1
+       [{ name: 'fullName' }, { name: 'email' }, { name: 'matricNo' }], //step 1
     [
       {
         name: 'school',

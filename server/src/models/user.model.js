@@ -52,10 +52,8 @@ const userSchema = new Schema(
       type: String,
       enum: ['100', '200', '300', '400', '500'],
     },
-    session: {
-      type: String,
-      required: true, // Example: "2024/2025"
-    },
+    
+   
 
     resetPasswordToken: String,
     resetPasswordExpires: Date,

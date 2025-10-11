@@ -9,6 +9,7 @@ require('./src/models/studentEnrollment.model');
 require('./src/models/session.model');
 require('./src/models/attendance.model');
 
+
 const localAuthRoute = require('./src/routes/auth/localAuth.route');
 const oAuthRoute = require('./src/routes/auth/oAuth.route');
 const cookieParser = require('cookie-parser');
@@ -25,6 +26,7 @@ const studentCourseRoute = require('./src/routes/course/student/studentCourse.ro
 const generalCourseRoute = require('./src/routes/course/general/course.route');
 const lecturerSessionRoute = require('./src/routes/session/lecturer/lecturerSession.route');
 const studentSessionRoute = require('./src/routes/session/student/studentSession.route');
+
 
 require('./src/lib/passport');
 

@@ -1,24 +1,28 @@
 import InputField from '../../../../../components/InputField';
 import Box from '../../../../../components/Box';
 import { useFormContext } from 'react-hook-form';
-import { School, CalendarDays, BookOpen } from 'lucide-react';
+import { School, MapPin } from 'lucide-react';
 import Err from '../../../../../components/Err';
 
-<School />;
 function AdminStepTwo() {
   const {
     register,
     formState: { errors },
   } = useFormContext();
-  console.log(errors)
+
   return (
     <>
+      <p className='text-gray-700 mb-6'>
+        Tell us the name of your school. You can always update more details later.
+      </p>
+
+      {/* SCHOOL NAME */}
       <Box className='relative'>
         <InputField
           htmlFor='school'
-          label='School'
+          label='School name'
           icon={School}
-          placeholder='e.g University of Lagos'
+          placeholder='e.g. University of Lagos'
           type='text'
           {...register('school', {
             required: {
@@ -27,55 +31,19 @@ function AdminStepTwo() {
             },
           })}
         />
-        <Err
-          msg={errors.school?.message || ' '}
-          
+        <Err msg={errors.school?.message || ' '} />
+      </Box>
+
+      <Box className='relative'>
+        <InputField
+          htmlFor='location'
+          label='Location (optional)'
+          icon={MapPin}
+          placeholder='e.g. Lagos, Nigeria'
+          type='text'
+          {...register('location')}
         />
       </Box>
-      <div className='flex gap-5'>
-        <Box className='relative'>
-          <InputField
-            htmlFor='session'
-            label='Session'
-            placeholder='e.g 2024/2025'
-            icon={CalendarDays}
-            type='text'
-            {...register('session', {
-            required: {
-              value: true,
-              message: "Please enter session",
-            },
-            pattern:{
-              value: /^\d{4}\/\d{4}$/,
-              message:'Use format YYYY/YYYY'
-            }
-          })}
-        />
-        <Err
-          msg={errors.session?.message || ' '}
-          
-        />
-        </Box>
-        <Box className='relative'>
-          <InputField
-            htmlFor='semester'
-            label='Semester'
-            icon={BookOpen}
-            placeholder='e.g First'
-            type='text'
-          {...register('semester', {
-            required: {
-              value: true,
-              message: "Please enter semester",
-            },
-          })}
-        />
-        <Err
-          msg={errors.semester?.message || ' '}
-          
-        />
-        </Box>
-      </div>
     </>
   );
 }

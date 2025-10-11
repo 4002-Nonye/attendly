@@ -18,5 +18,3 @@ const attendanceSchema = new Schema(
 
 mongoose.model('Attendance', attendanceSchema);
 
-// POST /api/courses/:courseId/sessions/:sessionId/attendance
-// GET /api/courses/:courseId/sessions/:sessionId/attendance - Returns list of students marked present/absent.

@@ -20,14 +20,14 @@ function PersonalInfoStep() {
           type='text'
           icon={User}
           autoComplete='name'
-          {...register('name', {
+          {...register('fullName', {
             required: {
               value: true,
               message: 'Please enter your full name',
             },
           })}
         />
-        <Err msg={errors.name?.message || ' '} />
+        <Err msg={errors.fullName?.message || ' '} />
       </Box>
       <Box className='relative'>
         <InputField

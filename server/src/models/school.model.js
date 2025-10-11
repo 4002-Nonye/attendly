@@ -19,5 +19,13 @@ const schoolSchema = new Schema(
   { timestamps: true }
 );
 
+// Add a case-insensitive unique index for schoolName
+// eg: 'University of Lagos' and 'university of lagos' are the same
+schoolSchema.index(
+  { schoolName: 1 },
+  { unique: true, collation: { locale: 'en', strength: 2 } }
+);
+
+
 
 mongoose.model('School', schoolSchema); // two arguments means we are trying to create a collection

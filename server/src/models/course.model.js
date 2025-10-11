@@ -1,60 +1,32 @@
 const mongoose = require('mongoose');
-
 const { Schema } = mongoose;
 
 const courseSchema = new Schema(
   {
-    courseCode: {
-      type: String,
-      required: true,
-      trim: true,
-      
-    },
-
-    courseTitle: {
-      type: String,
-      trim: true,
-      
-    },
-    lecturers: [
-      {
-        type: mongoose.Schema.Types.ObjectId, // multiple lecturers
-        ref: 'User',
-      },
-    ],
-    faculty: {
+    courseCode: { type: String, required: true, trim: true },
+    courseTitle: { type: String, required: true, trim: true },
+    lecturers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    faculty: { type: mongoose.Schema.Types.ObjectId, ref: 'Faculty' },
+    department: { type: mongoose.Schema.Types.ObjectId, ref: 'Department' },
+    level: { type: String, required: true },
+    schoolId: { type: mongoose.Schema.Types.ObjectId, ref: 'School' },
+    academicPeriod: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Faculty',
-    },
-    department: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Department',
-    },
-    
-    semester: {
-      type: String,
-      enum: ['First', 'Second'],
+      ref: 'AcademicPeriod',
       required: true,
-    },
-
-    level: {
-      type: String,
-      required: true,
-    },
-   
-    schoolId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'School',
     },
   },
   { timestamps: true }
 );
 
-// courseCode must be unique within a department + school
-courseSchema.index({ courseCode: 1, department: 1, schoolId: 1 }, { unique: true });
+// Unique constraint within department + school + academicPeriod
+courseSchema.index(
+  { courseCode: 1, department: 1, schoolId: 1, academicPeriod: 1 },
+  { unique: true }
+);
+courseSchema.index(
+  { courseTitle: 1, department: 1, schoolId: 1, academicPeriod: 1 },
+  { unique: true }
+);
 
-// courseTitle must be unique within a department + school
-courseSchema.index({ courseTitle: 1, department: 1, schoolId: 1 }, { unique: true });
-
-
-mongoose.model('Course', courseSchema); // two arguments means we are trying to create a collection
+mongoose.model('Course', courseSchema);

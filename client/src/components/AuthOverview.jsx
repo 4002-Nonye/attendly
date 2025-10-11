@@ -8,7 +8,7 @@ function AuthOverview({ title, content, subText }) {
         <img src={logo} alt='logo' /> <span>Attendly</span>
       </div>
 
-      <div className='flex-1 flex items-center'>
+      <div className='flex-1 flex items-start mt-72'>
         <div>
           <h1 className='font-medium mb-10 text-3xl lg:text-4xl'>{title}</h1>
           <p className='w-full xl:w-[80%] leading-7'>{content}</p>

@@ -1,6 +1,7 @@
 import { FormProvider, useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
+import { ClipLoader } from 'react-spinners';
 
 import googleIcon from '../../../assets/icons8-google.svg';
 import Divider from '../../../components/Divider';
@@ -14,6 +15,7 @@ import Logo from '../../../components/Logo';
 import SelectRole from '../../../components/SelectRole';
 import StudentFormField from './formFields/StudentFormField';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { useSignup } from './useSignup';
 
 function Signup() {
   const methods = useForm({
@@ -21,8 +23,7 @@ function Signup() {
     reValidateMode: 'onChange',
   });
   const { handleSubmit, trigger, reset } = methods;
-
-  // Load persisted role from localStorage
+  const { signup, isPending } = useSignup();
   const [role, setRole] = useState('');
 
   // Multi-step form context
@@ -59,7 +60,20 @@ function Signup() {
 
   // Handle successful form submission
   const onSubmit = (data) => {
-    console.log(data);
+    const { fullName, email, password, school: schoolInput } = data;
+
+    if (role === 'admin') {
+      const data = {
+        fullName,
+        email,
+        password,
+        schoolInput,
+        role,
+      };
+      signup(data, {
+        onSuccess: resetStep(),
+      });
+    }
   };
 
   //  Handle form validation errors
@@ -149,7 +163,16 @@ function Signup() {
                   className='w-28 text-sm md:text-base'
                   type='submit'
                 >
-                  Sign up
+                  {isPending ? (
+                    <ClipLoader
+                      color='#ffff'
+                      aria-label='Loading Spinner'
+                      data-testid='loader'
+                      size={25}
+                    />
+                  ) : (
+                    'Sign up'
+                  )}
                 </Button>
               )}
             </div>

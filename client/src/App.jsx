@@ -7,6 +7,7 @@ import SignupPage from './pages/general/SignupPage';
 import ForgotPasswordPage from './pages/general/ForgotPasswordPage';
 import ResetPasswordPage from './pages/general/ResetPasswordPage';
 import LinkAccountPage from './pages/general/LinkAccountPage';
+import Dashboard from './pages/admin/Dashboard';
 function App() {
   return (
     <BrowserRouter>
@@ -17,8 +18,9 @@ function App() {
         <Route path='/forgot-password' element={<ForgotPasswordPage />} />
         <Route path='/reset-password' element={<ResetPasswordPage />} />
         <Route path='/link-account' element={<LinkAccountPage />} />
+        <Route path='/admin/dashboard' element={<Dashboard />} />
         <Route path='/dashboard' element={<Home />} />
-        <Route path='/link-account' element={<LinkAccountSample />} />
+        <Route path='/link-account-sample' element={<LinkAccountSample />} />
         <Route path='/scan-code' element={<ScanQrCode />} />
       </Routes>
     </BrowserRouter>

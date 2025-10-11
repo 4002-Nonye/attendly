@@ -24,7 +24,8 @@ exports.signup = async (req, res) => {
       department,
       faculty,
       level,
-      session
+      
+    
     } = req.body;
 
     // 1. Validate required fields
@@ -44,7 +45,10 @@ exports.signup = async (req, res) => {
 
     // 4. Admin creates a new school if school does not exist
     if (role === 'admin') {
-      schoolDoc = await School.findOne({ schoolName: schoolInput });
+      schoolDoc = await School.findOne({ schoolName: schoolInput }).collation({
+        locale: 'en',
+        strength: 2,
+      });
       if (schoolDoc) {
         return res.status(409).json({ error: 'School name already exists' });
       }
@@ -67,7 +71,9 @@ exports.signup = async (req, res) => {
           role: 'student',
         });
         if (existingMatricNo) {
-          return res.status(400).json({ error: 'Matric number already in use' });
+          return res
+            .status(400)
+            .json({ error: 'Matric number already in use' });
         }
       }
     }
@@ -84,8 +90,7 @@ exports.signup = async (req, res) => {
       department,
       faculty,
       level,
-      session,
-      matricNo:  matricNo,
+      matricNo: matricNo,
       schoolId: schoolDoc._id,
     });
 
