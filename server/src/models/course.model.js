@@ -7,17 +7,17 @@ const courseSchema = new Schema(
     courseTitle: { type: String, required: true, trim: true },
     unit: Number,
     academicYear: { type: mongoose.Schema.Types.ObjectId, ref: 'AcademicYear' },
-    semester: { type: mongoose.Schema.Types.ObjectId, ref: 'Semester' },
+    semester: {
+      type: String,
+      enum: ['First', 'Second'],
+      default: 'First',
+    },
     lecturers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     faculty: { type: mongoose.Schema.Types.ObjectId, ref: 'Faculty' },
     department: { type: mongoose.Schema.Types.ObjectId, ref: 'Department' },
     level: { type: Number, required: true },
     schoolId: { type: mongoose.Schema.Types.ObjectId, ref: 'School' },
-    academicPeriod: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'AcademicPeriod',
-      required: true,
-    },
+   
   },
   { timestamps: true }
 );

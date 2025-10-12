@@ -1,25 +1,44 @@
 const mongoose = require('mongoose');
 const Course = mongoose.model('Course');
+const School = mongoose.model('School');
 
 exports.getAssignedCoursesForLecturer = async (req, res) => {
   try {
-    const lecturerId = req.user.id;
+    const { id: lecturerId, schoolId } = req.user;
 
-    const courses = await Course.find({ lecturers: lecturerId }).populate(
-      'lecturers',
-      'fullName'
-    );
-
-    if (!courses || courses.length === 0) {
-      return res.status(404).json({ error: 'No courses found' });
+    // Find the lecturer's school and confirm it has an active academic year
+    const school = await School.findById(schoolId);
+    if (!school || !school.currentAcademicYear) {
+      return res.status(400).json({ error: 'No active academic year found' });
     }
 
+    // Filter courses by lecturer and current academic year
+    const courses = await Course.find({
+      lecturers: lecturerId,
+      schoolId,
+      academicYear: school.currentAcademicYear,
+      semester:school.currentSemester
+    })
+      // Populate lecturer details (optional, since it's the same lecturer)
+      .populate('lecturers', 'fullName email')
+      .populate('faculty', 'name')
+      .populate('department', 'name')
+      .sort({ level: 1, courseCode: 1 })
+      .lean();
+
+    // Handle case where lecturer has no assigned courses
+    if (!courses.length) {
+      return res.status(404).json({ error: 'No assigned courses found' });
+    }
+
+    // Return the assigned courses
     res.status(200).json({ courses });
   } catch (error) {
-    console.log(error);
+    console.error('Error fetching assigned courses:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
+
 
 exports.assignLecturer = async (req, res) => {
   try {
@@ -27,12 +46,12 @@ exports.assignLecturer = async (req, res) => {
     const lecturerId = req.user.id;
     const { schoolId } = req.user;
 
-    // Validate IDs
+    //   Validate that courseIds exist and are in array form
     if (!courseIds || !Array.isArray(courseIds) || courseIds.length === 0) {
       return res.status(400).json({ error: 'No courses selected' });
     }
 
-    // Filter out invalid MongoDB ObjectIds
+    //   Filter out invalid ObjectIds
     const validIds = courseIds.filter((id) =>
       mongoose.Types.ObjectId.isValid(id)
     );
@@ -40,56 +59,93 @@ exports.assignLecturer = async (req, res) => {
       return res.status(400).json({ error: 'Some course IDs are invalid' });
     }
 
-    // check if courses exist
+    //   Get the school's active academic year and semester
+    const school = await School.findById(schoolId);
+    if (!school || !school.currentAcademicYear || !school.currentSemester) {
+      return res
+        .status(400)
+        .json({ error: 'No active academic year or semester found' });
+    }
+
+    //   Verify that the selected courses exist for this school and session
     const existingCourses = await Course.find({
       _id: { $in: validIds },
       schoolId,
+      academicYear: school.currentAcademicYear,
+      semester: school.currentSemester,
     });
 
     if (!existingCourses.length) {
       return res
         .status(404)
-        .json({ error: 'No courses found with the provided IDs' });
+        .json({ error: 'No valid courses found for the active session' });
     }
 
-    // Update all courses in one go
+    //   Assign the lecturer to all valid courses (without duplicates)
     await Course.updateMany(
-      { _id: { $in: validIds }, schoolId },
+      {
+        _id: { $in: existingCourses.map((c) => c._id) },
+        schoolId,
+      },
       { $addToSet: { lecturers: lecturerId } }
     );
 
-    res.status(200).json({
+   
+   return res.status(200).json({
       message: 'Courses assigned successfully',
     });
   } catch (error) {
-    console.log(error.message);
+
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
+
 
 exports.unassignLecturer = async (req, res) => {
   try {
     const { courseId } = req.params;
-    const { id: lecturerId } = req.user;
+    const { id: lecturerId, schoolId } = req.user;
 
+    //  Validate the courseId
+    if (!courseId) {
+      return res.status(400).json({ error: 'Course ID is required' });
+    }
+
+    //  Get the school's active academic year and semester
+    const school = await School.findById(schoolId);
+    if (!school || !school.currentAcademicYear || !school.currentSemester) {
+      return res
+        .status(400)
+        .json({ error: 'No active academic year or semester found' });
+    }
+
+    //  Find and update the course if it’s in the current active session
     const updatedCourse = await Course.findOneAndUpdate(
-      { _id: courseId, lecturers: lecturerId }, // find all courses where the lecturerId is in the course.lecturer
-      { $pull: { lecturers: lecturerId } }, // remove the lecturerId from the array
+      {
+        _id: courseId,
+        lecturers: lecturerId,
+        schoolId,
+        academicYear: school.currentAcademicYear,
+        semester: school.currentSemester,
+      },
+      { $pull: { lecturers: lecturerId } }, // remove the lecturer from the array
       { new: true }
     );
 
+    //  If not found, return proper error
     if (!updatedCourse) {
       return res.status(404).json({
-        error: 'Course not found or you are not assigned to this course',
+        error:
+          'Course not found in the active session or you are not assigned to this course',
       });
     }
 
+    //  
     return res.status(200).json({
-      message: 'Unassigned successfully',
+      message: 'Lecturer unassigned successfully',
     });
   } catch (error) {
+
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
-
-

@@ -180,8 +180,8 @@ exports.getDepartmentsByFaculty = async (req, res) => {
       return res.status(400).json({ error: 'Faculty ID is required' });
     }
 
-    const departments = await Department.find({ facultyId })
-      .select('name id')
+    const departments = await Department.find({ faculty:facultyId })
+      .select('name maxLevel id')
       .lean();
 
     if (!departments.length) {
@@ -190,7 +190,7 @@ exports.getDepartmentsByFaculty = async (req, res) => {
 
   return  res.status(200).json({ departments });
   } catch (error) {
-    console.error(error);
+    
    return res.status(500).json({ error: 'Internal server error' });
   }
 };

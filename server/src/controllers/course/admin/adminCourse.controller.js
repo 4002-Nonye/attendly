@@ -1,23 +1,42 @@
 const mongoose = require('mongoose');
 const Course = mongoose.model('Course');
-
+const School = mongoose.model('School');
+const Department = mongoose.model('Department');
+const Faculty = mongoose.model('Faculty');
 exports.createCourse = async (req, res) => {
   try {
-    const {
-      courseCode,
-      courseTitle,
-      semester,
-      department,
-      faculty,
-      level,
-    } = req.body;
+    const { courseCode, courseTitle, department, faculty, level, unit } =
+      req.body;
     const { schoolId } = req.user;
     // prettier-ignore
-    if ( !courseCode || !courseTitle || !semester || !department || !faculty || !level) {
+    if ( !courseCode || !courseTitle  || !department || !faculty || !level || !unit) {
       return res.status(400).json({
         error: 'All fields are required',
       });
 
+    }
+
+    // Validate department and faculty belong to the school
+    const [departmentExists, facultyExists] = await Promise.all([
+      Department.findOne({ _id: department,  schoolId }),
+      Faculty.findOne({ _id: faculty,  schoolId }),
+    ]);
+
+    if (!departmentExists) {
+      return res.status(404).json({ error: 'Department not found in this school' });
+    }
+
+    if (!facultyExists) {
+      return res.status(404).json({ error: 'Faculty not found in this school' });
+    }
+    // get school for academic year and semester
+    const school = await School.findById(schoolId).populate(
+      'currentAcademicYear'
+    );
+    if (!school.currentAcademicYear) {
+      return res
+        .status(400)
+        .json({ error: 'No active academic year found for this school' });
     }
 
     // Check if either courseTitle or courseCode already exists in the same department + school
@@ -45,12 +64,15 @@ exports.createCourse = async (req, res) => {
     const newCourse = await new Course({
       courseCode,
       courseTitle,
-      semester,
       department,
       faculty,
       level,
       schoolId,
+      unit,
+      semester: school.currentSemester,
+      academicYear: school.currentAcademicYear._id,
     }).save();
+
     return res.status(201).json({ message: 'Course created', newCourse });
   } catch (error) {
     console.log(error);

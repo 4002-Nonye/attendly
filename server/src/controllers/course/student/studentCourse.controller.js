@@ -1,19 +1,36 @@
 const mongoose = require('mongoose');
 const StudentEnrollment = mongoose.model('StudentEnrollment');
+const School = require('../models/School');
 
 exports.getRegisteredCoursesForStudent = async (req, res) => {
   try {
-    const studentId = req.user.id;
+    const { id: studentId, schoolId } = req.user;
 
-    // do not fetch enrolled students here
-    const courses = await StudentEnrollment.find({ student: studentId })
-      .populate('course', 'courseTitle courseCode')
-      .populate('student', 'fullName');
-    if (!courses || courses.length === 0) {
-      return res.status(404).json({ error: 'No courses found' });
+    //  Get the active academic year and semester for the student's school
+    const school = await School.findById(schoolId);
+    if (!school || !school.currentAcademicYear || !school.currentSemester) {
+      return res
+        .status(400)
+        .json({ error: 'No active academic year or semester found' });
     }
 
-    res.status(200).json({ courses });
+    //  Fetch courses the student registered for in the active session
+    const courses = await StudentEnrollment.find({
+      student: studentId,
+      schoolId,
+      academicYear: school.currentAcademicYear,
+      semester: school.currentSemester,
+    })
+      .populate('course', 'courseTitle courseCode')
+      .populate('student', 'fullName')
+      .lean();
+
+    //  Handle if no courses found
+    if (!courses.length) {
+      return res.status(404).json({ error: 'No registered courses found' });
+    }
+
+    return res.status(200).json({ courses });
   } catch (error) {
     return res.status(500).json({ error: 'Internal server error' });
   }
@@ -22,14 +39,14 @@ exports.getRegisteredCoursesForStudent = async (req, res) => {
 exports.registerCourse = async (req, res) => {
   try {
     const { courseIds } = req.body;
-    const studentId = req.user.id;
+    const { id: studentId, schoolId } = req.user;
 
-    // Validate IDs
+    //  Validate input
     if (!courseIds || !Array.isArray(courseIds) || courseIds.length === 0) {
       return res.status(400).json({ error: 'No courses selected' });
     }
 
-    // Filter out invalid MongoDB ObjectIds
+    //  Filter out invalid ObjectIds
     const validIds = courseIds.filter((id) =>
       mongoose.Types.ObjectId.isValid(id)
     );
@@ -37,24 +54,33 @@ exports.registerCourse = async (req, res) => {
       return res.status(400).json({ error: 'Some course IDs are invalid' });
     }
 
-    // Prepare documents
-  //  todo: in frontend, we block receiving ids of courses that are already registered
+    //  Fetch school and confirm there’s an active academic year & semester
+    const school = await School.findById(schoolId);
+    if (!school || !school.currentAcademicYear || !school.currentSemester) {
+      return res
+        .status(400)
+        .json({ error: 'No active academic year or semester found' });
+    }
+
+    //  Prepare enrollment documents for the active session
     const enrollments = validIds.map((courseId) => ({
       student: studentId,
       course: courseId,
+      schoolId,
+      academicYear: school.currentAcademicYear,
+      semester: school.currentSemester,
     }));
 
-    // insert with duplicate skip
-   await StudentEnrollment.insertMany(enrollments, {
-      ordered: false,
-    }).catch((err) => {
-      if (err.code === 11000) return;
-      throw err;
-    });
+    //  Insert documents, skipping duplicates (MongoDB error 11000)
+    await StudentEnrollment.insertMany(enrollments, { ordered: false }).catch(
+      (err) => {
+        if (err.code === 11000) return; // skip duplicate key errors
+        throw err;
+      }
+    );
 
-    res.status(201).json({
+    return res.status(201).json({
       message: 'Courses registered successfully',
-     
     });
   } catch (error) {
     return res.status(500).json({ error: 'Internal server error' });
@@ -65,10 +91,14 @@ exports.unregisterCourse = async (req, res) => {
   try {
     const { courseId } = req.params;
     const { id: studentId } = req.user;
+
+    // find and delete the student's enrollment record
     const deleted = await StudentEnrollment.findOneAndDelete({
       student: studentId,
       course: courseId,
     });
+
+    // If no enrollment record was found, the student wasn’t enrolled
     if (!deleted) {
       return res
         .status(404)
