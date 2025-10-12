@@ -5,14 +5,15 @@ const {
   createFaculty,
   editFaculty,
   deleteFaculty,
-  getFacultiesAndDepartmentsBySchool,
+  
   getFacultyStats,
+  getFacultiesBySchool,
 } = require('../../controllers/faculty/faculty.controller');
 
 const facultyRoute = express.Router();
 
 
-facultyRoute.get('/:id/faculties-and-departments',requireLogin,getFacultiesAndDepartmentsBySchool)
+facultyRoute.get('/:schoolId',requireLogin,getFacultiesBySchool)
 facultyRoute.get('/',requireLogin,requireAdminAccess,getFacultyStats)
 facultyRoute.post('/', requireLogin, requireAdminAccess, createFaculty);
 facultyRoute.put('/:facultyId',requireLogin,requireAdminAccess,editFaculty)

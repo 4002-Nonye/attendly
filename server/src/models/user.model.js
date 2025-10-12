@@ -48,18 +48,21 @@ const userSchema = new Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'School',
     },
-    level: {
-      type: String,
-      enum: ['100', '200', '300', '400', '500'],
-    },
-    
-   
+    level:Number,
+
 
     resetPasswordToken: String,
     resetPasswordExpires: Date,
   },
   { timestamps: true }
 );
+
+userSchema.pre('save', function (next) {
+  if (this.role !== 'student') {
+    this.level = undefined;
+  }
+  next();
+});
 
 // if user is a student, enforce uniqueness in matric number within a school
 userSchema.index(

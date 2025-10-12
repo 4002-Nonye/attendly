@@ -8,6 +8,7 @@ require('./src/models/school.model');
 require('./src/models/studentEnrollment.model');
 require('./src/models/session.model');
 require('./src/models/attendance.model');
+require('./src/models/academicYear.model');
 
 
 const localAuthRoute = require('./src/routes/auth/localAuth.route');
@@ -26,7 +27,7 @@ const studentCourseRoute = require('./src/routes/course/student/studentCourse.ro
 const generalCourseRoute = require('./src/routes/course/general/course.route');
 const lecturerSessionRoute = require('./src/routes/session/lecturer/lecturerSession.route');
 const studentSessionRoute = require('./src/routes/session/student/studentSession.route');
-
+const schoolRoute = require('./src/routes/school/school.route');
 
 require('./src/lib/passport');
 
@@ -56,6 +57,7 @@ app.use('/api/departments', departmentRoute);
 app.use('/api/users', userRoute);
 app.use('/api/lecturer/sessions', lecturerSessionRoute);
 app.use('/api/student/sessions', studentSessionRoute);
+app.use('/api/schools',schoolRoute)
 
 app.listen(process.env.PORT, () => {
   // Connect to the database after server starts

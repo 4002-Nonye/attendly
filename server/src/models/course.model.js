@@ -5,10 +5,13 @@ const courseSchema = new Schema(
   {
     courseCode: { type: String, required: true, trim: true },
     courseTitle: { type: String, required: true, trim: true },
+    unit: Number,
+    academicYear: { type: mongoose.Schema.Types.ObjectId, ref: 'AcademicYear' },
+    semester: { type: mongoose.Schema.Types.ObjectId, ref: 'Semester' },
     lecturers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     faculty: { type: mongoose.Schema.Types.ObjectId, ref: 'Faculty' },
     department: { type: mongoose.Schema.Types.ObjectId, ref: 'Department' },
-    level: { type: String, required: true },
+    level: { type: Number, required: true },
     schoolId: { type: mongoose.Schema.Types.ObjectId, ref: 'School' },
     academicPeriod: {
       type: mongoose.Schema.Types.ObjectId,

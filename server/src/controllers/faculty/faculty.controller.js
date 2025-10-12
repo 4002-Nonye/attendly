@@ -6,36 +6,29 @@ const Course = mongoose.model('Course');
 const User = mongoose.model('User');
 
 // FOR DROPDOWNS
-exports.getFacultiesAndDepartmentsBySchool = async (req, res) => {
+exports.getFacultiesBySchool = async (req, res) => {
   try {
-    const { id: schoolId } = req.params;
+    const { schoolId } = req.params;
 
     if (!schoolId) {
-      return res
-        .status(400)
-        .json({ error: 'School ID not found in user data' });
+      return res.status(400).json({ error: 'School ID is required' });
     }
 
-    const faculties = await Faculty.find({ schoolId }).select('name id').lean(); // get faculties within a school
-    const departments = await Department.find({ schoolId })
+    const faculties = await Faculty.find({ schoolId })
       .select('name id')
       .lean();
+
     if (!faculties.length) {
-      return res
-        .status(404)
-        .json({ error: 'No faculties found for this school' });
-    }
-    if (!departments.length) {
-      return res
-        .status(404)
-        .json({ error: 'No departments found for this school' });
+      return res.status(404).json({ error: 'No faculties found for this school' });
     }
 
-    res.status(200).json({ faculties, departments });
+    res.status(200).json({ faculties });
   } catch (error) {
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
+
 
 exports.createFaculty = async (req, res) => {
   try {

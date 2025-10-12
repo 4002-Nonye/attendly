@@ -12,6 +12,8 @@ const hashPassword = require('../../utils/hashPassword');
 
 const User = mongoose.model('User');
 const School = mongoose.model('School');
+
+
 exports.signup = async (req, res) => {
   try {
     const {

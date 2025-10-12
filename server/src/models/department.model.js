@@ -11,6 +11,7 @@ const departmentSchema = new Schema(
       ref: 'School',
       required: true,
     },
+    maxLevel: { type: Number, default: 400 }, // duration of a course
   },
   { timestamps: true }
 );

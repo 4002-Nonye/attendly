@@ -6,7 +6,7 @@ const User = mongoose.model('User');
 
 exports.addDepartment = async (req, res) => {
   try {
-    const { name, faculty: facultyId } = req.body;
+    const { name, faculty: facultyId, duration } = req.body;
     const { schoolId } = req.user;
     if (!name || !facultyId) {
       return res.status(400).json({ error: 'Name and Faculty are required' });
@@ -27,6 +27,7 @@ exports.addDepartment = async (req, res) => {
       name,
       faculty: facultyId,
       schoolId,
+      maxLevel: duration,
     });
     await newDepartment.save();
     return res.status(201).json({
@@ -167,5 +168,29 @@ exports.deleteDepartment = async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+
+exports.getDepartmentsByFaculty = async (req, res) => {
+  try {
+    const { facultyId } = req.params;
+
+    if (!facultyId) {
+      return res.status(400).json({ error: 'Faculty ID is required' });
+    }
+
+    const departments = await Department.find({ facultyId })
+      .select('name id')
+      .lean();
+
+    if (!departments.length) {
+      return res.status(404).json({ error: 'No departments found for this faculty' });
+    }
+
+  return  res.status(200).json({ departments });
+  } catch (error) {
+    console.error(error);
+   return res.status(500).json({ error: 'Internal server error' });
   }
 };
