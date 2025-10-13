@@ -8,7 +8,8 @@ const roles = [
     id: 'admin',
     icon: UserStar,
     title: 'Admin',
-    description:'Create schools, faculties, departments, courses and view attendance reports.',
+    description:
+      'Create schools, faculties, departments, courses and view attendance reports.',
   },
   {
     id: 'lecturer',
@@ -53,13 +54,16 @@ function SelectRole({ selectedRole, onSelect }) {
               key={role.id}
               onClick={() => setRoleLocal(role.id)} // set selected role when clicked
               className={`
-  shadow-lg h-72 md:w-56 w-[90%] justify-center cursor-pointer
-  text-center items-center flex flex-col rounded-md p-3
-  transition-all duration-300 hover:shadow-xl hover:scale-105
-  text-blue-900 border-2
-  ${isSelected ? 'border-blue-700' : 'border-transparent'}
+                             shadow-lg h-72 md:w-56 w-[90%] justify-center cursor-pointer
+                           text-center items-center flex flex-col rounded-md p-3
+                            transition-all duration-300 hover:shadow-xl hover:scale-105
+                            text-blue-900 border-2
+                             ${
+                               isSelected
+                                 ? 'border-blue-700'
+                                 : 'border-transparent'
+                             }
 `}
-
               role='button'
               tabIndex={0}
             >

@@ -1,26 +1,40 @@
 const mongoose = require('mongoose');
 const StudentEnrollment = mongoose.model('StudentEnrollment');
+const School = mongoose.model('School');
 
 exports.getAdminAttendanceReport = async (req, res) => {
   // accepts filters: facultyId, departmentId, level, courseId
   // returns
   // course information
   // student id -> name -> sessions total -> attended total -> % attended -> eligible
+  // scoped to the current academic year and semester
   try {
     const { facultyId, departmentId, level, courseId } = req.query;
+    const { schoolId } = req.user;
+
     if (!facultyId || !departmentId || !level || !courseId)
       return res.status(400).json({ error: 'All fields are required' });
 
+    // find the school's current academic period
+    const school = await School.findById(schoolId)
+      .select('currentAcademicYear currentSemester')
+      .lean();
+      
+    if (!school)
+      return res.status(404).json({ error: 'School not found' });
+
     const matchFilters = {};
 
-    // Build filters
+     // Build filters
     if (facultyId)
       matchFilters['student.faculty'] =
         mongoose.Types.ObjectId.createFromHexString(facultyId);
     if (departmentId)
       matchFilters['student.department'] =
         mongoose.Types.ObjectId.createFromHexString(departmentId);
-    if (level) matchFilters['student.level'] = level;
+    if (level) matchFilters['student.level'] = parseInt(level);
+
+    console.log(matchFilters)
 
     const report = await StudentEnrollment.aggregate([
       // 1. Filter enrollments by course
@@ -41,22 +55,34 @@ exports.getAdminAttendanceReport = async (req, res) => {
       },
       { $unwind: '$student' },
 
-      // 3. Apply faculty/department/level filters
+   //   3. Apply faculty/department/level filters
       {
         $match: matchFilters,
       },
 
-      // 4. Lookup all sessions for this course
+      // 4. Lookup all sessions for this course — scoped to current academic period
       {
         $lookup: {
           from: 'sessions',
-          localField: 'course',
-          foreignField: 'course',
+          let: { courseId: '$course' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$course', '$$courseId'] },
+                    { $eq: ['$academicYear', school.currentAcademicYear] },
+                    { $eq: ['$semester', school.currentSemester] },
+                  ],
+                },
+              },
+            },
+          ],
           as: 'sessions',
         },
       },
 
-      // 5. Lookup attendance records for this student
+      // 5. Lookup attendance records for this student (same academic period)
       {
         $lookup: {
           from: 'attendances',
@@ -68,6 +94,8 @@ exports.getAdminAttendanceReport = async (req, res) => {
                   $and: [
                     { $eq: ['$student', '$$studentId'] },
                     { $eq: ['$course', '$$courseId'] },
+                    { $eq: ['$academicYear', school.currentAcademicYear] },
+                    { $eq: ['$semester', school.currentSemester] },
                   ],
                 },
               },
@@ -207,9 +235,10 @@ exports.getAdminAttendanceReport = async (req, res) => {
     res.json({ data: report });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Internal server error'});
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
+
 
 exports.downloadAdminAttendanceReport = async (req, res) => {
   // returns downloadable PDF across chosen scope

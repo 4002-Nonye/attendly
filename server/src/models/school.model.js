@@ -17,11 +17,12 @@ const schoolSchema = new Schema(
     currentAcademicYear: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'AcademicYear',
+      default:null
     },
     currentSemester: {
       type: String,
       enum: ['First', 'Second'],
-      default: 'First',
+      default: null,
     },
   },
   { timestamps: true }
