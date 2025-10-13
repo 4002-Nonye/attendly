@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Session = mongoose.model('Session');
 const StudentEnrollment = mongoose.model('StudentEnrollment');
-const Course = mongoose.model('Course');
+const School = mongoose.model('School');
 const Attendance = mongoose.model('Attendance');
 
 exports.markAttendance = async (req, res) => {
@@ -62,25 +62,45 @@ exports.markAttendance = async (req, res) => {
       session: sessionId,
       student: userId,
       status: 'Present',
+      academicYear: activeSession.academicYear,
+      semester: activeSession.semester,
     });
     await markedAttendance.save();
     return res
       .status(201)
       .json({ message: 'Attendance taken', markedAttendance });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
 exports.getStudentAttendanceReport = async (req, res) => {
   try {
-    const { id } = req.user;
+    const { id, schoolId } = req.user;
+
+    //  Get the school's current academic period
+    const schoolDoc = await School.findById(schoolId).select(
+      'currentAcademicYear currentSemester'
+    );
+
+    if (!schoolDoc) return res.status(404).json({ error: 'School not found' });
+
+    const { currentAcademicYear, currentSemester } = schoolDoc;
+    if (!currentAcademicYear || !currentSemester)
+      return res
+        .status(400)
+        .json({ error: 'No active academic period for this school' });
 
     const report = await StudentEnrollment.aggregate([
       // 1. Get all enrollments for this student
       {
         $match: {
           student: mongoose.Types.ObjectId.createFromHexString(id),
+          academicYear: mongoose.Types.ObjectId.createFromHexString(
+            currentAcademicYear.toString()
+          ),
+          semester: currentSemester,
         },
       },
       // 2. Lookup the course details
@@ -95,13 +115,22 @@ exports.getStudentAttendanceReport = async (req, res) => {
       // 3. Each enrollment → one course
       { $unwind: '$course' },
 
-      // 4. Lookup sessions for this course
+      // 4. Lookup sessions for the current academic period
+
       {
         $lookup: {
           from: 'sessions',
           let: { courseId: '$course._id' },
           pipeline: [
-            { $match: { $expr: { $eq: ['$course', '$$courseId'] } } },
+            {
+              $match: {
+                $expr: { $eq: ['$course', '$$courseId'] },
+                academicYear: mongoose.Types.ObjectId.createFromHexString(
+                  currentAcademicYear.toString()
+                ),
+                semester: currentSemester,
+              },
+            },
           ],
           as: 'sessions',
         },
@@ -121,6 +150,10 @@ exports.getStudentAttendanceReport = async (req, res) => {
                     { $eq: ['$student', '$$studentId'] },
                   ],
                 },
+                academicYear: mongoose.Types.ObjectId.createFromHexString(
+                  currentAcademicYear.toString()
+                ),
+                semester: currentSemester,
               },
             },
           ],
@@ -195,20 +228,35 @@ exports.getStudentAttendanceReport = async (req, res) => {
   }
 };
 
-
 exports.getStudentSessionDetails = async (req, res) => {
   // returns session date -> lecturer (startedBy) -> Time -> status (present/absent)
   try {
     const { courseId } = req.params;
-    const { id } = req.user;
+    const { id, schoolId } = req.user;
 
     // Validate courseId
     if (!mongoose.Types.ObjectId.isValid(courseId)) {
       return res.status(400).json({ error: 'Invalid session ID' });
     }
 
-    // Find all sessions for the course
-    const sessions = await Session.find({ course: courseId })
+    //  Get current academic year and semester for the student's school
+    const school = await School.findById(schoolId).select(
+      'currentAcademicYear currentSemester'
+    );
+
+    if (!school || !school.currentAcademicYear) {
+      return res
+        .status(404)
+        .json({ error: 'No current academic period found for this school' });
+    }
+
+    // Find all sessions for the course in the current academic period
+
+    const sessions = await Session.find({
+      course: courseId,
+      academicYear: school.currentAcademicYear,
+      semester: school.currentSemester,
+    })
       .populate('startedBy', 'fullName')
       .populate('endedBy', 'fullName')
       .select('createdAt status')
@@ -264,6 +312,7 @@ exports.getStudentSessionDetails = async (req, res) => {
     });
     return res.status(200).json({ sessionDetails });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };

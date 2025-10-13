@@ -56,7 +56,7 @@ studentCourseRoute.get(
 
 // Get student session details
 studentCourseRoute.get(
-  '/:courseId/student/attendance-details',
+  '/:courseId/attendance-details',
   requireLogin,
   requireStudentAccess,
   getStudentSessionDetails

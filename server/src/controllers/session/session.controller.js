@@ -5,6 +5,7 @@ const Session = mongoose.model('Session');
 const StudentEnrollment = mongoose.model('StudentEnrollment');
 const Attendance = mongoose.model('Attendance');
 const Course = mongoose.model('Course');
+const School = mongoose.model('School');
 
 exports.createSession = async (req, res) => {
   try {
@@ -48,6 +49,8 @@ exports.createSession = async (req, res) => {
       date: new Date(),
       status: 'active',
       token: sessionToken,
+      academicYear: isAssigned.academicYear, // pulled from course
+      semester: isAssigned.semester,
     }).save();
 
     // Build QR data for frontend
@@ -136,7 +139,7 @@ exports.endSession = async (req, res) => {
     session.endedBy = userId;
     await session.save();
 
-    return res.status(200).json({ message: 'Session ended successfully'});
+    return res.status(200).json({ message: 'Session ended successfully' });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: 'Internal server error' });
@@ -145,50 +148,72 @@ exports.endSession = async (req, res) => {
 
 exports.getActiveSessionsForStudent = async (req, res) => {
   try {
-    const { id } = req.user;
+    const { id,  schoolId } = req.user;
 
-    // 1. Get student's registered courses
-    const enrollments = await StudentEnrollment.find({ student: id }).select(
-      'course'
-    );
 
+    //  Get current academic year and semester for the student's school
+    const school = await School.findById(schoolId).populate('currentAcademicYear');
+    if (!school || !school.currentAcademicYear) {
+      return res.status(400).json({ error: 'No active academic year found for this school' });
+    }
+
+    //  Get all courses the student is enrolled in
+    const enrollments = await StudentEnrollment.find({ student: id }).select('course');
     const courseIds = enrollments.map((enrollment) => enrollment.course);
 
-    // 2. Find active sessions for the courses
-    const activeSession = await Session.find({
+
+    //  Find active sessions that match:
+    //     - student's courses
+    //     - current academic year
+    //     - current semester
+    //     - and session status = active
+    const activeSessions = await Session.find({
       course: { $in: courseIds },
+      academicYear: school.currentAcademicYear._id,
+      semester: school.currentSemester,
       status: 'active',
     })
       .select('-token')
       .populate('course', 'courseTitle courseCode')
       .populate('startedBy', 'fullName');
 
-    return res.status(200).json({ session: activeSession });
+  
+    return res.status(200).json({ session: activeSessions });
   } catch (error) {
-    console.log(error)
+    console.error(error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
 exports.getActiveSessionsForLecturer = async (req, res) => {
   try {
-    const { id } = req.user;
+    const { id,  schoolId } = req.user;
 
-    // Find all courses this lecturer is assigned to
+    //  Get the lecturer’s school and its current academic year + semester
+    const school = await School.findById(schoolId).populate('currentAcademicYear');
+    if (!school || !school.currentAcademicYear) {
+      return res.status(400).json({ error: 'No active academic year found for this school' });
+    }
+
+    //  Find all courses this lecturer is assigned to
     const courses = await Course.find({ lecturers: id }).select('_id');
-
     const courseIds = courses.map((c) => c._id);
 
-    // Find active sessions for those courses
+    
+    //  Find active sessions for those courses under the current academic year and semester
     const sessions = await Session.find({
       course: { $in: courseIds },
+      academicYear: school.currentAcademicYear._id,
+      semester: school.currentSemester,
       status: 'active',
     })
       .populate('course', 'courseCode courseTitle')
       .populate('startedBy', 'fullName');
+
+   
     return res.status(200).json({ session: sessions });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const StudentEnrollment = mongoose.model('StudentEnrollment');
-const School = require('../models/School');
+const School = mongoose.model('School');
 
 exports.getRegisteredCoursesForStudent = async (req, res) => {
   try {

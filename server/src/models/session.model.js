@@ -20,6 +20,15 @@ const sessionSchema = new Schema(
       enum: ['active', 'ended'],
       default: 'active',
     },
+        academicYear: {
+          type: mongoose.Types.ObjectId,
+          ref: 'AcademicYear',
+          required: true,
+        },
+        semester: {
+          type: String,
+          enum: ['First', 'Second'],
+        },
     token: String,
   },
   { timestamps: true }

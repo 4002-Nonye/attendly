@@ -3,6 +3,7 @@ const Course = mongoose.model('Course');
 const School = mongoose.model('School');
 const Department = mongoose.model('Department');
 const Faculty = mongoose.model('Faculty');
+
 exports.createCourse = async (req, res) => {
   try {
     const { courseCode, courseTitle, department, faculty, level, unit } =
