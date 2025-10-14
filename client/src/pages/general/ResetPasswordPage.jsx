@@ -1,5 +1,5 @@
 import AuthOverview from '../../components/AuthOverview';
-import ResetPassword from '../../features/auth/general/ResetPassword';
+import ResetPassword from '../../features/auth/ResetPassword';
 
 function ResetPasswordPage() {
   return (

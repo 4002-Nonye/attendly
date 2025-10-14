@@ -1,12 +1,10 @@
-import ProgressBar from '../../../../components/ProgressBar';
-import { useFormStep } from '../../../../contexts/useFormStep';
-import PersonalInfoStep from '../steps/general/PersonalInfoStep';
+import ProgressBar from '../../../components/ProgressBar';
+import { useFormStep } from '../../../contexts/useFormStep';
+import PersonalInfoStep from'../steps/general/PersonalInfoStep';
 import SchoolInfo from '../steps/general/SchoolInfo';
 import SecurityStep from '../steps/general/SecurityStep';
 
-
-
-function LecturerFormField() {
+function StudentFormField() {
   const { step } = useFormStep();
   return (
     <>
@@ -21,7 +19,7 @@ function LecturerFormField() {
 
         {/* STEP 2 */}
 
-        {step === 2 && <SchoolInfo />}
+        {step === 2 && <SchoolInfo showLevel={true} />}
 
         {/* STEP 3 */}
         {step === 3 && <SecurityStep />}
@@ -30,4 +28,4 @@ function LecturerFormField() {
   );
 }
 
-export default LecturerFormField;
+export default StudentFormField;

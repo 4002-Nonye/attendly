@@ -1,14 +1,14 @@
 import PropTypes from 'prop-types';
-import Box from '../../../../../components/Box';
+import Box from '../../../../components/Box';
 import { useFormContext } from 'react-hook-form';
 import { useEffect, useRef } from 'react';
 
-import Err from '../../../../../components/Err';
-import Select from '../../../../../components/Select';
+import Err from '../../../../components/Err';
+import Select from '../../../../components/Select';
 
-import { useSchools } from '../../../../school/useSchools';
-import { useFaculties } from '../../../../faculty/general/useFaculties';
-import { useDepartments } from '../../../../department/general/useDeparments';
+import { useSchools } from '../../../school/useSchools';
+import { useFaculties } from '../../../faculty/general/useFaculties';
+import { useDepartments } from '../../../department/general/useDeparments';
 
 import toast from 'react-hot-toast';
 

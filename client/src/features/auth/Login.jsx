@@ -2,15 +2,15 @@ import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
 import { Lock, Eye, EyeOff, Mail } from 'lucide-react';
 
-import googleIcon from '../../../assets/icons8-google.svg';
+import googleIcon from '../../assets/icons8-google.svg';
 
-import Box from '../../../components/Box';
-import Err from '../../../components/Err';
-import InputField from '../../../components/InputField';
-import Divider from '../../../components/Divider';
-import Button from '../../../components/Button';
-import FormHeader from '../../../components/FormHeader';
-import Logo from '../../../components/Logo';
+import Box from '../../components/Box';
+import Err from '../../components/Err';
+import InputField from '../../components/InputField';
+import Divider from '../../components/Divider';
+import Button from '../../components/Button';
+import FormHeader from '../../components/FormHeader';
+import Logo from '../../components/Logo';
 
 function Login() {
   const {

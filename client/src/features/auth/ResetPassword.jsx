@@ -1,9 +1,9 @@
-import Box from '../../../components/Box';
-import InputField from '../../../components/InputField';
-import Button from '../../../components/Button';
-import FormHeader from '../../../components/FormHeader';
-import Logo from '../../../components/Logo';
-import Err from '../../../components/Err';
+import Box from '../../components/Box';
+import InputField from '../../components/InputField';
+import Button from '../../components/Button';
+import FormHeader from '../../components/FormHeader';
+import Logo from '../../components/Logo';
+import Err from '../../components/Err';
 import { Lock, Eye, EyeOff } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 

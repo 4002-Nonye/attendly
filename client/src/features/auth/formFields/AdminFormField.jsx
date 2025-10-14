@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
-import ProgressBar from '../../../../components/ProgressBar';
-import { useFormStep } from '../../../../contexts/useFormStep';
+import { useFormStep } from '../../../contexts/useFormStep';
 
+import ProgressBar from '../../../components/ProgressBar'
 import AdminStepTwo from '../steps/admin/AdminStepTwo';
 
 import PersonalInfoStep from '../steps/general/PersonalInfoStep';

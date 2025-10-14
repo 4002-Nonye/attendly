@@ -1,5 +1,5 @@
 import AuthOverview from '../../components/AuthOverview';
-import ForgotPassword from '../../features/auth/general/ForgotPassword';
+import ForgotPassword from '../../features/auth/ForgotPassword';
 
 function ForgotPasswordPage() {
   return (
