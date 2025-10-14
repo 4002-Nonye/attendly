@@ -30,7 +30,6 @@ function Login() {
     });
   };
 
-
   return (
     <div className='lg:w-2/4 w-full flex flex-col lg:justify-center min-h-screen  p-3 '>
       {/* LOGO - only mobile  screens */}
@@ -128,16 +127,14 @@ function Login() {
         {/* DIVIDER */}
         <Divider text='or login with' />
 
-        {/* LOGIN WITH GOOGLE CTA */}
-        <Button
-          className='mb-8 mt-7 rounded-md '
-          fullWidth={true}
-          variant='outline'
-          size='lg'
+        {/* LOGIN WITH GOOGLE */}
+        <a
+          href='/auth/google'
+          className='flex items-center justify-center gap-2 w-full py-4 px-4 mb-8 mt-7 rounded-md border border-gray-300 hover:bg-gray-50 transition-colors'
         >
-          <img src={googleIcon} alt='google' className='w-8' /> &nbsp;{' '}
-          <span>Google</span>
-        </Button>
+          <img src={googleIcon} alt='Google' className='w-6 h-6' />
+          <span className='font-medium'>Continue with Google</span>
+        </a>
 
         {/*   SIGN UP LINK */}
         <p className='text-center text-sm md:text-base'>

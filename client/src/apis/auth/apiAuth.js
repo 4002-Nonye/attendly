@@ -27,7 +27,18 @@ export const forgotPassword = async (data) => {
     const response = await axios.post('/api/auth/forgot-password', data, {
       withCredentials: true,
     });
-    return response.data
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+export const resetPassword = async (data) => {
+  try {
+    const response = await axios.post('/api/auth/reset-password', data, {
+      withCredentials: true,
+    });
+    return response.data;
   } catch (error) {
     throw error.response.data;
   }

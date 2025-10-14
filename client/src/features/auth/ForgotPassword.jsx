@@ -15,12 +15,15 @@ function ForgotPassword() {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm();
 
   const { forgotPassword, isPending } = useForgotPassword();
 
   const onSubmit = (data) => {
-    forgotPassword(data);
+    forgotPassword(data, {
+      onSuccess: () => reset(),
+    });
   };
 
   return (
@@ -33,10 +36,16 @@ function ForgotPassword() {
       >
         {/* FORM HEADER */}
         <FormHeader text='Forgot your password?' />
-        <p className='text-gray-700'>
+        <p className='text-gray-700 mb-4'>
           Enter the email address linked to your Attendly account, and we'll
           send you a link to reset your password.
         </p>
+        <div className='bg-blue-50 border-l-4 border-blue-400 p-3 mb-6'>
+          <p className='text-sm text-blue-800'>
+            💡 If the email doesn't arrive within a few minutes, check your spam
+            folder.
+          </p>
+        </div>
 
         {/* EMAIL INPUT */}
         <Box className='mt-10 mb-3'>
