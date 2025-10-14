@@ -12,9 +12,8 @@ const {
 
 const facultyRoute = express.Router();
 
-
-facultyRoute.get('/:schoolId',requireLogin,getFacultiesBySchool)
 facultyRoute.get('/',requireLogin,requireAdminAccess,getFacultyStats)
+facultyRoute.get('/:schoolId',getFacultiesBySchool)
 facultyRoute.post('/', requireLogin, requireAdminAccess, createFaculty);
 facultyRoute.put('/:facultyId',requireLogin,requireAdminAccess,editFaculty)
 facultyRoute.delete('/:facultyId',requireLogin,requireAdminAccess,deleteFaculty)

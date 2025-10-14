@@ -14,13 +14,8 @@ exports.getFacultiesBySchool = async (req, res) => {
       return res.status(400).json({ error: 'School ID is required' });
     }
 
-    const faculties = await Faculty.find({ schoolId })
-      .select('name id')
-      .lean();
+    const faculties = await Faculty.find({ schoolId }).select('name id').lean();
 
-    if (!faculties.length) {
-      return res.status(404).json({ error: 'No faculties found for this school' });
-    }
 
     res.status(200).json({ faculties });
   } catch (error) {
@@ -28,7 +23,6 @@ exports.getFacultiesBySchool = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
-
 
 exports.createFaculty = async (req, res) => {
   try {

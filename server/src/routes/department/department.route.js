@@ -12,7 +12,7 @@ const { requireAdminAccess } = require('../../middlewares/roleAccess');
 const departmentRoute = express.Router();
 
 departmentRoute.get('/', requireLogin, requireAdminAccess, getDepartmentStats);
-departmentRoute.get('/:facultyId', requireLogin, getDepartmentsByFaculty);
+departmentRoute.get('/:facultyId', getDepartmentsByFaculty);
 departmentRoute.post('/', requireLogin, requireAdminAccess, addDepartment);
 departmentRoute.put('/:id', requireLogin, requireAdminAccess, editDepartment);
 departmentRoute.delete(

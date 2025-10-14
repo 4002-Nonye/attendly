@@ -10,7 +10,7 @@ const {
 
 const schoolRoute = express.Router();
 
-schoolRoute.get('/', requireLogin, getSchools);
+schoolRoute.get('/', getSchools);
 
 schoolRoute.post(
   '/academic-year',

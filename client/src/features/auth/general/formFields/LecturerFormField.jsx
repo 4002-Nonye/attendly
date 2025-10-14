@@ -1,8 +1,9 @@
 import ProgressBar from '../../../../components/ProgressBar';
 import { useFormStep } from '../../../../contexts/useFormStep';
 import PersonalInfoStep from '../steps/general/PersonalInfoStep';
+import SchoolInfo from '../steps/general/SchoolInfo';
 import SecurityStep from '../steps/general/SecurityStep';
-import LecturerStepTwo from '../steps/lecturer/LecturerStepTwo';
+
 
 
 function LecturerFormField() {
@@ -20,7 +21,7 @@ function LecturerFormField() {
 
         {/* STEP 2 */}
 
-        {step === 2 && <LecturerStepTwo />}
+        {step === 2 && <SchoolInfo />}
 
         {/* STEP 3 */}
         {step === 3 && <SecurityStep />}
