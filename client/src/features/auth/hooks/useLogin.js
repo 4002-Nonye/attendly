@@ -1,13 +1,13 @@
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { signUp as signUpApi } from '../../apis/general/apiAuth';
+import { login as loginApi } from '../../../apis/general/apiAuth';
 import toast from 'react-hot-toast';
 
-export function useSignup() {
+export function useLogin() {
   const navigate = useNavigate();
 
   const mutation = useMutation({
-    mutationFn: signUpApi,
+    mutationFn: loginApi,
     onSuccess: (data) => {
       toast.success(data.message);
       navigate(`/${data.user.role}/dashboard`, { replace: true });
@@ -17,5 +17,5 @@ export function useSignup() {
     },
   });
 
-  return { signup: mutation.mutate, isPending: mutation.isPending };
+  return { login: mutation.mutate, isPending: mutation.isPending };
 }

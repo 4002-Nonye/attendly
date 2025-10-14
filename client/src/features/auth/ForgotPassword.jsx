@@ -1,4 +1,3 @@
-
 import Box from '../../components/Box';
 import InputField from '../../components/InputField';
 import Button from '../../components/Button';
@@ -8,6 +7,8 @@ import { Mail } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import Err from '../../components/Err';
 import Logo from '../../components/Logo';
+import { useForgotPassword } from './hooks/useForgotPassword';
+import { ClipLoader } from 'react-spinners';
 
 function ForgotPassword() {
   const {
@@ -16,19 +17,19 @@ function ForgotPassword() {
     formState: { errors },
   } = useForm();
 
+  const { forgotPassword, isPending } = useForgotPassword();
+
   const onSubmit = (data) => {
-    console.log(data);
+    forgotPassword(data);
   };
-  const onError = (err) => {
-    console.log(err);
-  };
+
   return (
     <div className='lg:w-2/4 w-full flex flex-col lg:justify-center min-h-screen p-3'>
       <Logo />
       <form
-        onSubmit={handleSubmit(onSubmit, onError)}
-           className='w-full max-w-[40rem] mx-auto px-5 sm:px-8 mt-10 md:mt-15'
-            noValidate={true}
+        onSubmit={handleSubmit(onSubmit)}
+        className='w-full max-w-[40rem] mx-auto px-5 sm:px-8 mt-10 md:mt-15'
+        noValidate={true}
       >
         {/* FORM HEADER */}
         <FormHeader text='Forgot your password?' />
@@ -61,8 +62,17 @@ function ForgotPassword() {
         </Box>
 
         {/* SUBMIT BUTTON */}
-        <Button fullWidth size='lg' type='submit'>
-          Send Reset Link
+        <Button fullWidth size='lg' type='submit' disabled={isPending}>
+          {isPending ? (
+            <ClipLoader
+              color='#ffff'
+              aria-label='Loading Spinner'
+              data-testid='loader'
+              size={25}
+            />
+          ) : (
+            'Send Reset Link'
+          )}
         </Button>
 
         {/* BACK TO LOGIN LINK */}

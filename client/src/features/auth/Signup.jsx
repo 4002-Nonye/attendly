@@ -15,13 +15,14 @@ import Logo from '../../components/Logo';
 import SelectRole from '../../components/SelectRole';
 import StudentFormField from './formFields/StudentFormField';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
-import { useSignup } from './useSignup';
+import { useSignup } from './hooks/useSignup';
 
 function Signup() {
   const methods = useForm({
     mode: 'onChange',
-    reValidateMode: 'onChange',
+    reValidateMode: 'onChange', // validate form fields on change
   });
+
   const { handleSubmit, trigger, reset } = methods;
   const { signup, isPending } = useSignup();
   const [role, setRole] = useState('');
@@ -44,7 +45,6 @@ function Signup() {
   // Allow user to change their role — reset everything
   const handleChangeRole = () => {
     setRole('');
-
     reset();
     resetStep();
   };
@@ -92,16 +92,10 @@ function Signup() {
     };
 
     const submissionData = { ...baseData, ...roleSpecificData[role] };
-    console.log(submissionData);
 
     signup(submissionData, {
       onSuccess: () => resetStep(),
     });
-  };
-
-  //  Handle form validation errors
-  const onError = (err) => {
-    console.log(err);
   };
 
   return (
@@ -116,7 +110,7 @@ function Signup() {
       {role && (
         <FormProvider {...methods}>
           <form
-            onSubmit={handleSubmit(onSubmit, onError)}
+            onSubmit={handleSubmit(onSubmit)}
             className='w-full max-w-[40rem] mx-auto px-5 sm:px-8 mt-10 md:mt-15'
             noValidate={true}
           >
@@ -192,6 +186,7 @@ function Signup() {
                       aria-label='Loading Spinner'
                       data-testid='loader'
                       size={25}
+                      disabled={isPending}
                     />
                   ) : (
                     'Sign up'

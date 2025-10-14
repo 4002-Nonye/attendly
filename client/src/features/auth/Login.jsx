@@ -11,21 +11,26 @@ import Divider from '../../components/Divider';
 import Button from '../../components/Button';
 import FormHeader from '../../components/FormHeader';
 import Logo from '../../components/Logo';
+import { useLogin } from './hooks/useLogin';
+import { ClipLoader } from 'react-spinners';
 
 function Login() {
   const {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm();
 
+  const { login, isPending } = useLogin();
+
   const onSubmit = (data) => {
-    console.log(data);
+    login(data, {
+      onSuccess: () => reset(),
+    });
   };
 
-  const onError = (err) => {
-    console.log(err);
-  };
+
   return (
     <div className='lg:w-2/4 w-full flex flex-col lg:justify-center min-h-screen  p-3 '>
       {/* LOGO - only mobile  screens */}
@@ -33,9 +38,9 @@ function Login() {
 
       {/* FORM */}
       <form
-        onSubmit={handleSubmit(onSubmit, onError)}
-            className='w-full max-w-[40rem] mx-auto px-5 sm:px-8 mt-10 md:mt-15'
-            noValidate={true}
+        onSubmit={handleSubmit(onSubmit)}
+        className='w-full max-w-[40rem] mx-auto px-5 sm:px-8 mt-10 md:mt-15'
+        noValidate={true}
       >
         {/* FORM HEAD */}
         <FormHeader text='Sign in to your account' />
@@ -106,8 +111,18 @@ function Login() {
           size='lg'
           className=' mb-6 mt-7'
           type='submit'
+          disabled={isPending}
         >
-          Login
+          {isPending ? (
+            <ClipLoader
+              color='#ffff'
+              aria-label='Loading Spinner'
+              data-testid='loader'
+              size={25}
+            />
+          ) : (
+            'Login'
+          )}
         </Button>
 
         {/* DIVIDER */}

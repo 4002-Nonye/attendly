@@ -2,13 +2,33 @@ import axios from 'axios';
 
 export const signUp = async (data) => {
   try {
-    console.log(data)
-    const response = await axios.post('api/auth/signup', data, {
+    const response = await axios.post('/api/auth/signup', data, {
       withCredentials: true,
     });
     return response.data;
   } catch (error) {
-   console.log(error)
+    throw error.response.data;
+  }
+};
+
+export const login = async (data) => {
+  try {
+    const response = await axios.post('/api/auth/login', data, {
+      withCredentials: true,
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+export const forgotPassword = async (data) => {
+  try {
+    const response = await axios.post('/api/auth/forgot-password', data, {
+      withCredentials: true,
+    });
+    return response.data
+  } catch (error) {
     throw error.response.data;
   }
 };
