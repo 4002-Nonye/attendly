@@ -179,6 +179,7 @@ function Signup() {
                   size='md'
                   className='w-28 text-sm md:text-base'
                   type='submit'
+                  disabled={isPending}
                 >
                   {isPending ? (
                     <ClipLoader
@@ -186,7 +187,6 @@ function Signup() {
                       aria-label='Loading Spinner'
                       data-testid='loader'
                       size={25}
-                      disabled={isPending}
                     />
                   ) : (
                     'Sign up'

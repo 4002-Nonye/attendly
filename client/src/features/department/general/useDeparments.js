@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { getDepartments } from '../../../apis/general/apiDepartment';
+import { getDepartments } from '../../../apis/department/apiDepartment';
 
 export function useDepartments({ id }) {
   const { data, isPending, error, isError } = useQuery({

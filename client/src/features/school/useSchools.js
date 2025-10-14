@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { getSchools } from '../../apis/general/apiSchool';
+import { getSchools } from '../../apis/school/apiSchool';
 
 export function useSchools() {
   const { data, isError, isPending, error } = useQuery({

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { getFaculties } from '../../../apis/general/apiFaculty';
+import { getFaculties } from '../../../apis/faculty/apiFaculty';
 
 export function useFaculties({ id }) {
   const { data, isPending, error, isError } = useQuery({
