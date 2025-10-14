@@ -19,7 +19,7 @@ function StudentFormField() {
 
         {/* STEP 2 */}
 
-        {step === 2 && <SchoolInfo showLevel={true} />}
+        {step === 2 && <SchoolInfo showLevel={true} showMatric={true} />}
 
         {/* STEP 3 */}
         {step === 3 && <SecurityStep />}

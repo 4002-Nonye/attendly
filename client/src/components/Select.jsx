@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types';
+import { ChevronDown } from 'lucide-react';
 
 function Select({
   htmlFor,
@@ -21,22 +22,33 @@ function Select({
           {label}
         </label>
       )}
+      <div className='relative'>
+        <select
+          id={htmlFor}
+          className={`
+          border border-gray-300 rounded-md p-2 w-full
+          focus:outline-none focus:ring-2 focus:ring-blue-500
+          text-gray-600 text-sm cursor-pointer py-4
+          appearance-none bg-white
+          ${selectClassname}
+        `}
+          {...rest}
+        >
+          <option value=''>{placeHolder}</option>
 
-      <select
-        id={htmlFor}
-        className={`border border-gray-300 rounded-md p-2 w-full focus:outline-none text-gray-500  focus:ring-2 focus:ring-blue-500 text-sm cursor-pointer py-4 ${selectClassname}`}
-        {...rest}
-      >
-        <option value=''>{placeHolder}</option>
-
-        {data?.map((item) => {
-          return (
+          {data?.map((item) => (
             <option key={item[valueKey]} value={item[valueKey]}>
               {item[labelKey]}
             </option>
-          );
-        })}
-      </select>
+          ))}
+        </select>
+
+        {/* Lucide icon (custom dropdown arrow) */}
+        <ChevronDown
+          size={18}
+          className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none'
+        />
+      </div>
     </>
   );
 }

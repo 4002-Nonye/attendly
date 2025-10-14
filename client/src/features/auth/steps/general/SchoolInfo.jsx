@@ -11,8 +11,9 @@ import { useFaculties } from '../../../faculty/general/useFaculties';
 import { useDepartments } from '../../../department/general/useDeparments';
 
 import toast from 'react-hot-toast';
+import InputField from '../../../../components/InputField';
 
-function SchoolInfo({ showLevel = false }) {
+function SchoolInfo({ showLevel = false, showMatric = false }) {
   const {
     register,
     formState: { errors },
@@ -187,36 +188,56 @@ function SchoolInfo({ showLevel = false }) {
         </Box>
       </div>
 
-      {/* Level - Only show for students */}
-      {showLevel && (
-        <Box>
-          <Select
-            htmlFor='level'
-            label='Level'
-            placeHolder={
-              !selectedDepartmentId
-                ? 'Select a department first'
-                : '-- Select Level --'
-            } 
-            data={levelOptions}
-            labelKey='level'
-            disabled={!selectedDepartmentId}
-            {...register('level', {
-              required: {
-                value: true,
-                message: 'Please select your level',
-              },
-            })}
-          />
-          <Err msg={errors.level?.message || ' '} />
-        </Box>
-      )}
+      {/* Level  and Matric Number - Only show for students */}
+      <div className='flex flex-col lg:flex-row gap-2 md:gap-5'>
+        {showLevel && (
+          <Box>
+            <Select
+              htmlFor='level'
+              label='Level'
+              placeHolder={
+                !selectedDepartmentId
+                  ? 'Select a department first'
+                  : '-- Select Level --'
+              }
+              data={levelOptions}
+              labelKey='level'
+              disabled={!selectedDepartmentId}
+              {...register('level', {
+                required: {
+                  value: true,
+                  message: 'Please select your level',
+                },
+              })}
+            />
+            <Err msg={errors.level?.message || ' '} />
+          </Box>
+        )}
+        {showMatric && (
+          <Box className='relative'>
+            <InputField
+              htmlFor='matricNo'
+              label='Matric ID'
+              placeholder='230903058'
+              type='text'
+              {...register('matricNo', {
+                required: {
+                  value: true,
+                  message: 'Please enter your matric ID',
+                },
+              })}
+            />
+            <Err msg={errors.matricNo?.message || ' '} />
+          </Box>
+        )}
+      </div>
     </>
   );
 }
 
 SchoolInfo.propTypes = {
   showLevel: PropTypes.bool,
+  showMatric: PropTypes.bool,
 };
 
 export default SchoolInfo;

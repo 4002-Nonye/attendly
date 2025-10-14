@@ -60,20 +60,43 @@ function Signup() {
 
   // Handle successful form submission
   const onSubmit = (data) => {
-    const { fullName, email, password, school: schoolInput } = data;
+    // common keys
+    const {
+      fullName,
+      email,
+      password,
+      school: schoolInput,
+      faculty,
+      department,
+    } = data;
 
-    if (role === 'admin') {
-      const data = {
-        fullName,
-        email,
-        password,
-        schoolInput,
-        role,
-      };
-      signup(data, {
-        onSuccess: resetStep(),
-      });
-    }
+    const baseData = {
+      fullName,
+      email,
+      password,
+      schoolInput,
+      role,
+    };
+    const roleSpecificData = {
+      student: {
+        level: parseInt(data.level),
+        matricNo: data.matricNo,
+        faculty,
+        department,
+      },
+      lecturer: {
+        faculty,
+        department,
+      },
+      admin: {},
+    };
+
+    const submissionData = { ...baseData, ...roleSpecificData[role] };
+    console.log(submissionData);
+
+    signup(submissionData, {
+      onSuccess: () => resetStep(),
+    });
   };
 
   //  Handle form validation errors
@@ -99,7 +122,7 @@ function Signup() {
           >
             {/* Header showing user’s chosen role + option to change */}
             {role && (
-              <div className='flex items-center justify-between bg-gray-50 rounded-lg p-3 mb-6'>
+              <div className='flex items-center justify-between bg-gray-50 rounded-lg py-3 mb-6 px-1.5'>
                 <p className='text-sm text-gray-700'>
                   You’re signing up as
                   <span className='font-semibold capitalize text-gray-900'>

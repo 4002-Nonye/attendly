@@ -16,4 +16,5 @@ const departmentSchema = new Schema(
   { timestamps: true }
 );
 
+departmentSchema.index({ faculty: 1 });
 mongoose.model('Department', departmentSchema);

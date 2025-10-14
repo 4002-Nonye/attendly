@@ -5,7 +5,7 @@ export const formStepFields = {
     [{ name: 'password' }, { name: 'confirmPassword' }], // step 3
   ],
   lecturer: [
-   [ { name: 'fullName' },{ name: 'email' }], //step 1
+    [{ name: 'fullName' }, { name: 'email' }], //step 1
     [
       {
         name: 'school',
@@ -24,7 +24,7 @@ export const formStepFields = {
   ],
 
   student: [
-       [{ name: 'fullName' }, { name: 'email' }, { name: 'matricNo' }], //step 1
+    [{ name: 'fullName' }, { name: 'email' }, { name: 'matricNo' }], //step 1
     [
       {
         name: 'school',
@@ -39,6 +39,7 @@ export const formStepFields = {
         type: 'select',
       },
       { name: 'level' },
+      { name: 'matricNo' },
     ], // step 2
     [{ name: 'password' }, { name: 'confirmPassword' }], // step 3
   ],

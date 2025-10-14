@@ -12,7 +12,7 @@ function PersonalInfoStep() {
       } = useFormContext();
  return (
     <>
-      <Box className='relative'>
+      <Box >
         <InputField
           htmlFor='name'
           label='Full Name'
@@ -29,7 +29,7 @@ function PersonalInfoStep() {
         />
         <Err msg={errors.fullName?.message || ' '} />
       </Box>
-      <Box className='relative'>
+      <Box >
         <InputField
           htmlFor='email'
           label='Email'
