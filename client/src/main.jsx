@@ -10,6 +10,7 @@ import { Toaster } from 'react-hot-toast';
 const queryClient = new QueryClient({
   queries: {
     staleTime: 0,
+    duration:5000
   },
 });
 

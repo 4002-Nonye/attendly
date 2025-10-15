@@ -6,6 +6,8 @@ const express = require('express');
 
 const userRoute = express.Router();
 
+// admin
 userRoute.get('/', requireLogin, requireAdminAccess, getAllUsers);
+
 
 module.exports= userRoute;

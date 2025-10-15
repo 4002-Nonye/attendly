@@ -1,4 +1,4 @@
-const passwordResetHtml = (resetLink, fullName) => `
+const confirmAccountLinkHtml = (fullName) => `
   <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
               max-width: 560px; margin: 40px auto; background: #ffffff; border: 1px solid #e5e7eb; 
               border-radius: 12px; overflow: hidden;">
@@ -9,39 +9,29 @@ const passwordResetHtml = (resetLink, fullName) => `
         Attendly
       </h1>
     </div>
-    
+
     <!-- Divider -->
     <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 0 24px;">
 
     <!-- Main content -->
     <div style="padding: 24px 40px; text-align: left;">
       <h2 style="font-size: 20px; color: #111827; margin-bottom: 16px; font-weight: 600;">
-        Reset your password
+        Your account has been linked!
       </h2>
 
       <p style="color: #6b7280; font-size: 15px; line-height: 1.6; margin-bottom: 32px;">
-        Hi ${fullName || 'there'}, we received a request to reset your Attendly account password.
-        Click the button below to create a new one. This link will expire in 1 hour.
+        Hi ${fullName || 'there'}, we’re happy to let you know that your Attendly account has been successfully linked with Google. 
+        You can now log in using either your email and password or your Google account.
       </p>
 
-      <div style="text-align: center; margin-bottom: 32px;">
-        <a href="${resetLink}" 
-           style="background-color: #172554; color: #ffffff; text-decoration: none;
-                  padding: 12px 32px; border-radius: 6px; font-size: 15px; font-weight: 500;
-                  display: inline-block;">
-          Reset Password
-        </a>
-      </div>
+      <p style="color: #6b7280; font-size: 15px; line-height: 1.6; margin-bottom: 32px;">
+        If you did not perform this action, please contact our support immediately to secure your account.
+      </p>
 
       <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 24px 0;">
 
-      <p style="color: #9ca3af; font-size: 13px; line-height: 1.6; margin-bottom: 16px;">
-        Didn’t request a password reset? You can safely ignore this email.
-      </p>
-
-      <p style="color: #9ca3af; font-size: 13px; line-height: 1.6; word-break: break-all;">
-        Or copy and paste this link:<br />
-        <a href="${resetLink}" style="color: #172554; text-decoration: none;">${resetLink}</a>
+      <p style="color: #9ca3af; font-size: 13px; line-height: 1.6;">
+        Thank you for using Attendly!
       </p>
     </div>
 
@@ -52,4 +42,4 @@ const passwordResetHtml = (resetLink, fullName) => `
   </div>
 `;
 
-module.exports = passwordResetHtml;
+module.exports = confirmAccountLinkHtml;

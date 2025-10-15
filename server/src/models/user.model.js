@@ -48,8 +48,7 @@ const userSchema = new Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'School',
     },
-    level:Number,
-
+    level: Number,
 
     resetPasswordToken: String,
     resetPasswordExpires: Date,
@@ -57,6 +56,7 @@ const userSchema = new Schema(
   { timestamps: true }
 );
 
+// do not add level if user is not a student
 userSchema.pre('save', function (next) {
   if (this.role !== 'student') {
     this.level = undefined;

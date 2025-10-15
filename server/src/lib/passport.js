@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const passport = require('passport');
 const sanitizeUser = require('../utils/sanitizeUser');
-const jwt =require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
 require('dotenv').config();
@@ -36,8 +36,9 @@ module.exports = passport.use(
         // we prompt the user to link their account (can sign in with both password and google)
         if (existingUser && !existingUser.googleId) {
           // store user information in a token
+          
           const token = jwt.sign(
-            { email:userEmail, googleId: id, displayName },
+            { email: userEmail, googleId: id, displayName },
             process.env.JWT_SECRET,
             { expiresIn: '10m' }
           );

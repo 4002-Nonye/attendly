@@ -6,13 +6,13 @@ const jwt = require('jsonwebtoken');
 const sendEmail = require('../../lib/sendEmail');
 require('dotenv').config();
 const crypto = require('crypto');
-const html = require('../../utils/emailTemplates/resetPasswordTemplate');
+const passwordResetHtml = require('../../utils/emailTemplates/resetPasswordTemplate');
+const confirmAccountLinkHtml = require('../../utils/emailTemplates/confirmAccountLink')
 const validateFields = require('../../utils/validateSignup');
 const hashPassword = require('../../utils/hashPassword');
 
 const User = mongoose.model('User');
 const School = mongoose.model('School');
-
 
 exports.signup = async (req, res) => {
   try {
@@ -26,8 +26,6 @@ exports.signup = async (req, res) => {
       department,
       faculty,
       level,
-      
-    
     } = req.body;
 
     // 1. Validate required fields
@@ -92,6 +90,7 @@ exports.signup = async (req, res) => {
       department,
       faculty,
       level,
+      hasPassword: !!password,
       matricNo: matricNo,
       schoolId: schoolDoc._id,
     });
@@ -113,7 +112,6 @@ exports.signup = async (req, res) => {
       user: safeToSendUser,
     });
   } catch (error) {
-    console.log(error.message);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -188,8 +186,7 @@ exports.login = async (req, res) => {
     if (existingUser) {
       if (!existingUser.password) {
         return res.status(401).json({
-          error:
-            'This account was created using Google. Please sign in with Google instead.',
+          error: 'This account uses Google Sign-In. Please log in with Google.',
         });
       }
       // compare password to allow login if there is a user
@@ -233,76 +230,86 @@ exports.logout = async (_, res) => {
 };
 
 exports.linkAccount = async (req, res) => {
-  const { token, password } = req.body;
-  if (!password) {
-    return res.status(404).json({ error: 'Password is required' });
-  }
-
+  const { token } = req.body;
   try {
     // retrieve the user stored from the token and decode it
     const payload = jwt.verify(token, process.env.JWT_SECRET);
     const { email, googleId } = payload;
 
-    const existingUser = await User.findOne({ email }).select('+password');
+    const existingUser = await User.findOne({ email });
     if (!existingUser) {
       return res.status(404).json({ error: 'User does not exist' });
     }
 
-    const comparePassword = await bcrypt.compare(
-      password,
-      existingUser.password
-    );
-
-    if (!comparePassword) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+    if (existingUser.googleId) {
+      return res.status(409).json({ error: 'Account already linked' });
     }
-
     // add google ID to link account that initially signed in with email and password
     existingUser.googleId = googleId;
     await existingUser.save();
 
+    // send email -successfully linked
+    await sendEmail(
+      email,
+      'A new sign-in method was added to your account',
+      confirmAccountLinkHtml(existingUser.fullName)
+    );
+
     setAuthCookie(res, existingUser);
-    return res.status(200).json({ message: 'Account linked successfully' });
+    return res
+      .status(200)
+      .json({ message: 'Account linked successfully', user: existingUser });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
-
 exports.forgotPassword = async (req, res) => {
   const { email } = req.body;
+
   if (!email) {
-    return res.status(400).json({ error: 'All fields are required' });
+    return res.status(400).json({ error: 'Email is required' });
   }
 
   try {
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email }).select('+password');
     if (!existingUser) {
-      return res.status(401).json({ error: 'User does not exist' });
-    }
-
-    // if there is a user trying to reset password, go ahead and generate a token
-
-    const token = crypto.randomBytes(32).toString('hex');
-
-    //save token to db
-    existingUser.resetPasswordToken = token;
-    existingUser.resetPasswordExpires = new Date(Date.now() + 3600000); // token expires in 1hr
-    await existingUser.save();
-
-    // Send email with token
-    const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${token}&email=${email}`;
-
-    try {
-      await sendEmail(email, 'Password Reset', html(resetLink));
+      // Return generic success message to avoid revealing whether email exists
       return res
         .status(200)
-        .json({ message: 'Reset link sent to your email.' });
-    } catch (error) {
-      return res.status(500).json({ error: 'Failed to send reset email' });
+        .json({ message: 'If that email exists, a reset link has been sent.' });
     }
+
+    // Check if user signed up with Google only
+    if (!existingUser.password) {
+      return res.status(400).json({
+        error: 'This account uses Google Sign-In. Please log in with Google.',
+      });
+    }
+
+    // Generate token and save to DB
+    const token = crypto.randomBytes(32).toString('hex');
+    existingUser.resetPasswordToken = token;
+    existingUser.resetPasswordExpires = new Date(Date.now() + 3600000); // 1 hour
+    await existingUser.save();
+
+    // Create reset link
+    const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${token}&email=${email}`;
+
+    // Send reset email
+    await sendEmail(
+      email,
+      'Reset Your Attendly Password',
+      passwordResetHtml(resetLink, existingUser.fullName)
+    );
+
+    return res.status(200).json({
+      message: 'Reset link sent to your email.',
+    });
   } catch (error) {
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error('Error in forgotPassword:', error);
+    return res
+      .status(500)
+      .json({ error: 'Something went wrong. Please try again later.' });
   }
 };
 
@@ -317,7 +324,6 @@ exports.resetPassword = async (req, res) => {
       resetPasswordExpires: { $gt: Date.now() },
     }).select('+password');
 
-    
     if (!existingUser) {
       return res.status(400).json({ error: 'Invalid token' });
     }
@@ -335,5 +341,39 @@ exports.resetPassword = async (req, res) => {
 };
 
 exports.getUser = async (req, res) => {
-  res.status(200).json({ user: req.user });
+  try {
+    const { id } = req.user;
+    const user = await User.findById(id).select(
+      'email role hasPassword fullName password'
+    );
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const hasPassword = !!user.password;
+    const safeToSendUser = sanitizeUser(user._doc);
+
+    return res.status(200).json({ user: { ...safeToSendUser, hasPassword } });
+  } catch (err) {
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+exports.getUserProfile = async (req, res) => {
+  try {
+    const { id } = req.user;
+
+    const user = await User.findById(id)
+      .select('email role fullName faculty department schoolId level')
+      .populate('faculty', 'name')
+      .populate('department', 'name')
+      .populate('schoolId', 'schoolName');
+
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const safeToSendUser = sanitizeUser(user._doc);
+    return res.status(200).json({
+      user: safeToSendUser,
+    });
+  } catch (err) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
 };

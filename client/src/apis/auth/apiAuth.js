@@ -43,3 +43,14 @@ export const resetPassword = async (data) => {
     throw error.response.data;
   }
 };
+
+export const linkAccount = async (data) => {
+  try {
+    const response = await axios.post('/api/auth/link-account', data, {
+      withCredentials: true,
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
