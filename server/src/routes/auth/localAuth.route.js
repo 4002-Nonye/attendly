@@ -19,8 +19,8 @@ localAuthRoute.post('/login', login);
 localAuthRoute.get('/logout', logout);
 localAuthRoute.put('/complete-profile',requireLogin,completeProfile)
 localAuthRoute.post('/link-account', linkAccount);
-localAuthRoute.post('/forgot-password', requireLogin, forgotPassword);
-localAuthRoute.post('/reset-password', requireLogin, resetPassword); 
+localAuthRoute.post('/forgot-password', forgotPassword);
+localAuthRoute.post('/reset-password', resetPassword); 
 localAuthRoute.get('/user',requireLogin, getUser);
 localAuthRoute.get('/me',requireLogin,getUserProfile)
 

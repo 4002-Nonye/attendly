@@ -1,29 +1,29 @@
 import { NavLink } from 'react-router-dom';
-import { Settings } from 'lucide-react';
+import { Settings, LogOut } from 'lucide-react';
 import PropTypes from 'prop-types';
-import logoBlack from '../assets/logo.svg';
-
+import logo from '../assets/logo-black.svg';
+import Button from '../components/Button';
 function Sidebar({ options }) {
   return (
-    <aside className='w-72 min-h-screen bg-blue-950 text-white flex flex-col py-6'>
+    <aside className='w-72 min-h-screen py-5 flex flex-col  border-r border-gray-200'>
       {/* Logo */}
-      <div className='px-6 mb-10 flex items-center'>
-        <img src={logoBlack} alt='logo' />{' '}
-        <h1 className='text-xl font-semibold tracking-tight'> Attendly</h1>
+      <div className='h-20 flex items-center px-4  '>
+        <img src={logo} alt='logo' className='h-10 w-auto' />
+        <h1 className='text-xl font-semibold tracking-tight '>Attendly</h1>
       </div>
 
       {/* Nav links */}
-      <nav className='flex-1'>
-        <ul className='space-y-5 px-4'>
+      <nav className='flex-1 mt-5'>
+        <ul className='space-y-3.5 px-4'>
           {options.map(({ name, icon: Icon, to }) => (
             <li key={name}>
               <NavLink
                 to={to}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors duration-200 ${
+                  `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors duration-200 ${
                     isActive
-                      ? 'bg-white/10 text-white'
-                      : 'text-gray-400 hover:text-white hover:bg-white/5'
+                      ? 'bg-blue-950 text-white'
+                      : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100'
                   }`
                 }
               >
@@ -35,21 +35,32 @@ function Sidebar({ options }) {
         </ul>
       </nav>
 
-      {/* Footer / Settings */}
-      <div className='mt-auto px-2'>
+      {/* Footer */}
+      <div className='mt-auto px-2 space-y-1 '>
+        {/* Settings */}
         <NavLink
           to='/settings'
           className={({ isActive }) =>
-            `flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors duration-200 ${
-              isActive
-                ? 'bg-white/10 text-white'
-                : 'text-gray-400 hover:text-white hover:bg-white/5'
+            `flex text-sm items-center gap-3 px-4 py-3 rounded-lg transition-colors duration-200 ${
+             isActive
+                      ? 'bg-blue-950 text-white'
+                      : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100'
             }`
           }
         >
           <Settings size={18} />
           <span className='text-sm font-medium'>Settings</span>
         </NavLink>
+
+        {/* Logout */}
+        <Button
+          variant='outline'
+          icon={LogOut}
+          fullWidth
+          className='transition-colors justify-start duration-200 text-slate-500 hover:text-red-400 hover:bg-white/5 border-none text-sm '
+        >
+          Logout
+        </Button>
       </div>
     </aside>
   );

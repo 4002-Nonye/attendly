@@ -9,20 +9,57 @@ import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 import LinkAccountPage from './pages/auth/LinkAccountPage';
 
 import CompleteProfile from './pages/auth/CompleteProfilePage';
-import DashboardPage from './pages/dashboard/DashboardPage';
+import ProtectedRoute from './components/ProtectedRoute';
 import AppLayout from './layouts/AppLayout';
+import CompleteProfileProtected from './components/CompleteProfileProtected';
+import PublicRoute from './components/PublicRoute';
+
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path='/' element={<Navigate to='/login' />} />
-        <Route path='/login' element={<LoginPage />} />
-        <Route path='/signup' element={<SignupPage />} />
-        <Route path='/forgot-password' element={<ForgotPasswordPage />} />
+        <Route
+          path='/login'
+          element={
+            <PublicRoute>
+              <LoginPage />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path='/signup'
+          element={
+            <PublicRoute>
+              <SignupPage />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path='/forgot-password'
+          element={
+            <PublicRoute>
+              <ForgotPasswordPage />
+            </PublicRoute>
+          }
+        />
         <Route path='/reset-password' element={<ResetPasswordPage />} />
         <Route path='/link-account' element={<LinkAccountPage />} />
-        <Route path='/complete-profile' element={<CompleteProfile />} />
- <Route element={<AppLayout />}>
+        <Route
+          path='/complete-profile'
+          element={
+            <CompleteProfileProtected>
+              <CompleteProfile />
+            </CompleteProfileProtected>
+          }
+        />
+        <Route
+          element={
+            <ProtectedRoute>
+              <AppLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route path='dashboard' element='dashboard' />
           <Route path='faculties' element='faculties' />
           <Route path='departments' element='departments' />
@@ -35,6 +72,7 @@ function App() {
         </Route>
 
         <Route path='/scan-code' element={<ScanQrCode />} />
+        <Route path='*' element={<Navigate to='/' />} />
       </Routes>
     </BrowserRouter>
   );

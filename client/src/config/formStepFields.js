@@ -24,7 +24,7 @@ export const formStepFields = {
   ],
 
   student: [
-    [{ name: 'fullName' }, { name: 'email' }, { name: 'matricNo' }], //step 1
+    [{ name: 'fullName' }, { name: 'email' }], //step 1
     [
       {
         name: 'school',

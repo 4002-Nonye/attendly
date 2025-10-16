@@ -45,8 +45,6 @@ function CompleteProfile() {
       admin: {},
     };
 
-    
-
     completeProfile({ ...baseData, ...roleSpecificData[role] });
   };
 
@@ -92,6 +90,7 @@ function CompleteProfile() {
                 size='lg'
                 className='mt-8'
                 disabled={isPending}
+                variant='primary'
               >
                 {isPending ? (
                   <ClipLoader

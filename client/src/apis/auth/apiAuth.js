@@ -68,9 +68,10 @@ export const completeProfile = async (data) => {
 
 export const getUser = async () => {
   try {
-    const response = await axios.post('/api/auth/user', {
+    const response = await axios.get('/api/auth/user', {
       withCredentials: true,
     });
+
     return response.data;
   } catch (error) {
     throw error.response.data;

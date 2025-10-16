@@ -10,7 +10,7 @@ import FormHeader from '../../components/FormHeader';
 import AdminFormField from './formFields/AdminFormField';
 import LecturerFormField from './formFields/LecturerFormField';
 import { useFormStep } from '../../contexts/useFormStep';
-import { formStepFields } from '../../utils/formStepFields';
+import { formStepFields } from '../../config/formStepFields';
 import Logo from '../../components/Logo';
 import SelectRole from '../../components/SelectRole';
 import StudentFormField from './formFields/StudentFormField';
@@ -146,6 +146,7 @@ function Signup() {
               {!isLastStep && (
                 <Button
                   size='md'
+                  variant='primary'
                   className='w-28'
                   onClick={validateSteps}
                   icon={ArrowRight}
@@ -183,7 +184,7 @@ function Signup() {
             {/* Google OAuth  */}
             <a
               href='/auth/google'
-              className='flex items-center justify-center gap-2 w-full py-4 px-4 mb-8 mt-7 rounded-md border border-gray-300 hover:bg-gray-50 transition-colors'
+              className='flex items-center justify-center gap-2 w-full py-4 px-4 mb-8 mt-7 rounded-md border border-gray-300 hover:bg-gray-50 transition-colors text-gray-700 duration-500'
             >
               <img src={googleIcon} alt='Google' className='w-6 h-6' />
               <span className='font-medium'>Continue with Google</span>

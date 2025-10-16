@@ -11,36 +11,15 @@ import {
   Layers,
   UserCircle,
 } from 'lucide-react';
+import { useUser } from '../features/auth/hooks/useUser';
+import { sidebarConfig } from '../config/sidebarConfig';
+import SkeletonSidebar from '../components/SkeletonSidebar';
 
 function AppLayout() {
-  const user = { role: 'lecturer' };
-
-  // Sidebar options based on user role
-  const sidebarOptions =
-    user?.role === 'admin'
-      ? [
-          { name: 'Dashboard', icon: LayoutDashboard, to: '/dashboard' },
-          { name: 'Lecturers', icon: Users2, to: '/lecturers' },
-          { name: 'Students', icon: GraduationCap, to: '/students' },
-          { name: 'Faculties', icon: Building2, to: '/faculties' },
-          { name: 'Departments', icon: Layers, to: '/departments' },
-          { name: 'Courses', icon: BookOpen, to: '/courses' },
-        ]
-      : user?.role === 'lecturer'
-      ? [
-          { name: 'Dashboard', icon: LayoutDashboard, to: '/dashboard' },
-          { name: 'Courses', icon: BookOpen, to: '/courses' },
-          { name: 'Sessions', icon: CalendarClock, to: '/sessions' },
-          { name: 'My Attendance', icon: ClipboardList, to: '/attendance' },
-          { name: 'Profile', icon: UserCircle, to: '/profile' },
-        ]
-      : [
-          { name: 'Dashboard', icon: LayoutDashboard, to: '/dashboard' },
-          { name: 'Courses', icon: BookOpen, to: '/courses' },
-          { name: 'Sessions', icon: CalendarClock, to: '/sessions' },
-          { name: 'My Attendance', icon: ClipboardList, to: '/attendance' },
-          { name: 'Profile', icon: UserCircle, to: '/profile' },
-        ];
+  const { data, isPending } = useUser();
+  if (isPending) return <SkeletonSidebar/>
+  const { role } = data.user;
+  const sidebarOptions = sidebarConfig[role] || sidebarConfig.student;
 
   return (
     <div className='flex min-h-screen'>

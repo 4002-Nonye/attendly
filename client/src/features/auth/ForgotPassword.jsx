@@ -71,7 +71,7 @@ function ForgotPassword() {
         </Box>
 
         {/* SUBMIT BUTTON */}
-        <Button fullWidth size='lg' type='submit' disabled={isPending}>
+        <Button fullWidth size='lg' type='submit' disabled={isPending} variant='primary'>
           {isPending ? (
             <ClipLoader
               color='#ffff'

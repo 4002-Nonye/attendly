@@ -84,6 +84,7 @@ function SelectRole({ selectedRole, onSelect }) {
       <Button
         size='lg'
         className='mt-16'
+        variant='primary'
         disabled={!roleLocal}
         onClick={handleContinue}
       >
