@@ -27,7 +27,9 @@ exports.authGoogleCallback = (req, res, next) =>
     const profileIncomplete =
       !user.schoolId ||
       !user.role ||
-      (user.role === 'student' && !user.matricNo);
+      (user.role === 'student' &&
+        (!user.matricNo || !user.faculty || !user.department)) ||
+      (user.role === 'lecturer' && (!user.faculty || !user.department));
 
     // Set auth cookie
     setAuthCookie(res, user);
@@ -38,5 +40,5 @@ exports.authGoogleCallback = (req, res, next) =>
     }
 
     // Otherwise, redirect to {role}/dashboard
-    return res.redirect(`${process.env.CLIENT_URL}/${user.role}/dashboard`);
+    return res.redirect(`${process.env.CLIENT_URL}/dashboard`);
   })(req, res, next);

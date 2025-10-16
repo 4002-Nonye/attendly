@@ -54,3 +54,25 @@ export const linkAccount = async (data) => {
     throw error.response.data;
   }
 };
+
+export const completeProfile = async (data) => {
+  try {
+    const response = await axios.put('/api/auth/complete-profile', data, {
+      withCredentials: true,
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+export const getUser = async () => {
+  try {
+    const response = await axios.post('/api/auth/user', {
+      withCredentials: true,
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};

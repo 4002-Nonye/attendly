@@ -1,13 +1,11 @@
 import { useMutation } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
-import { login as loginApi } from '../../../apis/auth/apiAuth';
+import { completeProfile as completeProfileApi } from '../../../apis/auth/apiAuth';
 import toast from 'react-hot-toast';
-
-export function useLogin() {
+import { useNavigate } from 'react-router-dom';
+export function useCompleteProfile() {
   const navigate = useNavigate();
-
   const mutation = useMutation({
-    mutationFn: loginApi,
+    mutationFn: completeProfileApi,
     onSuccess: (data) => {
       toast.success(data.message);
       navigate(`/dashboard`, { replace: true });
@@ -16,6 +14,5 @@ export function useLogin() {
       toast.error(err.error);
     },
   });
-
-  return { login: mutation.mutate, isPending: mutation.isPending };
+  return { completeProfile: mutation.mutate, isPending: mutation.isPending };
 }

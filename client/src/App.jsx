@@ -2,12 +2,14 @@ import { Routes, Route, BrowserRouter, Navigate } from 'react-router-dom';
 import LinkAccountSample from './tests/LinkAccountSample';
 import Home from './tests/Home';
 import ScanQrCode from './tests/ScanQrCode';
-import LoginPage from './pages/general/LoginPage';
-import SignupPage from './pages/general/SignupPage';
-import ForgotPasswordPage from './pages/general/ForgotPasswordPage';
-import ResetPasswordPage from './pages/general/ResetPasswordPage';
-import LinkAccountPage from './pages/general/LinkAccountPage';
-import Dashboard from './pages/admin/Dashboard';
+import LoginPage from './pages/auth/LoginPage';
+import SignupPage from './pages/auth/SignupPage';
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
+import ResetPasswordPage from './pages/auth/ResetPasswordPage';
+import LinkAccountPage from './pages/auth/LinkAccountPage';
+
+import CompleteProfile from './pages/auth/CompleteProfilePage';
+import DashboardPage from './pages/dashboard/DashboardPage';
 function App() {
   return (
     <BrowserRouter>
@@ -18,7 +20,8 @@ function App() {
         <Route path='/forgot-password' element={<ForgotPasswordPage />} />
         <Route path='/reset-password' element={<ResetPasswordPage />} />
         <Route path='/link-account' element={<LinkAccountPage />} />
-        <Route path='/admin/dashboard' element={<Dashboard />} />
+        <Route path='/dashboard' element={<DashboardPage />} />
+        <Route path='/complete-profile' element={<CompleteProfile />} />
         <Route path='/dashboard' element={<Home />} />
         <Route path='/link-account-sample' element={<LinkAccountSample />} />
         <Route path='/scan-code' element={<ScanQrCode />} />

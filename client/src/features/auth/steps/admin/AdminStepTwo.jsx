@@ -13,11 +13,11 @@ function AdminStepTwo() {
   return (
     <>
       <p className='text-gray-700 mb-6'>
-        Tell us the name of your school. You can always update more details later.
+        Tell us about your school. You can always update more details later.
       </p>
 
       {/* SCHOOL NAME */}
-      <Box className='relative'>
+      <Box>
         <InputField
           htmlFor='school'
           label='School name'
@@ -34,7 +34,7 @@ function AdminStepTwo() {
         <Err msg={errors.school?.message || ' '} />
       </Box>
 
-      <Box className='relative'>
+      <Box>
         <InputField
           htmlFor='location'
           label='Location (optional)'

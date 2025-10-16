@@ -10,7 +10,7 @@ export function useSignup() {
     mutationFn: signUpApi,
     onSuccess: (data) => {
       toast.success(data.message);
-      navigate(`/${data.user.role}/dashboard`, { replace: true });
+      navigate(`/dashboard`, { replace: true });
     },
     onError: (err) => {
       toast.error(err.error);

@@ -16,6 +16,7 @@ import SelectRole from '../../components/SelectRole';
 import StudentFormField from './formFields/StudentFormField';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useSignup } from './hooks/useSignup';
+import ChangeRole from '../../components/ChangeRole';
 
 function Signup() {
   const methods = useForm({
@@ -114,27 +115,8 @@ function Signup() {
             className='w-full max-w-[40rem] mx-auto px-5 sm:px-8 mt-10 md:mt-15'
             noValidate={true}
           >
-            {/* Header showing user’s chosen role + option to change */}
-            {role && (
-              <div className='flex items-center justify-between bg-gray-50 rounded-lg py-3 mb-6 px-1.5'>
-                <p className='text-sm text-gray-700'>
-                  You’re signing up as
-                  <span className='font-semibold capitalize text-gray-900'>
-                    {' '}
-                    {role}
-                  </span>
-                </p>
-                <Button
-                  variant=''
-                  type='button'
-                  size='sm'
-                  className='font-medium text-blue-800 hover:underline'
-                  onClick={handleChangeRole}
-                >
-                  Change role
-                </Button>
-              </div>
-            )}
+            {/* Header showing user’s chosen role and option to change */}
+            {role && <ChangeRole role={role} onClick={handleChangeRole} />}
 
             {/* FORM HEADER */}
             <FormHeader text='Create your account' />

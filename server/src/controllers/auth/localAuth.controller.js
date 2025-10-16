@@ -7,7 +7,7 @@ const sendEmail = require('../../lib/sendEmail');
 require('dotenv').config();
 const crypto = require('crypto');
 const passwordResetHtml = require('../../utils/emailTemplates/resetPasswordTemplate');
-const confirmAccountLinkHtml = require('../../utils/emailTemplates/confirmAccountLink')
+const confirmAccountLinkHtml = require('../../utils/emailTemplates/confirmAccountLink');
 const validateFields = require('../../utils/validateSignup');
 const hashPassword = require('../../utils/hashPassword');
 
@@ -120,7 +120,7 @@ exports.signup = async (req, res) => {
 exports.completeProfile = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { role, schoolId, faculty, department, matricNo } = req.body;
+    const { role, schoolInput, faculty, department, matricNo } = req.body;
 
     if (!role) {
       return res.status(400).json({ error: 'Role is required' });
@@ -134,7 +134,13 @@ exports.completeProfile = async (req, res) => {
           error: 'Student must have faculty, department, and matric number',
         });
       }
-      updateData = { ...updateData, faculty, department, matricNo };
+      updateData = {
+        ...updateData,
+        faculty,
+        department,
+        matricNo,
+        schoolId: schoolInput,
+      };
     }
 
     if (role === 'lecturer') {
@@ -143,14 +149,29 @@ exports.completeProfile = async (req, res) => {
           error: 'Lecturer must have faculty and department',
         });
       }
-      updateData = { ...updateData, faculty, department };
+      updateData = {
+        ...updateData,
+        faculty,
+        department,
+        schoolId: schoolInput,
+      };
     }
 
+    let schoolDoc;
     if (role === 'admin') {
-      if (!schoolId) {
-        return res.status(400).json({ error: 'Admin must have school ID' });
+      if (!schoolInput) {
+        return res.status(400).json({ error: 'Admin must have school name' });
       }
-      updateData = { ...updateData, schoolId };
+      schoolDoc = await School.findOne({ schoolName: schoolInput }).collation({
+        locale: 'en',
+        strength: 2,
+      });
+      if (schoolDoc) {
+        return res.status(409).json({ error: 'School name already exists' });
+      }
+      schoolDoc = await School.create({ schoolName: schoolInput, admin: null });
+
+      updateData = { ...updateData, schoolId: schoolDoc._id };
     }
 
     const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
