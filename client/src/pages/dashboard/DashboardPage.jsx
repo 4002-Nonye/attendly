@@ -1,9 +1,12 @@
-import AdminDashboard from '../../features/dashboard/AdminDashboard'
+import { Outlet } from 'react-router-dom';
+import AdminDashboard from '../../features/dashboard/AdminDashboard';
 function DashboardPage() {
-  return <div>
+  return (
+    <div className='flex'>
+      <AdminDashboard />
 
-    <AdminDashboard/>
-  </div>;
+    </div>
+  );
 }
 
 export default DashboardPage;

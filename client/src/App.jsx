@@ -10,6 +10,7 @@ import LinkAccountPage from './pages/auth/LinkAccountPage';
 
 import CompleteProfile from './pages/auth/CompleteProfilePage';
 import DashboardPage from './pages/dashboard/DashboardPage';
+import AppLayout from './layouts/AppLayout';
 function App() {
   return (
     <BrowserRouter>
@@ -20,10 +21,19 @@ function App() {
         <Route path='/forgot-password' element={<ForgotPasswordPage />} />
         <Route path='/reset-password' element={<ResetPasswordPage />} />
         <Route path='/link-account' element={<LinkAccountPage />} />
-        <Route path='/dashboard' element={<DashboardPage />} />
         <Route path='/complete-profile' element={<CompleteProfile />} />
-        <Route path='/dashboard' element={<Home />} />
-        <Route path='/link-account-sample' element={<LinkAccountSample />} />
+ <Route element={<AppLayout />}>
+          <Route path='dashboard' element='dashboard' />
+          <Route path='faculties' element='faculties' />
+          <Route path='departments' element='departments' />
+          <Route path='courses' element='courses' />
+          <Route path='lecturers' element='lecturers' />
+          <Route path='students' element='students' />
+          <Route path='attendance' element='attendance' />
+          <Route path='profile' element='profile' />
+          <Route path='sessions' element='sessions' />
+        </Route>
+
         <Route path='/scan-code' element={<ScanQrCode />} />
       </Routes>
     </BrowserRouter>
