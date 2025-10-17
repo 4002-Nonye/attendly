@@ -1,6 +1,4 @@
 import { Routes, Route, BrowserRouter, Navigate } from 'react-router-dom';
-import LinkAccountSample from './tests/LinkAccountSample';
-import Home from './tests/Home';
 import ScanQrCode from './tests/ScanQrCode';
 import LoginPage from './pages/auth/LoginPage';
 import SignupPage from './pages/auth/SignupPage';
@@ -12,15 +10,15 @@ import CompleteProfile from './pages/auth/CompleteProfilePage';
 import ProtectedRoute from './components/ProtectedRoute';
 import AppLayout from './layouts/AppLayout';
 import CompleteProfileProtected from './components/CompleteProfileProtected';
+import DashboardPage from './pages/dashboard/DashboardPage';
 import PublicRoute from './components/PublicRoute';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path='/' element={<Navigate to='/login' />} />
         <Route
-          path='/login'
+          path='/'
           element={
             <PublicRoute>
               <LoginPage />
@@ -60,7 +58,7 @@ function App() {
             </ProtectedRoute>
           }
         >
-          <Route path='dashboard' element='dashboard' />
+          <Route path='dashboard' element={<DashboardPage />} />
           <Route path='faculties' element='faculties' />
           <Route path='departments' element='departments' />
           <Route path='courses' element='courses' />

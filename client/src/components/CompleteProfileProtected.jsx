@@ -17,17 +17,17 @@ function CompleteProfileProtected({ children }) {
     );
   }
 
-  // Not logged in → login
+  // Not logged in - login
   if (!data?.user) {
-    return <Navigate to='/login' replace />;
+    return <Navigate to='/' replace />;
   }
 
-  // Already has role → dashboard (already completed profile)
+  // Already has role - dashboard (already completed profile)
   if (data?.user?.role) {
     return <Navigate to='/dashboard' replace />;
   }
 
-  // Needs to complete profile → show page
+  // Needs to complete profile - show page
   return children;
 }
 

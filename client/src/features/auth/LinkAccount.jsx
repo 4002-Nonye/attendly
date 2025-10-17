@@ -76,6 +76,7 @@ function LinkAccount() {
             className='sm:w-auto'
             onClick={() => linkAccount({ token })}
             disabled={isPending}
+            variant='primary'
           >
             {isPending ? (
               <ClipLoader

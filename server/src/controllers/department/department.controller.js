@@ -171,7 +171,6 @@ exports.deleteDepartment = async (req, res) => {
   }
 };
 
-
 exports.getDepartmentsByFaculty = async (req, res) => {
   try {
     const { facultyId } = req.params;
@@ -180,17 +179,30 @@ exports.getDepartmentsByFaculty = async (req, res) => {
       return res.status(400).json({ error: 'Faculty ID is required' });
     }
 
-    const departments = await Department.find({ faculty:facultyId })
+    const departments = await Department.find({ faculty: facultyId })
       .select('name maxLevel id')
       .lean();
 
     if (!departments.length) {
-      return res.status(404).json({ error: 'No departments found for this faculty' });
+      return res
+        .status(404)
+        .json({ error: 'No departments found for this faculty' });
     }
 
-  return  res.status(200).json({ departments });
+    return res.status(200).json({ departments });
   } catch (error) {
-    
-   return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+exports.getTotalDepartments = async (req, res) => {
+  try {
+    const { schoolId } = req.user;
+    const total = await Department.countDocuments({
+      schoolId,
+    });
+    return res.status(200).json({ total });
+  } catch (error) {
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };

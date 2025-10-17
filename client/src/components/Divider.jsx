@@ -12,4 +12,8 @@ function Divider({ text }) {
   );
 }
 
+Divider.propTypes = {
+  text: PropTypes.string,
+};
+
 export default Divider;

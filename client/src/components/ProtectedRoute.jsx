@@ -11,17 +11,17 @@ function ProtectedRoute({ children }) {
     return <SkeletonSidebar />;
   }
 
-  // Not authenticated - redirect to login
+  // Not authenticated redirect to login (home)
   if (!data?.user) {
-    return <Navigate to='/login' replace />;
+    return <Navigate to='/' replace />;
   }
 
-  // Authenticated but no role - redirect to complete profile
+  // Authenticated but no role → redirect to complete profile
   if (!data?.user?.role) {
     return <Navigate to='/complete-profile' replace />;
   }
 
-  // Authenticated and has role - allow access
+  // Authenticated and has role → allow access
   return children;
 }
 

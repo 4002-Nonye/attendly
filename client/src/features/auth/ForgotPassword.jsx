@@ -88,7 +88,7 @@ function ForgotPassword() {
         <p className='text-sm text-center mt-6 text-gray-600'>
           Remembered your password?{' '}
           <Link
-            to='/login'
+            to='/'
             className='text-blue-700 hover:underline font-medium'
           >
             Back to login

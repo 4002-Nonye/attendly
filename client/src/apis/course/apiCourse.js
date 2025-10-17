@@ -1,9 +1,9 @@
 import axios from 'axios';
 
-// for dropdown (general)
-export const getSchools = async () => {
+// admin
+export const getCoursesTotal = async () => {
   try {
-    const response = await axios.get('/api/schools');
+    const response = await axios.get('/api/admin/courses/total');
     return response.data;
   } catch (error) {
     throw error.response.data;

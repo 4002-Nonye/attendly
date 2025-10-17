@@ -10,7 +10,7 @@ const School = mongoose.model('School');
 exports.createSession = async (req, res) => {
   try {
     const { courseId } = req.params;
-    const { id: lecturerId } = req.user;
+    const { id: lecturerId, schoolId } = req.user;
 
     if (!courseId)
       return res
@@ -49,8 +49,9 @@ exports.createSession = async (req, res) => {
       date: new Date(),
       status: 'active',
       token: sessionToken,
-      academicYear: isAssigned.academicYear, // pulled from course
+      academicYear: isAssigned.academicYear,
       semester: isAssigned.semester,
+      schoolId,
     }).save();
 
     // Build QR data for frontend
@@ -77,6 +78,7 @@ exports.endSession = async (req, res) => {
 
     // 1. Find the session
     const session = await Session.findById(sessionId);
+
     if (!session || session.status !== 'active') {
       return res.status(404).json({ error: 'No active session found' });
     }
@@ -130,6 +132,7 @@ exports.endSession = async (req, res) => {
           session: sessionId,
           course: courseId,
           status: 'Absent',
+          academicYear:session.academicYear
         }))
       );
     }
@@ -148,19 +151,23 @@ exports.endSession = async (req, res) => {
 
 exports.getActiveSessionsForStudent = async (req, res) => {
   try {
-    const { id,  schoolId } = req.user;
-
+    const { id, schoolId } = req.user;
 
     //  Get current academic year and semester for the student's school
-    const school = await School.findById(schoolId).populate('currentAcademicYear');
+    const school = await School.findById(schoolId).populate(
+      'currentAcademicYear'
+    );
     if (!school || !school.currentAcademicYear) {
-      return res.status(400).json({ error: 'No active academic year found for this school' });
+      return res
+        .status(400)
+        .json({ error: 'No active academic year found for this school' });
     }
 
     //  Get all courses the student is enrolled in
-    const enrollments = await StudentEnrollment.find({ student: id }).select('course');
+    const enrollments = await StudentEnrollment.find({ student: id }).select(
+      'course'
+    );
     const courseIds = enrollments.map((enrollment) => enrollment.course);
-
 
     //  Find active sessions that match:
     //     - student's courses
@@ -177,7 +184,6 @@ exports.getActiveSessionsForStudent = async (req, res) => {
       .populate('course', 'courseTitle courseCode')
       .populate('startedBy', 'fullName');
 
-  
     return res.status(200).json({ session: activeSessions });
   } catch (error) {
     console.error(error);
@@ -187,19 +193,22 @@ exports.getActiveSessionsForStudent = async (req, res) => {
 
 exports.getActiveSessionsForLecturer = async (req, res) => {
   try {
-    const { id,  schoolId } = req.user;
+    const { id, schoolId } = req.user;
 
     //  Get the lecturer’s school and its current academic year + semester
-    const school = await School.findById(schoolId).populate('currentAcademicYear');
+    const school = await School.findById(schoolId).populate(
+      'currentAcademicYear'
+    );
     if (!school || !school.currentAcademicYear) {
-      return res.status(400).json({ error: 'No active academic year found for this school' });
+      return res
+        .status(400)
+        .json({ error: 'No active academic year found for this school' });
     }
 
     //  Find all courses this lecturer is assigned to
     const courses = await Course.find({ lecturers: id }).select('_id');
     const courseIds = courses.map((c) => c._id);
 
-    
     //  Find active sessions for those courses under the current academic year and semester
     const sessions = await Session.find({
       course: { $in: courseIds },
@@ -210,8 +219,56 @@ exports.getActiveSessionsForLecturer = async (req, res) => {
       .populate('course', 'courseCode courseTitle')
       .populate('startedBy', 'fullName');
 
-   
     return res.status(200).json({ session: sessions });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+exports.getRecentSessions = async (req, res) => {
+  try {
+    const { schoolId } = req.user;
+
+    //  Get recent sessions
+    const sessions = await Session.find({ schoolId })
+      .select('course status startedBy createdAt')
+      .populate('course', 'courseCode courseTitle')
+      .populate('startedBy', 'fullName')
+      .sort({ createdAt: -1 }) // get latest
+      .limit(5);
+
+    //  Construct session summaries
+    const sessionSummaries = await Promise.all(
+      sessions.map(async (session) => {
+        const attendanceCount = await Attendance.countDocuments({
+          session: session._id,
+          status:'Present'
+        });
+
+        const enrolledCount = await StudentEnrollment.countDocuments({
+          course: session.course._id,
+        });
+
+        return {
+          id: session._id,
+          course: session.course.courseTitle,
+          courseCode: session.course.courseCode,
+          lecturer: session.startedBy.fullName,
+          date: session.createdAt.toISOString().split('T')[0],
+          time: new Date(session.createdAt).toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
+          }),
+          status: session.status,
+          attended: attendanceCount,
+          enrolled: enrolledCount,
+        };
+      })
+    );
+
+    return res.status(200).json({ sessions: sessionSummaries });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Internal server error' });

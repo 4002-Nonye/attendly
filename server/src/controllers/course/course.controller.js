@@ -87,3 +87,13 @@ exports.getCourseById = async (req, res) => {
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+exports.getTotalCourses = async (req, res) => {
+  try {
+    const { schoolId } = req.user;
+    const total = await Course.countDocuments({ schoolId });
+    return res.status(200).json({ total });
+  } catch (error) {
+    return res.status(500).json({ error: 'Internal servor error' });
+  }
+};

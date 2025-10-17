@@ -8,7 +8,8 @@ const {
 
 const generalCourseRoute = express.Router();
 
-/* ----------------------------- GENERAL ROUTES ----------------------------- */
+
+
 // Get a single course
 generalCourseRoute.get('/:id', requireLogin, getCourseById);
 // Get all courses

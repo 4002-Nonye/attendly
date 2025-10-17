@@ -364,9 +364,17 @@ exports.resetPassword = async (req, res) => {
 exports.getUser = async (req, res) => {
   try {
     const { id } = req.user;
-    const user = await User.findById(id).select(
-      'email role hasPassword fullName password'
-    );
+    const user = await User.findById(id)
+      .select('email role fullName password schoolId')
+      .populate({
+        path: 'schoolId',
+        select: 'schoolName currentAcademicYear currentSemester',
+        populate: {
+          path: 'currentAcademicYear',
+          select: 'year',
+        }
+      });
+      
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const hasPassword = !!user.password;
@@ -389,10 +397,10 @@ exports.getUserProfile = async (req, res) => {
       .populate('schoolId', 'schoolName');
 
     if (!user) return res.status(404).json({ error: 'User not found' });
-
+    const hasPassword = !!user.password;
     const safeToSendUser = sanitizeUser(user._doc);
     return res.status(200).json({
-      user: safeToSendUser,
+      user: { ...safeToSendUser, hasPassword },
     });
   } catch (err) {
     return res.status(500).json({ error: 'Internal server error' });

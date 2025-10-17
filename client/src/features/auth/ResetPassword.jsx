@@ -100,6 +100,7 @@ function ResetPassword() {
           type='submit'
           className='mt-4'
           disabled={isPending}
+          variant='primary'
         >
           {isPending ? (
             <ClipLoader

@@ -68,7 +68,32 @@ exports.getAllUsers = async (req, res) => {
     const pages = Math.ceil(total / limit);
     return res.status(200).json({ users, total, pages });
   } catch (error) {
-    console.log(error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+exports.getStudentsTotal = async (req, res) => {
+  try {
+    const { schoolId } = req.user;
+    const total = await User.countDocuments({
+      schoolId,
+      role: 'student',
+    });
+    return res.status(200).json({ total });
+  } catch (error) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+exports.getLecturerTotal = async (req, res) => {
+  try {
+    const { schoolId } = req.user;
+    const total = await User.countDocuments({
+      schoolId,
+      role: 'lecturer',
+    });
+    return res.status(200).json({ total });
+  } catch (error) {
     return res.status(500).json({ error: 'Internal server error' });
   }
 };

@@ -16,7 +16,6 @@ exports.getFacultiesBySchool = async (req, res) => {
 
     const faculties = await Faculty.find({ schoolId }).select('name id').lean();
 
-
     res.status(200).json({ faculties });
   } catch (error) {
     console.error(error);
@@ -192,6 +191,20 @@ exports.getFacultyStats = async (req, res) => {
     res.status(200).json({ facultyStats });
   } catch (error) {
     console.log(error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// get total departments in a school
+exports.getTotalFaculties = async (req, res) => {
+  try {
+    const { schoolId } = req.user;
+    const total = await Faculty.countDocuments({
+      schoolId,
+    });
+    console.log(total)
+    return res.status(200).json({ total });
+  } catch (error) {
     return res.status(500).json({ error: 'Internal server error' });
   }
 };

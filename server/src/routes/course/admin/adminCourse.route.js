@@ -1,14 +1,31 @@
 const express = require('express');
 const requireLogin = require('../../../middlewares/requireLogin');
 const { requireAdminAccess } = require('../../../middlewares/roleAccess');
-const { createCourse, editCourse, deleteCourse } = require('../../../controllers/course/admin/adminCourse.controller');
-const { getAdminAttendanceReport } = require('../../../controllers/attendance/admin/adminAttendance.controller');
+const {
+  createCourse,
+  editCourse,
+  deleteCourse,
+} = require('../../../controllers/course/admin/adminCourse.controller');
+const {
+  getAdminAttendanceReport,
+} = require('../../../controllers/attendance/admin/adminAttendance.controller');
+const {
+  getTotalCourses,
+} = require('../../../controllers/course/course.controller');
 
 const adminCourseRoute = express.Router();
 
-/* ----------------------------- ADMIN ROUTES ----------------------------- */
 // Create a new course
 adminCourseRoute.post('/', requireLogin, requireAdminAccess, createCourse);
+
+// Total courses
+adminCourseRoute.get(
+  '/total',
+  requireLogin,
+  requireAdminAccess,
+  getTotalCourses
+);
+
 // Edit a course
 adminCourseRoute.put('/:id', requireLogin, requireAdminAccess, editCourse);
 // Delete a course
@@ -21,4 +38,4 @@ adminCourseRoute.get(
   getAdminAttendanceReport
 );
 
-module.exports = adminCourseRoute
+module.exports = adminCourseRoute;

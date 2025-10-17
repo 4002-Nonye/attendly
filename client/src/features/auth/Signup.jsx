@@ -193,7 +193,7 @@ function Signup() {
             {/* Login redirect link */}
             <p className='text-center text-sm md:text-base'>
               Already have an account?{' '}
-              <Link to='/login' className='text-blue-700'>
+              <Link to='/' className='text-blue-700'>
                 Log in
               </Link>
             </p>
