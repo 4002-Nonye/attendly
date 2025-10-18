@@ -21,3 +21,13 @@ export const getFacultyTotal = async () => {
     throw error.response.data;
   }
 };
+
+// admin
+export const getFacultyStats = async () => {
+  try {
+    const response = await axios.get(`/api/faculties`);
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};

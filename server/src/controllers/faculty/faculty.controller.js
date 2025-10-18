@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const Faculty = mongoose.model('Faculty');
 const Department = mongoose.model('Department');
 const Course = mongoose.model('Course');
-const User = mongoose.model('User');
+
 
 // FOR DROPDOWNS
 exports.getFacultiesBySchool = async (req, res) => {
@@ -151,46 +151,116 @@ exports.getFacultyStats = async (req, res) => {
     const { schoolId } = req.user;
     const { searchQuery } = req.query;
 
-    const filter = { schoolId }; // base filter
+    const matchFilter = {
+      schoolId: mongoose.Types.ObjectId.createFromHexString(schoolId),
+    };
 
-    // OPTIONAL FILTER
+    // Add search filter
     if (searchQuery) {
-      filter.name = { $regex: searchQuery, $options: 'i' };
+      matchFilter.name = { $regex: searchQuery, $options: 'i' };
     }
 
-    // 1. Fetch all faculties
-    const faculties = await Faculty.find(filter).lean();
+    const facultyStats = await Faculty.aggregate([
+      // 1. Match faculties for this school (with optional search)
+      { $match: matchFilter },
 
-    const facultyStats = await Promise.all(
-      faculties.map(async (faculty) => {
-        // 2. Go through each faculty and calculate total
-        //  Promise.all for parallel execution
-        const [totalDepartments, totalCourses, totalStudents, totalLecturers] =
-          await Promise.all([
-            // check how many departments exist in each faculty
-            Department.countDocuments({ faculty: faculty._id }),
-            // check how many courses are existent in each faculty
-            Course.countDocuments({ faculty: faculty._id }),
-            // check how many students are in the faculty
-            User.countDocuments({ faculty: faculty._id, role: 'student' }),
-            // check how many lecturers exist in the faculty
-            User.countDocuments({ faculty: faculty._id, role: 'lecturer' }),
-          ]);
+      // 2. Lookup and count departments
+      {
+        $lookup: {
+          from: 'departments',
+          localField: '_id',
+          foreignField: 'faculty',
+          as: 'departments',
+        },
+      },
 
-        // send back faculties and totals
-        return {
-          ...faculty,
-          totalDepartments,
-          totalCourses,
-          totalStudents,
-          totalLecturers,
-        };
-      })
-    );
+      // 3. Lookup and count courses
+      {
+        $lookup: {
+          from: 'courses',
+          localField: '_id',
+          foreignField: 'faculty',
+          as: 'courses',
+        },
+      },
 
-    res.status(200).json({ facultyStats });
+      // 4. Lookup and count students
+      {
+        $lookup: {
+          from: 'users',
+          let: { facultyId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$faculty', '$$facultyId'] },
+                    { $eq: ['$role', 'student'] },
+                  ],
+                },
+              },
+            },
+          ],
+          as: 'students',
+        },
+      },
+
+      // 5. Lookup and count lecturers
+      {
+        $lookup: {
+          from: 'users',
+          let: { facultyId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$faculty', '$$facultyId'] },
+                    { $eq: ['$role', 'lecturer'] },
+                  ],
+                },
+              },
+            },
+          ],
+          as: 'lecturers',
+        },
+      },
+
+      // 6. Add computed fields
+      {
+        $addFields: {
+          totalDepartments: { $size: '$departments' },
+          totalCourses: { $size: '$courses' },
+          totalStudents: { $size: '$students' },
+          totalLecturers: { $size: '$lecturers' },
+        },
+      },
+
+      // 7. Project only needed fields
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          code: 1,
+          dean: 1,
+          description: 1,
+          totalDepartments: 1,
+          totalCourses: 1,
+          totalStudents: 1,
+          totalLecturers: 1,
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      },
+
+      // 8. Sort by name
+      { $sort: { name: 1 } },
+    ]);
+
+    return res.status(200).json({
+      facultyStats,
+    });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -202,7 +272,7 @@ exports.getTotalFaculties = async (req, res) => {
     const total = await Faculty.countDocuments({
       schoolId,
     });
-    console.log(total)
+    console.log(total);
     return res.status(200).json({ total });
   } catch (error) {
     return res.status(500).json({ error: 'Internal server error' });

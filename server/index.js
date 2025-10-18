@@ -28,6 +28,7 @@ const lecturerSessionRoute = require('./src/routes/session/lecturer/lecturerSess
 const studentSessionRoute = require('./src/routes/session/student/studentSession.route');
 const schoolRoute = require('./src/routes/school/school.route');
 const adminSessionRoute = require('./src/routes/session/admin/adminSession.route');
+const attendanceRoute = require('./src/routes/attendance/attendance.route');
 
 require('./src/lib/passport');
 
@@ -59,6 +60,7 @@ app.use('/api/lecturer/sessions', lecturerSessionRoute);
 app.use('/api/student/sessions', studentSessionRoute);
 app.use('/api/schools', schoolRoute);
 app.use('/api/admin/sessions', adminSessionRoute);
+app.use('/api/admin/attendance/trends', attendanceRoute);
 
 app.listen(process.env.PORT, () => {
   // Connect to the database after server starts

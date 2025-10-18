@@ -1,4 +1,6 @@
 import { Calendar, Plus } from "lucide-react";
+import Button from "./Button";
+import { Link } from "react-router-dom";
 
 function EmptyAcademicYear() {
   return (
@@ -14,7 +16,7 @@ function EmptyAcademicYear() {
           Create your first academic year and semester to start managing your
           school efficiently
         </p>
-        <Link to='/academic-years' className='mt-4'>
+        <Link to='/academic-year' className='mt-4'>
           <Button icon={Plus} variant='primary' size='lg'>
             Create Academic Year
           </Button>
@@ -25,3 +27,5 @@ function EmptyAcademicYear() {
 }
 
 export default EmptyAcademicYear;
+
+

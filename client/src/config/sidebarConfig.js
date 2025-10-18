@@ -13,11 +13,11 @@ import {
 export const sidebarConfig = {
   admin: [
     { name: 'Dashboard', icon: LayoutDashboard, to: '/dashboard' },
-    { name: 'Lecturers', icon: Users2, to: '/lecturers' },
-    { name: 'Students', icon: GraduationCap, to: '/students' },
     { name: 'Faculties', icon: Building2, to: '/faculties' },
     { name: 'Departments', icon: Layers, to: '/departments' },
     { name: 'Courses', icon: BookOpen, to: '/courses' },
+    { name: 'Lecturers', icon: Users2, to: '/lecturers' },
+    { name: 'Students', icon: GraduationCap, to: '/students' },
   ],
   lecturer: [
     { name: 'Dashboard', icon: LayoutDashboard, to: '/dashboard' },

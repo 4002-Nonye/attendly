@@ -73,7 +73,7 @@ function RecentSessionsTable() {
             <tbody className='bg-white divide-y divide-gray-200'>
               {recentSessions.map((session) => (
                 <tr
-                  key={session._id}
+                  key={session.id}
                   className='hover:bg-gray-50 transition-colors'
                 >
                   <td className='px-6 py-4 whitespace-nowrap'>

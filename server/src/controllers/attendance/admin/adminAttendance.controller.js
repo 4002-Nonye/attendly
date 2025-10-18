@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const StudentEnrollment = mongoose.model('StudentEnrollment');
 const School = mongoose.model('School');
+const dayjs = require('dayjs');
+const Attendance = mongoose.model('Attendance');
 
 exports.getAdminAttendanceReport = async (req, res) => {
   // accepts filters: facultyId, departmentId, level, courseId
@@ -19,13 +21,12 @@ exports.getAdminAttendanceReport = async (req, res) => {
     const school = await School.findById(schoolId)
       .select('currentAcademicYear currentSemester')
       .lean();
-      
-    if (!school)
-      return res.status(404).json({ error: 'School not found' });
+
+    if (!school) return res.status(404).json({ error: 'School not found' });
 
     const matchFilters = {};
 
-     // Build filters
+    // Build filters
     if (facultyId)
       matchFilters['student.faculty'] =
         mongoose.Types.ObjectId.createFromHexString(facultyId);
@@ -34,7 +35,7 @@ exports.getAdminAttendanceReport = async (req, res) => {
         mongoose.Types.ObjectId.createFromHexString(departmentId);
     if (level) matchFilters['student.level'] = parseInt(level);
 
-    console.log(matchFilters)
+    console.log(matchFilters);
 
     const report = await StudentEnrollment.aggregate([
       // 1. Filter enrollments by course
@@ -55,7 +56,7 @@ exports.getAdminAttendanceReport = async (req, res) => {
       },
       { $unwind: '$student' },
 
-   //   3. Apply faculty/department/level filters
+      //   3. Apply faculty/department/level filters
       {
         $match: matchFilters,
       },
@@ -239,7 +240,64 @@ exports.getAdminAttendanceReport = async (req, res) => {
   }
 };
 
-
 exports.downloadAdminAttendanceReport = async (req, res) => {
   // returns downloadable PDF across chosen scope
 };
+
+// for dashboard trends
+exports.getWeeklyAttendance = async (req, res) => {
+  try {
+    const { schoolId } = req.user;
+
+    const school = await School.findById(schoolId).select(
+      'currentAcademicYear currentSemester'
+    );
+
+    // compute 1 week
+    const today = dayjs().endOf('day');
+    const lastWeek = dayjs().subtract(5, 'day').startOf('day');
+
+    // Fetch attendance records from the last 7 days
+    const records = await Attendance.find({
+      createdAt: { $gte: lastWeek, $lte: today },
+      academicYear: school.currentAcademicYear,
+      semester: school.currentSemester,
+    }).select('createdAt status');
+
+    // Days structure for 1 week
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    const weekData = days.map((day) => ({
+      day,
+      total: 0,
+      present: 0,
+      rate: 0,
+    }));
+
+    // compute attendance with status or present
+    const data = records.forEach((record) => {
+      // get the day each attendance record was taken
+      const dayIndex = dayjs(record.createdAt).day();
+      // increase the total of that day
+      weekData[dayIndex].total += 1;
+
+      // count how many were present on that day
+      if (record.status === 'Present') weekData[dayIndex].present += 1;
+    });
+
+    // Calculate rate for each day
+    weekData.forEach((day) => {
+      if (day.total > 0) {
+        day.rate = ((day.present / day.total) * 100).toFixed(2);
+      }
+    });
+    // starts from Monday instead of Sunday
+    const ordered = [...weekData.slice(1), weekData[0]];
+
+    res.json({ trend: ordered });
+  } catch (error) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+exports.getFacultyAttendance = async (req, res) => {};
