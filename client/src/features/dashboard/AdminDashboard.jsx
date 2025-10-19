@@ -86,24 +86,20 @@ function AdminDashboard() {
     isLecturerPending ||
     isStudentPending
   )
-    return <SkeletonDashboard/>;
+    return <SkeletonDashboard />;
 
   return (
     <div className='w-full'>
-      {/* Welcome Header */}
-      <div className='mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4'>
-        <div>
-          <h1 className='text-3xl font-bold text-gray-900'>
-            Welcome back, {firstName}! 👋
-          </h1>
-          <p className='text-gray-600 mt-1'>
-            Here's an overview of your school
-          </p>
-        </div>
+      {/* Welcome bar */}
+      <div className='mb-2 flex flex-col md:flex-row md:items-center md:justify-between gap-4 '>
+        <h1 className='text-3xl font-bold text-gray-900'>
+          Welcome aboard, {firstName}!
+        </h1>
 
         {/* Academic Info */}
         <AcademicYear semester={semester} academicYear={academicYear} />
       </div>
+      <p className='text-gray-600 mb-4'>Here's an overview of your school</p>
 
       {!academicYear || !semester ? (
         <EmptyAcademicYear />
@@ -128,13 +124,13 @@ function AdminDashboard() {
               Quick Actions
             </h3>
             <div className='flex flex-wrap gap-3'>
-              <Button variant='primary' icon={Plus}>
+              <Button variant='primary' icon={Plus} size='sm'>
                 Add Faculty
               </Button>
-              <Button variant='primary' icon={Plus}>
+              <Button variant='primary' icon={Plus} size='sm'>
                 Add Department
               </Button>
-              <Button variant='primary' icon={Plus}>
+              <Button variant='primary' icon={Plus} size='sm'>
                 Add Course
               </Button>
             </div>

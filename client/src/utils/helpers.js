@@ -9,6 +9,6 @@ export const extractSemester = (data) => {
 };
 
 export const extractAcademicYear = (data) => {
-  const academicYear = data?.user?.schoolId?.currentAcademicYear.year ?? null;
+  const academicYear = data?.user?.schoolId?.currentAcademicYear?.year ?? null;
   return academicYear;
 };

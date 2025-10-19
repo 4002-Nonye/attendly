@@ -1,14 +1,15 @@
 import { Navigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { useUser } from '../features/auth/hooks/useUser';
-import SkeletonSidebar from './SkeletonSidebar';
+
+import SkeletonApp from './SkeletonApp';
 
 function ProtectedRoute({ children }) {
   const { data, isPending } = useUser();
 
   // Show loading spinner while checking authentication
   if (isPending) {
-    return <SkeletonSidebar />;
+    return <SkeletonApp />;
   }
 
   // Not authenticated redirect to login (home)

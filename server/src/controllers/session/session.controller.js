@@ -132,7 +132,7 @@ exports.endSession = async (req, res) => {
           session: sessionId,
           course: courseId,
           status: 'Absent',
-          academicYear:session.academicYear
+          academicYear: session.academicYear,
         }))
       );
     }
@@ -230,8 +230,15 @@ exports.getRecentSessions = async (req, res) => {
   try {
     const { schoolId } = req.user;
 
+    const school = await School.findById(schoolId).select(
+      'currentAcademicYear currentSemester'
+    );
     //  Get recent sessions
-    const sessions = await Session.find({ schoolId })
+    const sessions = await Session.find({
+      schoolId,
+      academicYear: school.currentAcademicYear,
+      semester: school.currentSemester,
+    })
       .select('course status startedBy createdAt')
       .populate('course', 'courseCode courseTitle')
       .populate('startedBy', 'fullName')
@@ -243,7 +250,7 @@ exports.getRecentSessions = async (req, res) => {
       sessions.map(async (session) => {
         const attendanceCount = await Attendance.countDocuments({
           session: session._id,
-          status:'Present'
+          status: 'Present',
         });
 
         const enrolledCount = await StudentEnrollment.countDocuments({

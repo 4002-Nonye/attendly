@@ -16,7 +16,7 @@ function Header() {
         <div className='flex items-center gap-3 flex-1 min-w-0'>
           {/* Mobile menu button */}
           <button 
-            className='md:hidden p-2 hover:bg-gray-100 rounded-lg'
+            className='lg:hidden p-2 hover:bg-gray-100 rounded-lg'
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             <Menu className='w-5 h-5 text-gray-700' />

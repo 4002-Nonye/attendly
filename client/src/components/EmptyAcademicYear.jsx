@@ -1,10 +1,12 @@
-import { Calendar, Plus } from "lucide-react";
-import Button from "./Button";
-import { Link } from "react-router-dom";
+import { Calendar, Plus } from 'lucide-react';
+import Button from './Button';
+import { Link } from 'react-router-dom';
+
 
 function EmptyAcademicYear() {
   return (
     <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-12'>
+      
       <div className='max-w-md mx-auto text-center flex flex-col justify-center items-center '>
         <div className='w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4'>
           <Calendar className='w-8 h-8 text-blue-600' />
@@ -27,5 +29,3 @@ function EmptyAcademicYear() {
 }
 
 export default EmptyAcademicYear;
-
-
