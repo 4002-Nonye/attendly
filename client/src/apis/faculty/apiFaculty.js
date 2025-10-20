@@ -12,15 +12,6 @@ export const getFaculties = async (schoolId) => {
   }
 };
 
-//admin
-export const getFacultyTotal = async () => {
-  try {
-    const response = await axios.get(`/api/faculties/total`);
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
-};
 
 // admin
 export const getFacultyStats = async () => {

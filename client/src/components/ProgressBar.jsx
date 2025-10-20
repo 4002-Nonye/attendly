@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { useFormStep } from '../contexts/useFormStep';
+import { useFormStep } from '../contexts/hooks/useFormStep';
 
 function ProgressBar({ totalSteps, stepTitles = [] }) {
   const { step } = useFormStep();

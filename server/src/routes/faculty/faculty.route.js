@@ -8,13 +8,12 @@ const {
   
   getFacultyStats,
   getFacultiesBySchool,
-  getTotalFaculties,
+  
 } = require('../../controllers/faculty/faculty.controller');
 
 const facultyRoute = express.Router();
 
 facultyRoute.get('/',requireLogin,requireAdminAccess,getFacultyStats)
-facultyRoute.get('/total',requireLogin,requireAdminAccess,getTotalFaculties)
 facultyRoute.get('/:schoolId',getFacultiesBySchool)
 facultyRoute.post('/', requireLogin, requireAdminAccess, createFaculty);
 facultyRoute.put('/:facultyId',requireLogin,requireAdminAccess,editFaculty)

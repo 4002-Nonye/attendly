@@ -9,7 +9,7 @@ import Button from '../../components/Button';
 import FormHeader from '../../components/FormHeader';
 import AdminFormField from './formFields/AdminFormField';
 import LecturerFormField from './formFields/LecturerFormField';
-import { useFormStep } from '../../contexts/useFormStep';
+import { useFormStep } from '../../contexts/hooks/useFormStep';
 import { formStepFields } from '../../config/formStepFields';
 import Logo from '../../components/Logo';
 import SelectRole from '../../components/SelectRole';

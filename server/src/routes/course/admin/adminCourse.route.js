@@ -18,13 +18,7 @@ const adminCourseRoute = express.Router();
 // Create a new course
 adminCourseRoute.post('/', requireLogin, requireAdminAccess, createCourse);
 
-// Total courses
-adminCourseRoute.get(
-  '/total',
-  requireLogin,
-  requireAdminAccess,
-  getTotalCourses
-);
+
 
 // Edit a course
 adminCourseRoute.put('/:id', requireLogin, requireAdminAccess, editCourse);

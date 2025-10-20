@@ -1,5 +1,5 @@
 import ProgressBar from '../../../components/ProgressBar';
-import { useFormStep } from '../../../contexts/useFormStep';
+import { useFormStep } from '../../../contexts/hooks/useFormStep';
 import PersonalInfoStep from'../steps/general/PersonalInfoStep';
 import SchoolInfo from '../steps/general/SchoolInfo';
 import SecurityStep from '../steps/general/SecurityStep';

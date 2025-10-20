@@ -19,7 +19,7 @@ const passport = require('passport');
 const connectDB = require('./src/lib/db');
 const facultyRoute = require('./src/routes/faculty/faculty.route');
 const departmentRoute = require('./src/routes/department/department.route');
-const userRoute = require('./src/routes/user/user.route');
+
 const adminCourseRoute = require('./src/routes/course/admin/adminCourse.route');
 const lecturerCourseRoute = require('./src/routes/course/lecturer/lecturerCourse.route');
 const studentCourseRoute = require('./src/routes/course/student/studentCourse.route');
@@ -27,8 +27,10 @@ const generalCourseRoute = require('./src/routes/course/general/course.route');
 const lecturerSessionRoute = require('./src/routes/session/lecturer/lecturerSession.route');
 const studentSessionRoute = require('./src/routes/session/student/studentSession.route');
 const schoolRoute = require('./src/routes/school/school.route');
-const adminSessionRoute = require('./src/routes/session/admin/adminSession.route');
-const attendanceRoute = require('./src/routes/attendance/attendance.route');
+
+const adminStatsRoute = require('./src/routes/dashboardStats/admin/adminStats.route');
+const lecturerStatsRoute = require('./src/routes/dashboardStats/lecturer/lecturerStats.route');
+const generalStatsRoute = require('./src/routes/dashboardStats/general/generalStats.route');
 
 require('./src/lib/passport');
 
@@ -55,12 +57,12 @@ app.use('/api/lecturer/courses', lecturerCourseRoute);
 app.use('/api/student/courses', studentCourseRoute);
 app.use('/api/faculties', facultyRoute);
 app.use('/api/departments', departmentRoute);
-app.use('/api/users', userRoute);
 app.use('/api/lecturer/sessions', lecturerSessionRoute);
 app.use('/api/student/sessions', studentSessionRoute);
 app.use('/api/schools', schoolRoute);
-app.use('/api/admin/sessions', adminSessionRoute);
-app.use('/api/admin/attendance/trends', attendanceRoute);
+app.use('/api/admin/dashboard', adminStatsRoute);
+app.use('/api/lecturer/dashboard', lecturerStatsRoute);
+app.use('/api/dashboard', generalStatsRoute);
 
 app.listen(process.env.PORT, () => {
   // Connect to the database after server starts

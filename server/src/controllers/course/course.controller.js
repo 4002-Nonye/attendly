@@ -20,6 +20,7 @@ exports.getCourses = async (req, res) => {
       return res.status(400).json({ error: 'No active academic year found' });
     }
 
+ 
     // Base filter: all courses within this school and its current academic year
     let filter = {
       schoolId,
@@ -88,23 +89,3 @@ exports.getCourseById = async (req, res) => {
   }
 };
 
-exports.getTotalCourses = async (req, res) => {
-  try {
-    const { schoolId } = req.user;
-
-    const school = await School.findById(schoolId).select(
-      'currentAcademicYear currentSemester'
-    );
-
-    const total = await Course.countDocuments({
-      schoolId,
-      academicYear: school.currentAcademicYear,
-      semester: school.currentSemester,
-    });
-
-    return res.status(200).json({ total });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: 'Internal servor error' });
-  }
-};

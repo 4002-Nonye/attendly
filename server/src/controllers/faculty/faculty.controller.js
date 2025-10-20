@@ -265,16 +265,3 @@ exports.getFacultyStats = async (req, res) => {
   }
 };
 
-// get total departments in a school
-exports.getTotalFaculties = async (req, res) => {
-  try {
-    const { schoolId } = req.user;
-    const total = await Faculty.countDocuments({
-      schoolId,
-    });
-    console.log(total);
-    return res.status(200).json({ total });
-  } catch (error) {
-    return res.status(500).json({ error: 'Internal server error' });
-  }
-};

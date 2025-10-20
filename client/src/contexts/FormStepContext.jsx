@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import { createContext, useCallback, useReducer } from 'react';
 
-const FormStepContext = createContext();
+const FormStepContext = createContext(null);
 const initialState = {
   step: 1,
   totalSteps: 3,

@@ -2,14 +2,19 @@ import { Navigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { useUser } from '../features/auth/hooks/useUser';
 
-import SkeletonApp from './SkeletonApp';
+import { ClipLoader } from 'react-spinners';
 
 function ProtectedRoute({ children }) {
   const { data, isPending } = useUser();
 
   // Show loading spinner while checking authentication
+
   if (isPending) {
-    return <SkeletonApp />;
+    return (
+      <div className='flex h-screen items-center justify-center bg-gray-50'>
+        <ClipLoader size={50} color='#1e1b4b' />
+      </div>
+    );
   }
 
   // Not authenticated redirect to login (home)

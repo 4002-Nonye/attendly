@@ -1,9 +1,7 @@
 const express = require('express');
 const requireLogin = require('../../../middlewares/requireLogin');
 const { requireStudentAccess } = require('../../../middlewares/roleAccess');
-const {
-  getActiveSessionsForStudent,
-} = require('../../../controllers/session/session.controller');
+const { getActiveSessionsForStudent } = require('../../../controllers/session/session.controller');
 
 const studentSessionRoute = express.Router();
 
@@ -14,6 +12,5 @@ studentSessionRoute.get(
   requireStudentAccess,
   getActiveSessionsForStudent
 );
-
 
 module.exports = studentSessionRoute;

@@ -11,12 +11,3 @@ export const getDepartments = async (facultyId) => {
   }
 };
 
-// admin
-export const getDepartmentTotal = async () => {
-  try {
-    const response = await axios.get(`/api/departments/total`);
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
-};

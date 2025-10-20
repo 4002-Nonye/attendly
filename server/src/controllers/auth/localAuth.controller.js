@@ -382,6 +382,7 @@ exports.getUser = async (req, res) => {
 
     return res.status(200).json({ user: { ...safeToSendUser, hasPassword } });
   } catch (err) {
+   console.log(err)
     return res.status(500).json({ message: 'Internal server error' });
   }
 };

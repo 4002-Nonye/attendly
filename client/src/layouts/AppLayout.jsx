@@ -6,10 +6,8 @@ import { sidebarConfig } from '../config/sidebarConfig';
 import Header from '../components/Header';
 import SkeletonApp from '../components/SkeletonApp';
 
-
 function AppLayout() {
   const { data, isPending } = useUser();
-
 
   if (isPending) return <SkeletonApp />;
 
@@ -23,15 +21,10 @@ function AppLayout() {
 
       {/* Main Content  - Scrollable */}
       <main className='flex-1 flex flex-col overflow-hidden '>
-
         <Header />
         {/* Content - Scrollable */}
         <div className='flex-1 overflow-y-auto py-5 px-8'>
-          <div>
-
-
-            <Outlet />
-          </div>
+          <Outlet />
         </div>
       </main>
     </div>

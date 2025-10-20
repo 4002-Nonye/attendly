@@ -7,7 +7,9 @@ exports.getAssignedCoursesForLecturer = async (req, res) => {
     const { id: lecturerId, schoolId } = req.user;
 
     // Find the lecturer's school and confirm it has an active academic year
-    const school = await School.findById(schoolId);
+    const school = await School.findById(schoolId)
+      .select('currentAcademicYear currentSemester')
+      .lean();
     if (!school || !school.currentAcademicYear) {
       return res.status(400).json({ error: 'No active academic year found' });
     }
@@ -17,7 +19,7 @@ exports.getAssignedCoursesForLecturer = async (req, res) => {
       lecturers: lecturerId,
       schoolId,
       academicYear: school.currentAcademicYear,
-      semester:school.currentSemester
+      semester: school.currentSemester,
     })
       // Populate lecturer details (optional, since it's the same lecturer)
       .populate('lecturers', 'fullName email')
@@ -28,17 +30,14 @@ exports.getAssignedCoursesForLecturer = async (req, res) => {
 
     // Handle case where lecturer has no assigned courses
     if (!courses.length) {
-      return res.status(404).json({ error: 'No assigned courses found' });
+      return res.status(200).json({ courses: [] });
     }
 
-    // Return the assigned courses
-    res.status(200).json({ courses });
+    return res.status(200).json({ courses });
   } catch (error) {
-    console.error('Error fetching assigned courses:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
-
 
 exports.assignLecturer = async (req, res) => {
   try {
@@ -90,16 +89,13 @@ exports.assignLecturer = async (req, res) => {
       { $addToSet: { lecturers: lecturerId } }
     );
 
-   
-   return res.status(200).json({
+    return res.status(200).json({
       message: 'Courses assigned successfully',
     });
   } catch (error) {
-
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
-
 
 exports.unassignLecturer = async (req, res) => {
   try {
@@ -140,12 +136,11 @@ exports.unassignLecturer = async (req, res) => {
       });
     }
 
-    //  
+    //
     return res.status(200).json({
       message: 'Lecturer unassigned successfully',
     });
   } catch (error) {
-
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
