@@ -25,43 +25,41 @@ function FacultyAttendanceChart({ hasData, data }) {
       </div>
 
       {hasData ? (
-        <div className='overflow-x-auto'>
-          <div className='min-w-[700px] lg:min-w-[900px]'>
-            <ResponsiveContainer width='100%' height={250}>
-              <BarChart data={data}>
-                <CartesianGrid strokeDasharray='3 3' stroke='#f3f4f6' />
-                <XAxis
-                  dataKey='faculty'
-                  stroke='#9ca3af'
-                  style={{ fontSize: '12px' }}
-                  interval={0}
-                  angle={-30}
-                  textAnchor='end'
-                  height={60}
-                />
-                <YAxis
-                  stroke='#9ca3af'
-                  style={{ fontSize: '12px' }}
-                  domain={[0, 100]}
-                  tickFormatter={(value) => `${value}%`}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'white',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '8px',
-                    fontSize: '12px',
-                  }}
-                  formatter={(value) => [`${value}%`, 'Attendance Rate']}
-                />
-                <Bar dataKey='rate' radius={[8, 8, 0, 0]}>
-                  {data.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill='#1e3a8a' />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+        <div className='overflow-x-auto '>
+          <ResponsiveContainer width='100%' height={250}>
+            <BarChart data={data}>
+              <CartesianGrid strokeDasharray='3 3' stroke='#f3f4f6' />
+              <XAxis
+                dataKey='faculty'
+                stroke='#9ca3af'
+                style={{ fontSize: '12px' }}
+                interval={0}
+                angle={-30}
+                textAnchor='end'
+                height={60}
+              />
+              <YAxis
+                stroke='#9ca3af'
+                style={{ fontSize: '12px' }}
+                domain={[0, 100]}
+                tickFormatter={(value) => `${value}%`}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: 'white',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '8px',
+                  fontSize: '12px',
+                }}
+                formatter={(value) => [`${value}%`, 'Attendance Rate']}
+              />
+              <Bar dataKey='rate' radius={[8, 8, 0, 0]} maxBarSize={60}>
+                {data.map((_, index) => (
+                  <Cell key={`cell-${index}`} fill='#1e3a8a' />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       ) : (
         <EmptyChart

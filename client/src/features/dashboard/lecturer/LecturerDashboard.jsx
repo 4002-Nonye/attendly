@@ -5,9 +5,6 @@ import {
   TrendingUp,
   Plus,
   Eye,
-  PlayCircle,
-  Clock,
-  CheckCircle2,
   ArrowRight,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -15,34 +12,40 @@ import Button from '../../../components/Button';
 import RecentSessionsTable from '../../../components/RecentSessionsTable';
 import { useCourseTotalLecturer } from './useCourseTotalLecturer';
 
-import { useSchoolInfo } from '../../../hooks/useSchoolInfo';
+import { useSessionTotal } from './useSessionTotal';
+import { useStudentTotalLecturer } from './useStudentTotalLecturer';
+import AcademicYear from '../../../components/AcademicYear';
+import LecturerDashboardSkeleton from '../../../components/LecturerDashboardSkeleton';
+import PageHeader from '../../../components/PageHeader';
+import Card from '../../../components/Card';
 
 function LecturerDashboard() {
-  const { data, isPending } = useCourseTotalLecturer();
-  const { firstName, semester, academicYear } = useSchoolInfo();
+  const { data: totalCourse, isCoursePending } = useCourseTotalLecturer();
+  const { data: totalSessions, isPending: isSessionPending } =
+    useSessionTotal();
+  const { data: totalStudents, isPending: isStudentPending } =
+    useStudentTotalLecturer();
 
   // TODO: Replace with actual API hooks
 
-  const totalStudents = 180;
-  const totalSessions = 32;
   const averageAttendance = 87;
 
   const stats = [
     {
       label: 'My Courses',
-      value: data?.total,
+      value: totalCourse?.total,
       icon: BookOpen,
       color: 'bg-blue-100 text-blue-600',
     },
     {
       label: 'Total Students',
-      value: totalStudents,
+      value: totalStudents?.total,
       icon: Users,
       color: 'bg-purple-100 text-purple-600',
     },
     {
       label: 'Sessions Conducted',
-      value: totalSessions,
+      value: totalSessions?.total,
       icon: Calendar,
       color: 'bg-green-100 text-green-600',
     },
@@ -94,61 +97,22 @@ function LecturerDashboard() {
     },
   ];
 
+  if (isCoursePending || isSessionPending || isStudentPending)
+    return <LecturerDashboardSkeleton />;
+
   return (
     <div className='w-full '>
       {/* Welcome Header */}
-      <div className='mb-6 lg:mb-8 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4'>
-        <div>
-          <h1 className='text-2xl lg:text-3xl font-bold text-gray-900'>
-            Welcome back, {firstName}! 👋
-          </h1>
-          <p className='text-sm lg:text-base text-gray-600 mt-1'>
-            Ready to track attendance for your classes
-          </p>
-        </div>
-
-        {/* Academic Info */}
-        <div className='flex gap-6 lg:gap-8 text-sm'>
-          <div>
-            <p className='text-gray-600 font-medium'>Academic Year</p>
-            <p className='text-gray-900 font-semibold text-base lg:text-lg'>
-              {academicYear || 'N/A'}
-            </p>
-          </div>
-          <div>
-            <p className='text-gray-600 font-medium'>Semester</p>
-            <p className='text-gray-900 font-semibold text-base lg:text-lg'>
-              {semester || 'N/A'}
-            </p>
-          </div>
-        </div>
-      </div>
+      <PageHeader
+        title='Welcome back'
+        subtitle='Ready to track attendance for your classes'
+      />
 
       {/* Stats Cards */}
       <div className='grid grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8'>
-        {stats.map((stat, index) => {
-          const Icon = stat.icon;
-          return (
-            <div
-              key={index}
-              className='bg-white rounded-xl shadow-sm border border-gray-100 p-4 lg:p-6 hover:shadow-md transition-shadow'
-            >
-              <div className='flex items-center justify-between'>
-                <div>
-                  <p className='text-xs lg:text-sm font-medium text-gray-600'>
-                    {stat.label}
-                  </p>
-                  <p className='text-xl lg:text-2xl font-bold text-gray-900 mt-1 lg:mt-2'>
-                    {stat.value}
-                  </p>
-                </div>
-                <div className={`${stat.color} p-2 lg:p-3 rounded-lg`}>
-                  <Icon className='w-5 h-5 lg:w-6 lg:h-6' />
-                </div>
-              </div>
-            </div>
-          );
-        })}
+        {stats.map((stat, index) => (
+          <Card key={index} {...stat} isLink={false} />
+        ))}
       </div>
 
       {/* My Courses Section */}
@@ -163,7 +127,7 @@ function LecturerDashboard() {
             </p>
           </div>
           <Link
-            to='/lecturer/courses'
+            to='/courses'
             className='text-xs lg:text-sm text-blue-600 hover:underline font-medium'
           >
             View all

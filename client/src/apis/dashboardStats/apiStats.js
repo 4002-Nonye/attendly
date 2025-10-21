@@ -83,10 +83,29 @@ export const getRecentSessions = async () => {
 export const getCoursesTotalLecturer = async () => {
   try {
     const response = await axios.get('/api/lecturer/dashboard/total-courses');
- 
+
     return response.data;
   } catch (error) {
-    
+    throw error.response.data;
+  }
+};
+
+export const getStudentTotalLecturer = async () => {
+  try {
+    const response = await axios.get('/api/lecturer/dashboard/total-students');
+
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+export const getSessionTotalLecturer = async () => {
+  try {
+    const response = await axios.get('/api/lecturer/dashboard/total-sessions');
+
+    return response.data;
+  } catch (error) {
     throw error.response.data;
   }
 };

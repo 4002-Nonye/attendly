@@ -14,7 +14,7 @@ exports.getRecentSessions = async (req, res) => {
 
     const school = await School.findById(schoolId).select(
       'currentAcademicYear currentSemester'
-    );
+    ).lean();
     //  Get recent sessions
     const sessions = await Session.find({
       schoolId,

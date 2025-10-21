@@ -22,20 +22,21 @@ import { useCourseTotalAdmin } from './useCourseTotalAdmin';
 import { useLecturerTotal } from './useLecturerTotal';
 import { useStudentTotalAdmin } from './useStudentTotalAdmin';
 import { useSchoolInfo } from '../../../hooks/useSchoolInfo';
+import PageHeader from '../../../components/PageHeader';
 
 function AdminDashboard() {
- 
   const { data: totalFaculties, isPending: isFacultyPending } =
     useFacultyTotal();
   const { data: totalDepartment, isPending: isDepartmentPending } =
     useDepartmentTotal();
-  const { data: totalCourses, isPending: isCoursePending } = useCourseTotalAdmin();
+  const { data: totalCourses, isPending: isCoursePending } =
+    useCourseTotalAdmin();
   const { data: totalLecturers, isPending: isLecturerPending } =
     useLecturerTotal();
   const { data: totalStudents, isPending: isStudentPending } =
     useStudentTotalAdmin();
 
-  const { firstName, semester, academicYear } = useSchoolInfo();
+  const {  semester, academicYear } = useSchoolInfo();
 
   const stats = [
     {
@@ -86,15 +87,12 @@ function AdminDashboard() {
   return (
     <div className='w-full'>
       {/* Welcome bar */}
-      <div className='mb-2 flex flex-col md:flex-row md:items-center md:justify-between gap-4 '>
-        <h1 className='text-3xl font-bold text-gray-900'>
-          Welcome aboard, {firstName}!
-        </h1>
 
-        {/* Academic Info */}
-        <AcademicYear semester={semester} academicYear={academicYear} />
-      </div>
-      <p className='text-gray-600 mb-4'>Here's an overview of your school</p>
+      <PageHeader
+        title='Welcome aboard'
+        subtitle={`Here's an overview of your school`}
+      />
+      
 
       {!academicYear || !semester ? (
         <EmptyAcademicYear />
@@ -103,7 +101,7 @@ function AdminDashboard() {
           {/* Stats Card */}
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8'>
             {stats.map((stat, index) => (
-              <Card key={index} {...stat} />
+              <Card key={index} {...stat} isLink={true} />
             ))}
           </div>
 

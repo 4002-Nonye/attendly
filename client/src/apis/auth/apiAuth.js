@@ -74,6 +74,7 @@ export const getUser = async () => {
 
     return response.data;
   } catch (error) {
+  
     throw error.response.data;
   }
 };
