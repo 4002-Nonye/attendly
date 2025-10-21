@@ -1,12 +1,14 @@
 const mongoose = require('mongoose');
 const Course = mongoose.model('Course');
 const School = mongoose.model('School');
+const StudentEnrollment = mongoose.model('StudentEnrollment');
+const Session = mongoose.model('Session');
 
 exports.getAssignedCoursesForLecturer = async (req, res) => {
   try {
     const { id: lecturerId, schoolId } = req.user;
 
-    // Find the lecturer's school and confirm it has an active academic year
+    // Find the lecturer's school and check if it has an active academic year
     const school = await School.findById(schoolId)
       .select('currentAcademicYear currentSemester')
       .lean();
@@ -21,19 +23,53 @@ exports.getAssignedCoursesForLecturer = async (req, res) => {
       academicYear: school.currentAcademicYear,
       semester: school.currentSemester,
     })
-      // Populate lecturer details (optional, since it's the same lecturer)
-      .populate('lecturers', 'fullName email')
       .populate('faculty', 'name')
       .populate('department', 'name')
       .sort({ level: 1, courseCode: 1 })
       .lean();
 
-    // Handle case where lecturer has no assigned courses
+    //  lecturer has no assigned courses
     if (!courses.length) {
       return res.status(200).json({ courses: [] });
     }
 
-    return res.status(200).json({ courses });
+    // Get total students and total sessions for each course
+    const [studentCounts, sessionCounts] = await Promise.all([
+      // Count how many students are enrolled in each course
+      StudentEnrollment.aggregate([
+        { $match: { course: { $in: courses.map((c) => c._id) } } },
+        { $group: { _id: '$course', count: { $sum: 1 } } },
+      ]),
+
+      // Count how many sessions each course has in the current academic year and semester
+      Session.aggregate([
+        {
+          $match: {
+            course: { $in: courses.map((c) => c._id) },
+            academicYear: school.currentAcademicYear,
+            semester: school.currentSemester,
+          },
+        },
+        { $group: { _id: '$course', count: { $sum: 1 } } },
+      ]),
+    ]);
+
+    // Create quick lookup objects for students and sessions
+    const studentMap = Object.fromEntries(
+      studentCounts.map((i) => [i._id.toString(), i.count])
+    );
+    const sessionMap = Object.fromEntries(
+      sessionCounts.map((i) => [i._id.toString(), i.count])
+    );
+
+    // Attach the totals to each course
+    const data = courses.map((course) => ({
+      ...course,
+      totalStudents: studentMap[course._id.toString()] || 0,
+      totalSessions: sessionMap[course._id.toString()] || 0,
+    }));
+
+    return res.status(200).json({ data });
   } catch (error) {
     return res.status(500).json({ error: 'Internal server error' });
   }

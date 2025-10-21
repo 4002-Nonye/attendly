@@ -7,10 +7,9 @@ const School = mongoose.model('School');
 // admin and lecturer
 exports.getRecentSessions = async (req, res) => {
   try {
-    const { schoolId, id: lecturerId, role } = req.user;
+    const { schoolId } = req.user;
 
-    let filter = {};
-    if (role === 'lecturer') filter.startedBy = lecturerId;
+
 
     const school = await School.findById(schoolId).select(
       'currentAcademicYear currentSemester'
@@ -20,11 +19,12 @@ exports.getRecentSessions = async (req, res) => {
       schoolId,
       academicYear: school.currentAcademicYear,
       semester: school.currentSemester,
-      ...filter
+      
     })
-      .select('course status startedBy createdAt')
+      .select('course status startedBy endedBy createdAt')
       .populate('course', 'courseCode courseTitle')
       .populate('startedBy', 'fullName')
+       .populate('endedBy', 'fullName')
       .sort({ createdAt: -1 }) // get latest
       .limit(5);
 
@@ -46,7 +46,8 @@ exports.getRecentSessions = async (req, res) => {
           id: session._id,
           course: session.course.courseTitle,
           courseCode: session.course.courseCode,
-          lecturer: session.startedBy.fullName,
+          startedBy: session.startedBy.fullName,
+          endedBy: session.endedBy.fullName,
           date: session.createdAt.toISOString().split('T')[0],
           time: new Date(session.createdAt).toLocaleTimeString([], {
             hour: '2-digit',

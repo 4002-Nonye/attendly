@@ -1,12 +1,12 @@
+import axios from 'axios'
 
+export const getLecturerAssignedCourses = async () => {
+  try {
+    const response = await axios.get('/api/lecturer/courses');
 
-// admin
-
-// export const getLecturerAssignedCourses = async () => {
-//   try {
-//     const response = await axios.get('/api/lecturer/courses');
-//     return response.data;
-//   } catch (error) {
-//     throw error.response.data;
-//   }
-// };
+    return response.data;
+  } catch (error) {
+console.log(error)
+    throw error.response.data;
+  }
+};

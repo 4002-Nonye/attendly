@@ -3,7 +3,7 @@ import { useSchoolInfo } from '../hooks/useSchoolInfo';
 import AcademicYear from './AcademicYear';
 
 function PageHeader({ title, subtitle }) {
-  const { firstName, semester, academicYear } = useSchoolInfo();
+  const { firstName } = useSchoolInfo();
   return (
     <div className='mb-6 lg:mb-8 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4'>
       <div>
@@ -14,7 +14,7 @@ function PageHeader({ title, subtitle }) {
       </div>
 
       {/* Academic Info */}
-      <AcademicYear semester={semester} academicYear={academicYear} />
+      <AcademicYear />
     </div>
   );
 }

@@ -1,13 +1,11 @@
 import { Calendar, Clock, CheckCircle2 } from 'lucide-react';
 
-import { useUser } from '../features/auth/hooks/useUser';
 import { useRecentSession } from '../features/dashboard/general/useRecentSession';
 
 function RecentSessionsTable() {
   const { data, isPending } = useRecentSession();
-  const { data: user } = useUser();
+
   const recentSessions = data?.sessions || [];
-  const isAdmin = user?.user?.role === 'admin';
 
   if (isPending) {
     return (
@@ -59,11 +57,14 @@ function RecentSessionsTable() {
                 <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                   Course
                 </th>
-                {isAdmin && (
-                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                    Lecturer
-                  </th>
-                )}
+
+                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                  Started By
+                </th>
+                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                  Ended By
+                </th>
+
                 <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                   Date & Time
                 </th>
@@ -91,13 +92,20 @@ function RecentSessionsTable() {
                       </div>
                     </div>
                   </td>
-                  {isAdmin && (
-                    <td className='px-6 py-4 whitespace-nowrap'>
-                      <div className='text-sm text-gray-900'>
-                        {session.lecturer}
-                      </div>
-                    </td>
-                  )}
+
+                  <td className='px-6 py-4 whitespace-nowrap'>
+                    <div className='text-sm text-gray-900'>
+                      {session.startedBy}
+                    </div>
+                  
+                  </td>
+                   <td className='px-6 py-4 whitespace-nowrap'>
+                    <div className='text-sm text-gray-900'>
+                      {session.endedBy || '-'}
+                    </div>
+                  
+                  </td>
+
                   <td className='px-6 py-4 whitespace-nowrap'>
                     <div className='flex items-center gap-2 text-sm text-gray-900'>
                       <Calendar className='w-4 h-4 text-gray-400' />

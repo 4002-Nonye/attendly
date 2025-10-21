@@ -20,10 +20,9 @@ exports.getCourses = async (req, res) => {
       return res.status(400).json({ error: 'No active academic year found' });
     }
 
- 
     // Base filter: all courses within this school and its current academic year
     let filter = {
-      schoolId,
+      schoolId: school._id,
       academicYear: school.currentAcademicYear,
       semester: school.currentSemester,
     };
@@ -39,6 +38,7 @@ exports.getCourses = async (req, res) => {
         filter.level = user.level;
       }
     }
+
 
     // Fetch courses that match the filter
     const courses = await Course.find(filter)
@@ -88,4 +88,3 @@ exports.getCourseById = async (req, res) => {
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
-

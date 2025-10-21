@@ -5,6 +5,7 @@ import {
   GraduationCap,
   Layers,
   Plus,
+  Calendar,
 } from 'lucide-react';
 
 import Button from '../../../components/Button';
@@ -13,7 +14,6 @@ import Card from '../../../components/Card';
 import Chart from '../../../components/Chart';
 import EmptyAcademicYear from '../../../components/EmptyAcademicYear';
 import RecentSessionsTable from '../../../components/RecentSessionsTable';
-import AcademicYear from '../../../components/AcademicYear';
 
 import SkeletonDashboard from '../../../components/SkeletonDashboard';
 import { useFacultyTotal } from './useFacultyTotal';
@@ -23,6 +23,7 @@ import { useLecturerTotal } from './useLecturerTotal';
 import { useStudentTotalAdmin } from './useStudentTotalAdmin';
 import { useSchoolInfo } from '../../../hooks/useSchoolInfo';
 import PageHeader from '../../../components/PageHeader';
+import { Link } from 'react-router-dom';
 
 function AdminDashboard() {
   const { data: totalFaculties, isPending: isFacultyPending } =
@@ -36,7 +37,7 @@ function AdminDashboard() {
   const { data: totalStudents, isPending: isStudentPending } =
     useStudentTotalAdmin();
 
-  const {  semester, academicYear } = useSchoolInfo();
+  const { semester, academicYear } = useSchoolInfo();
 
   const stats = [
     {
@@ -92,10 +93,22 @@ function AdminDashboard() {
         title='Welcome aboard'
         subtitle={`Here's an overview of your school`}
       />
-      
 
       {!academicYear || !semester ? (
-        <EmptyAcademicYear />
+        <EmptyAcademicYear
+          icon={Calendar}
+          iconColor='text-blue-600'
+          title='Set Up Academic Year'
+          message='Create your first academic year and semester to start
+          managing your school efficiently'
+          iconBg='bg-blue-100'
+        >
+          <Link to='/academic-year' className='mt-4'>
+            <Button icon={Plus} variant='primary' size='lg'>
+              Create Academic Year
+            </Button>
+          </Link>
+        </EmptyAcademicYear>
       ) : (
         <>
           {/* Stats Card */}

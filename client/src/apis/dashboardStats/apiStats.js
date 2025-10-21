@@ -80,15 +80,7 @@ export const getRecentSessions = async () => {
 };
 
 /* ----------------------- LECTURER -----------------------------*/
-export const getCoursesTotalLecturer = async () => {
-  try {
-    const response = await axios.get('/api/lecturer/dashboard/total-courses');
 
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
-};
 
 export const getStudentTotalLecturer = async () => {
   try {

@@ -6,7 +6,7 @@ function Card({ color, link, label, value, icon: Icon, isLink = true }) {
   const content = (
     <div
       className={`flex ${
-        isLink ? 'flex-col' : 'flex-row-reverse justify-between'
+        isLink ? 'flex-col' : 'flex-col md:flex-row-reverse justify-between'
       }`}
     >
       <div className='flex items-center justify-between mb-4'>
@@ -21,7 +21,7 @@ function Card({ color, link, label, value, icon: Icon, isLink = true }) {
       </div>
       <div>
         <h3 className='text-gray-600 text-sm font-medium mb-1'>{label}</h3>
-        <p className='text-3xl font-bold text-gray-900'>{value}</p>
+        <p className='text-2xl md:text-3xl font-bold text-gray-900'>{value}</p>
       </div>
     </div>
   );
