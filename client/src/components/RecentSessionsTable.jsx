@@ -97,13 +97,13 @@ function RecentSessionsTable() {
                     <div className='text-sm text-gray-900'>
                       {session.startedBy}
                     </div>
-                  
                   </td>
-                   <td className='px-6 py-4 whitespace-nowrap'>
+                  <td className='px-6 py-4 whitespace-nowrap'>
                     <div className='text-sm text-gray-900'>
-                      {session.endedBy || '-'}
+                      {session.status === 'active'
+                        ? 'In progress'
+                        : session.endedBy}
                     </div>
-                  
                   </td>
 
                   <td className='px-6 py-4 whitespace-nowrap'>
@@ -119,7 +119,7 @@ function RecentSessionsTable() {
                     </div>
                     <div className='flex items-center gap-2 text-sm text-gray-500 mt-1'>
                       <Clock className='w-4 h-4 text-gray-400' />
-                      <span>{session.time}</span> {/* ✅ Remove hardcoded PM */}
+                      <span>{session.time}</span>
                     </div>
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap'>

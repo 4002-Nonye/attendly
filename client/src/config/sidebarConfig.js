@@ -8,6 +8,7 @@ import {
   ClipboardList,
   Layers,
   UserCircle,
+  CalendarDays,
 } from 'lucide-react';
 
 export const sidebarConfig = {
@@ -18,6 +19,8 @@ export const sidebarConfig = {
     { name: 'Courses', icon: BookOpen, to: '/courses' },
     { name: 'Lecturers', icon: Users2, to: '/lecturers' },
     { name: 'Students', icon: GraduationCap, to: '/students' },
+    { name: 'Attendance', icon: ClipboardList, to: '/reports' },
+   // { name: 'Academic year', icon: CalendarDays, to: '/academic-year' }, // TODO : PUT IN SETTINGS
   ],
   lecturer: [
     { name: 'Dashboard', icon: LayoutDashboard, to: '/dashboard' },

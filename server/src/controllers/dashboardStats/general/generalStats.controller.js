@@ -9,26 +9,21 @@ exports.getRecentSessions = async (req, res) => {
   try {
     const { schoolId } = req.user;
 
-
-
-    const school = await School.findById(schoolId).select(
-      'currentAcademicYear currentSemester'
-    ).lean();
+    const school = await School.findById(schoolId)
+      .select('currentAcademicYear currentSemester')
+      .lean();
     //  Get recent sessions
     const sessions = await Session.find({
       schoolId,
       academicYear: school.currentAcademicYear,
       semester: school.currentSemester,
-      
     })
       .select('course status startedBy endedBy createdAt')
       .populate('course', 'courseCode courseTitle')
       .populate('startedBy', 'fullName')
-       .populate('endedBy', 'fullName')
+      .populate('endedBy', 'fullName')
       .sort({ createdAt: -1 }) // get latest
       .limit(5);
-
- 
 
     //  Construct session summaries
     const sessionSummaries = await Promise.all(
@@ -47,7 +42,7 @@ exports.getRecentSessions = async (req, res) => {
           course: session.course.courseTitle,
           courseCode: session.course.courseCode,
           startedBy: session.startedBy.fullName,
-          endedBy: session.endedBy.fullName,
+          endedBy: session.endedBy?.fullName || '',
           date: session.createdAt.toISOString().split('T')[0],
           time: new Date(session.createdAt).toLocaleTimeString([], {
             hour: '2-digit',
@@ -63,7 +58,7 @@ exports.getRecentSessions = async (req, res) => {
 
     return res.status(200).json({ sessions: sessionSummaries });
   } catch (error) {
-  
+    console.log(error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };

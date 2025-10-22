@@ -39,4 +39,8 @@ const sessionSchema = new Schema(
   { timestamps: true }
 );
 
+
+
+sessionSchema.index({ schoolId: 1, course: 1, academicYear: 1, semester: 1, status: 1 });
+
 mongoose.model('Session', sessionSchema);

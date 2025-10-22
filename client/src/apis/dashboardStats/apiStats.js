@@ -1,45 +1,10 @@
 import axios from 'axios';
 
 /* ----------------------- ADMIN -----------------------------*/
-export const getStudentTotalAdmin = async () => {
-  try {
-    const response = await axios.get('/api/admin/dashboard/total-students');
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
-};
 
-export const getLecturerTotalAdmin = async () => {
+export const getAdminDashboardStats = async () => {
   try {
-    const response = await axios.get('/api/admin/dashboard/total-lecturers');
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
-};
-
-export const getDepartmentTotalAdmin = async () => {
-  try {
-    const response = await axios.get('/api/admin/dashboard/total-departments');
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
-};
-
-export const getFacultyTotalAdmin = async () => {
-  try {
-    const response = await axios.get(`/api/admin/dashboard/total-faculties`);
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
-};
-
-export const getCoursesTotalAdmin = async () => {
-  try {
-    const response = await axios.get('/api/admin/dashboard/total-courses');
+    const response = await axios.get('/api/admin/dashboard/stats');
     return response.data;
   } catch (error) {
     throw error.response.data;
@@ -81,10 +46,9 @@ export const getRecentSessions = async () => {
 
 /* ----------------------- LECTURER -----------------------------*/
 
-
-export const getStudentTotalLecturer = async () => {
+export const getLecturerDashboardStats = async () => {
   try {
-    const response = await axios.get('/api/lecturer/dashboard/total-students');
+    const response = await axios.get('/api/lecturer/dashboard/stats');
 
     return response.data;
   } catch (error) {
@@ -92,10 +56,11 @@ export const getStudentTotalLecturer = async () => {
   }
 };
 
-export const getSessionTotalLecturer = async () => {
-  try {
-    const response = await axios.get('/api/lecturer/dashboard/total-sessions');
+/* ----------------------- STUDENT -----------------------------*/
 
+export const getStudentDashboardStats = async () => {
+  try {
+    const response = await axios.get('/api/student/dashboard/stats');
     return response.data;
   } catch (error) {
     throw error.response.data;

@@ -1,4 +1,5 @@
-import axios from 'axios'
+import axios from 'axios';
+axios.defaults.withCredentials = true;
 
 export const getLecturerAssignedCourses = async () => {
   try {
@@ -6,7 +7,15 @@ export const getLecturerAssignedCourses = async () => {
 
     return response.data;
   } catch (error) {
-console.log(error)
+    throw error.response.data;
+  }
+};
+
+export const getStudentRegisteredCourses = async () => {
+  try {
+    const response = await axios.get('/api/student/courses');
+    return response.data;
+  } catch (error) {
     throw error.response.data;
   }
 };

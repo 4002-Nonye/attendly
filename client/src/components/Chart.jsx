@@ -7,22 +7,22 @@ import FacultyAttendanceChart from './FacultyAttendanceChart';
 function Chart() {
   const { data: schoolTrend, isPending: isWeeklySchoolPending } =
     useWeeklySchoolTrend();
-   
+
   const { data: facultyTrend, isPending: isWeeklyFacultyPending } =
     useWeeklyFacultyTrend();
 
   const facultyAttendanceTrend = facultyTrend?.trend;
   const schoolAttendanceTrend = schoolTrend?.trend;
 
-
   // Calculate average attendance rate
-  const averageRate =
+  const averageRate = Number(
     schoolAttendanceTrend?.length > 0
       ? Math.round(
           schoolAttendanceTrend.reduce((acc, curr) => acc + curr.rate, 0) /
-            schoolAttendanceTrend?.length
+            schoolAttendanceTrend.length
         )
-      : 0;
+      : 0
+  );
 
   // Empty state check (any item rate = 0)
   const hasFacultyTrendData = facultyAttendanceTrend?.some((f) => f.rate !== 0);

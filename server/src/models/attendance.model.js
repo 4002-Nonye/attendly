@@ -25,4 +25,7 @@ const attendanceSchema = new Schema(
   { timestamps: true }
 );
 
+
+attendanceSchema.index({ student: 1, course: 1, academicYear: 1, semester: 1, status: 1 });
+
 mongoose.model('Attendance', attendanceSchema);

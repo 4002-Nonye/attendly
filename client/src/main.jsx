@@ -8,16 +8,19 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Toaster } from 'react-hot-toast';
 
 const queryClient = new QueryClient({
-  queries: {
-    staleTime: 0,
-    
+  defaultOptions: {
+    queries: {
+      staleTime: 0,
+      retry: 2,
+      gcTime: 1000 * 60 * 10,
+    },
   },
 });
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-    <ReactQueryDevtools initialIsOpen={false} />
+      <ReactQueryDevtools initialIsOpen={false} />
       <FormStepProvider>
         <Toaster position='top-center' gutter={12} />
         <App />

@@ -1,7 +1,7 @@
 import { useUser } from '../../features/auth/hooks/useUser';
 import AdminDashboard from '../../features/dashboard/admin/AdminDashboard';
 import LecturerDashboard from '../../features/dashboard/lecturer/LecturerDashboard';
-import StudentDashboard from '../../features/dashboard/StudentDashboard';
+import StudentDashboard from '../../features/dashboard/student/StudentDashboard';
 function DashboardPage() {
   const { data: user } = useUser();
 

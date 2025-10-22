@@ -12,78 +12,67 @@ import Button from '../../../components/Button';
 
 import Card from '../../../components/Card';
 import Chart from '../../../components/Chart';
-import EmptyAcademicYear from '../../../components/EmptyAcademicYear';
+
 import RecentSessionsTable from '../../../components/RecentSessionsTable';
 
 import SkeletonDashboard from '../../../components/SkeletonDashboard';
-import { useFacultyTotal } from './useFacultyTotal';
-import { useDepartmentTotal } from './useDepartmentTotal';
-import { useCourseTotalAdmin } from './useCourseTotalAdmin';
-import { useLecturerTotal } from './useLecturerTotal';
-import { useStudentTotalAdmin } from './useStudentTotalAdmin';
+
 import { useSchoolInfo } from '../../../hooks/useSchoolInfo';
 import PageHeader from '../../../components/PageHeader';
 import { Link } from 'react-router-dom';
+import EmptyCard from '../../../components/EmptyCard';
+import { useAdminDashboardStats } from './useAdminDashboardStats';
 
 function AdminDashboard() {
-  const { data: totalFaculties, isPending: isFacultyPending } =
-    useFacultyTotal();
-  const { data: totalDepartment, isPending: isDepartmentPending } =
-    useDepartmentTotal();
-  const { data: totalCourses, isPending: isCoursePending } =
-    useCourseTotalAdmin();
-  const { data: totalLecturers, isPending: isLecturerPending } =
-    useLecturerTotal();
-  const { data: totalStudents, isPending: isStudentPending } =
-    useStudentTotalAdmin();
-
+  const { data: stat, isStatPending } = useAdminDashboardStats();
   const { semester, academicYear } = useSchoolInfo();
+
+  const {
+    totalFaculties,
+    totalDepartments,
+    totalCourses,
+    totalLecturers,
+    totalStudents,
+  } = stat || {};
 
   const stats = [
     {
       label: 'Total Faculties',
-      value: totalFaculties?.total || 0,
+      value: totalFaculties,
       icon: Building2,
       color: 'bg-blue-100 text-blue-600',
       link: '/faculties',
     },
     {
       label: 'Total Departments',
-      value: totalDepartment?.total || 0,
+      value: totalDepartments,
       icon: Layers,
       color: 'bg-purple-100 text-purple-600',
       link: '/departments',
     },
     {
       label: 'Total Courses',
-      value: totalCourses?.total || 0,
+      value: totalCourses,
       icon: BookOpen,
       color: 'bg-green-100 text-green-600',
       link: '/courses',
     },
     {
       label: 'Total Lecturers',
-      value: totalLecturers?.total || 0,
+      value: totalLecturers,
       icon: Users,
       color: 'bg-orange-100 text-orange-600',
       link: '/lecturers',
     },
     {
       label: 'Total Students',
-      value: totalStudents?.total || 0,
+      value: totalStudents,
       icon: GraduationCap,
       color: 'bg-pink-100 text-pink-600',
       link: '/students',
     },
   ];
-  if (
-    isFacultyPending ||
-    isDepartmentPending ||
-    isCoursePending ||
-    isLecturerPending ||
-    isStudentPending
-  )
-    return <SkeletonDashboard />;
+  if (isStatPending) return <SkeletonDashboard />;
 
   return (
     <div className='w-full'>
@@ -95,7 +84,7 @@ function AdminDashboard() {
       />
 
       {!academicYear || !semester ? (
-        <EmptyAcademicYear
+        <EmptyCard
           icon={Calendar}
           iconColor='text-blue-600'
           title='Set Up Academic Year'
@@ -108,7 +97,7 @@ function AdminDashboard() {
               Create Academic Year
             </Button>
           </Link>
-        </EmptyAcademicYear>
+        </EmptyCard>
       ) : (
         <>
           {/* Stats Card */}

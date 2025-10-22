@@ -4,12 +4,12 @@ import { useUser } from '../features/auth/hooks/useUser';
 import { sidebarConfig } from '../config/sidebarConfig';
 
 import Header from '../components/Header';
-import SkeletonApp from '../components/SkeletonApp';
+
 
 function AppLayout() {
-  const { data, isPending } = useUser();
+  const { data } = useUser();
 
-  if (isPending) return <SkeletonApp />;
+
 
   const { role } = data?.user || {};
   const sidebarOptions = sidebarConfig[role] || sidebarConfig.student;

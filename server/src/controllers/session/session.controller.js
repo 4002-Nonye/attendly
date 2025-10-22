@@ -184,7 +184,7 @@ exports.getActiveSessionsForStudent = async (req, res) => {
       .populate('course', 'courseTitle courseCode')
       .populate('startedBy', 'fullName');
 
-    return res.status(200).json({ session: activeSessions });
+    return res.status(200).json({ session: activeSessions,total:activeSessions.length });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Internal server error' });
@@ -219,9 +219,9 @@ exports.getActiveSessionsForLecturer = async (req, res) => {
       .populate('course', 'courseCode courseTitle')
       .populate('startedBy', 'fullName');
 
-    return res.status(200).json({ session: sessions });
+    return res.status(200).json({ session: sessions,total:sessions.length });
   } catch (error) {
-    console.error(error);
+    
     return res.status(500).json({ error: 'Internal server error' });
   }
 };

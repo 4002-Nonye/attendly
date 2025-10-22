@@ -20,7 +20,7 @@ function Card({ color, link, label, value, icon: Icon, isLink = true }) {
         )}
       </div>
       <div>
-        <h3 className='text-gray-600 text-sm font-medium mb-1'>{label}</h3>
+        <p className='text-gray-600 text-sm font-medium mb-1'>{label}</p>
         <p className='text-2xl md:text-3xl font-bold text-gray-900'>{value}</p>
       </div>
     </div>

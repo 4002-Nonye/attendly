@@ -2,16 +2,15 @@ import {
   BookOpen,
   Users,
   Calendar,
-  TrendingUp,
   Plus,
   Eye,
   AlertCircle,
+  CalendarClock,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Button from '../../../components/Button';
 import RecentSessionsTable from '../../../components/RecentSessionsTable';
-import { useSessionTotal } from './useSessionTotal';
-import { useStudentTotalLecturer } from './useStudentTotalLecturer';
+
 import LecturerDashboardSkeleton from '../../../components/LecturerDashboardSkeleton';
 import PageHeader from '../../../components/PageHeader';
 import Card from '../../../components/Card';
@@ -19,58 +18,52 @@ import { useAssignedCourses } from './useAssignedCourses';
 import CourseCard from '../../../components/CourseCard';
 import { DASHBOARD_COURSE_LIMIT } from '../../../config/dashboard';
 import { useSchoolInfo } from '../../../hooks/useSchoolInfo';
-import EmptyAcademicYear from '../../../components/EmptyAcademicYear';
+
+import EmptyCard from '../../../components/EmptyCard';
+import { useLecturerDashboardStats } from './useLecturerDashboardStats';
 
 function LecturerDashboard() {
- 
-  const { data: totalSessions, isPending: isSessionPending } =
-    useSessionTotal();
-  const { data: totalStudents, isPending: isStudentPending } =
-    useStudentTotalLecturer();
   const { data: courses, isPending: isAssignedCoursesPending } =
     useAssignedCourses();
   const { academicYear, semester } = useSchoolInfo();
+  const { data: stat, isStatPending } = useLecturerDashboardStats();
+
+  const { totalStudents, totalSessions, activeSessions, totalCourses } =
+    stat || {};
 
   const displayedCourses =
     courses?.data?.slice(0, DASHBOARD_COURSE_LIMIT) || [];
-  const totalCoursesCount = courses?.data?.length || 0;
-  const hasMoreCourses = totalCoursesCount > DASHBOARD_COURSE_LIMIT;
 
-  const averageAttendance = 87;
+  const hasMoreCourses = totalCourses > DASHBOARD_COURSE_LIMIT;
 
   const stats = [
     {
       label: 'My Courses',
-      value: totalCoursesCount,
+      value: totalCourses,
       icon: BookOpen,
       color: 'bg-blue-100 text-blue-600',
     },
     {
       label: 'Total Students',
-      value: totalStudents?.total || 0,
+      value: totalStudents,
       icon: Users,
       color: 'bg-purple-100 text-purple-600',
     },
     {
       label: 'Sessions Conducted',
-      value: totalSessions?.total || 0,
+      value:totalSessions,
       icon: Calendar,
       color: 'bg-green-100 text-green-600',
     },
     {
-      label: 'Average Attendance',
-      value: `${averageAttendance}%`,
-      icon: TrendingUp,
+      label: 'Active Sessions',
+      value: activeSessions,
+      icon: CalendarClock,
       color: 'bg-orange-100 text-orange-600',
     },
   ];
 
-  if (
-   
-    isSessionPending ||
-    isStudentPending ||
-    isAssignedCoursesPending
-  ) {
+  if (isAssignedCoursesPending || isStatPending) {
     return <LecturerDashboardSkeleton />;
   }
 
@@ -83,7 +76,7 @@ function LecturerDashboard() {
       />
 
       {!academicYear || !semester ? (
-        <EmptyAcademicYear
+        <EmptyCard
           icon={AlertCircle}
           iconColor='text-orange-600'
           title='No Active Academic Period'
@@ -108,16 +101,16 @@ function LecturerDashboard() {
                 </h2>
                 <p className='text-xs lg:text-sm text-gray-600 mt-1'>
                   {hasMoreCourses
-                    ? `Showing ${DASHBOARD_COURSE_LIMIT} of ${totalCoursesCount} courses`
+                    ? `Showing ${DASHBOARD_COURSE_LIMIT} of ${totalCourses} courses`
                     : `Courses you're teaching this semester`}
                 </p>
               </div>
-              {totalCoursesCount > 0 && (
+              {totalCourses > 0 && (
                 <Link
                   to='/courses'
                   className='text-xs lg:text-sm text-blue-600 hover:underline font-medium'
                 >
-                  View all {hasMoreCourses && `(${totalCoursesCount})`}
+                  View all {hasMoreCourses && `(${totalCourses})`}
                 </Link>
               )}
             </div>
@@ -134,23 +127,19 @@ function LecturerDashboard() {
                 ))}
               </div>
             ) : (
-              <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-12'>
-                <div className='max-w-md mx-auto text-center'>
-                  <div className='w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4'>
-                    <BookOpen className='w-8 h-8 text-blue-600' />
-                  </div>
-                  <h3 className='text-lg font-semibold text-gray-900 mb-2'>
-                    No Courses Yet
-                  </h3>
-                  <p className='text-gray-600 mb-6'>
-                    You haven't registered for any courses yet. Register for
-                    courses to start tracking attendance.
-                  </p>
-                  <Link to='/courses/register'>
-                    <Button icon={Plus}>Register Course</Button>
-                  </Link>
-                </div>
-              </div>
+              <EmptyCard
+                icon={BookOpen}
+                iconColor='text-blue-600'
+                title='No Courses Yet'
+                message={`You haven't registered for any courses yet. Register for courses to start tracking attendance.`}
+                iconBg='bg-blue-100'
+              >
+                <Link to='/courses/register'>
+                  <Button icon={Plus} variant='primary'>
+                    Register Course
+                  </Button>
+                </Link>
+              </EmptyCard>
             )}
           </div>
 

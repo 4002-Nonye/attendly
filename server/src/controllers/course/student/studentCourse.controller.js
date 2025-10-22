@@ -8,6 +8,7 @@ exports.getRegisteredCoursesForStudent = async (req, res) => {
 
     //  Get the active academic year and semester for the student's school
     const school = await School.findById(schoolId);
+
     if (!school || !school.currentAcademicYear || !school.currentSemester) {
       return res
         .status(400)
@@ -17,18 +18,13 @@ exports.getRegisteredCoursesForStudent = async (req, res) => {
     //  Fetch courses the student registered for in the active session
     const courses = await StudentEnrollment.find({
       student: studentId,
-      schoolId,
+      school: schoolId,
       academicYear: school.currentAcademicYear,
       semester: school.currentSemester,
     })
       .populate('course', 'courseTitle courseCode')
       .populate('student', 'fullName')
       .lean();
-
-    //  Handle if no courses found
-    if (!courses.length) {
-      return res.status(404).json({ error: 'No registered courses found' });
-    }
 
     return res.status(200).json({ courses });
   } catch (error) {
@@ -66,7 +62,7 @@ exports.registerCourse = async (req, res) => {
     const enrollments = validIds.map((courseId) => ({
       student: studentId,
       course: courseId,
-      schoolId,
+      school: schoolId,
       academicYear: school.currentAcademicYear,
       semester: school.currentSemester,
     }));
