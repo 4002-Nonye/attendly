@@ -10,20 +10,17 @@ import {
 } from 'recharts';
 import EmptyChart from './EmptyChart';
 import PropTypes from 'prop-types';
+import SectionIntro from './SectionIntro';
 
 function SchoolAttendanceChart({ hasData, data, averageRate }) {
-  
   return (
     <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-6'>
-      <div className='flex items-center justify-between mb-4'>
-        <div>
-          <h3 className='text-lg font-semibold text-gray-900'>
-            Attendance Trend
-          </h3>
-          <p className='text-sm text-gray-600'>
-            Weekly attendance rates across the school
-          </p>
-        </div>
+      <div className='flex items-start justify-between'>
+        <SectionIntro
+          title='Attendance Trend'
+          subTitle='Weekly attendance rates across the school'
+          className='mb-4 lg:mb-5'
+        />
         {hasData && (
           <span className='text-2xl font-bold text-blue-600'>
             {averageRate}%

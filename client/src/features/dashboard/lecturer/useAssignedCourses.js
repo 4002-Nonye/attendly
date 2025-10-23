@@ -6,7 +6,6 @@ export function useAssignedCourses() {
   const { data, isPending, error, isError } = useQuery({
     queryKey: ['courses-assigned', 'lecturer'],
     queryFn: getLecturerAssignedCourses,
-    retry: 1,
   });
   return { data, isPending, error, isError };
 }

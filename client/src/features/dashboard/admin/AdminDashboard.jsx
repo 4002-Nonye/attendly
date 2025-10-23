@@ -15,13 +15,12 @@ import Chart from '../../../components/Chart';
 
 import RecentSessionsTable from '../../../components/RecentSessionsTable';
 
-import SkeletonDashboard from '../../../components/SkeletonDashboard';
-
 import { useSchoolInfo } from '../../../hooks/useSchoolInfo';
 import PageHeader from '../../../components/PageHeader';
 import { Link } from 'react-router-dom';
 import EmptyCard from '../../../components/EmptyCard';
 import { useAdminDashboardStats } from './useAdminDashboardStats';
+import AdminDashboardSkeleton from '../../../components/AdminDashboardSkeleton';
 
 function AdminDashboard() {
   const { data: stat, isStatPending } = useAdminDashboardStats();
@@ -72,7 +71,7 @@ function AdminDashboard() {
       link: '/students',
     },
   ];
-  if (isStatPending) return <SkeletonDashboard />;
+  if (isStatPending) return <AdminDashboardSkeleton />;
 
   return (
     <div className='w-full'>

@@ -11,18 +11,16 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
+import SectionIntro from './SectionIntro';
 
 function FacultyAttendanceChart({ hasData, data }) {
   return (
     <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-6'>
-      <div className='mb-4'>
-        <h3 className='text-lg font-semibold text-gray-900'>
-          Attendance by Faculty
-        </h3>
-        <p className='text-sm text-gray-600'>
-          Average attendance rates across all faculties this week
-        </p>
-      </div>
+      <SectionIntro
+        title='Attendance by Faculty'
+        subTitle='Average attendance rates across all faculties this week'
+        className='mb-4 lg:mb-5'
+      />
 
       {hasData ? (
         <div className='overflow-x-auto '>

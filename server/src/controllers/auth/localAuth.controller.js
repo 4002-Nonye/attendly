@@ -365,7 +365,7 @@ exports.getUser = async (req, res) => {
   try {
     const { id } = req.user;
     const user = await User.findById(id)
-      .select('email role fullName password schoolId')
+      .select('email role fullName password level schoolId')
       .populate({
         path: 'schoolId',
         select: 'schoolName currentAcademicYear currentSemester',

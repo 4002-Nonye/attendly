@@ -79,6 +79,8 @@ exports.getStudentAttendanceReport = async (req, res) => {
   try {
     const { id, schoolId } = req.user;
 
+    // TODO : GET THE PERCENTAGE FOR CALCULATING ELIGIBILITY FROM SCHOOL'S SETTING
+
     //  Get the school's current academic period
     const schoolDoc = await School.findById(schoolId).select(
       'currentAcademicYear currentSemester'
@@ -112,7 +114,7 @@ exports.getStudentAttendanceReport = async (req, res) => {
           as: 'course',
         },
       },
-      // 3. Each enrollment → one course
+      // 3. Each enrollment - one course
       { $unwind: '$course' },
 
       // 4. Lookup sessions for the current academic period
@@ -213,6 +215,7 @@ exports.getStudentAttendanceReport = async (req, res) => {
           _id: 0,
           courseId: '$course._id',
           courseCode: '$course.courseCode',
+          courseTitle: '$course.courseTitle',
           totalSessions: 1,
           totalAttended: 1,
           attendancePercentage: 1,
@@ -223,7 +226,6 @@ exports.getStudentAttendanceReport = async (req, res) => {
 
     return res.status(200).json({ report });
   } catch (error) {
-    console.error(error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -297,14 +299,18 @@ exports.getStudentSessionDetails = async (req, res) => {
       } else if (s.status === 'active') {
         finalStatus = 'Not yet taken'; // session is ongoing but student is yet to mark attendance
       } else {
-        finalStatus = 'Unknown'; // safety fallback
+        finalStatus = 'Unknown';
       }
 
-      // send to Frontend
+      // send to fe
       return {
         sessionId: s._id,
         date: s.createdAt.toISOString().split('T')[0], // YYYY-MM-DD
-        time: s.createdAt.toISOString().split('T')[1].slice(0, 5), // HH:MM
+        time: new Date(s.createdAt).toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+        }),
         lecturer: s.startedBy?.fullName || 'Unknown',
         sessionStatus: s.status, // -> "active" or "ended"
         studentStatus: finalStatus, // -> "Present", "Absent", "Not yet taken"
@@ -312,7 +318,7 @@ exports.getStudentSessionDetails = async (req, res) => {
     });
     return res.status(200).json({ sessionDetails });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
+

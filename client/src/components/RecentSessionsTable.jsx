@@ -1,6 +1,8 @@
 import { Calendar, Clock, CheckCircle2 } from 'lucide-react';
 
 import { useRecentSession } from '../features/dashboard/general/useRecentSession';
+import TableSkeleton from './TableSkeleton';
+import SectionIntro from './SectionIntro';
 
 function RecentSessionsTable() {
   const { data, isPending } = useRecentSession();
@@ -8,41 +10,20 @@ function RecentSessionsTable() {
   const recentSessions = data?.sessions || [];
 
   if (isPending) {
-    return (
-      <div className='bg-white rounded-xl shadow-sm border border-gray-100 mb-8'>
-        <div className='p-6 border-b border-gray-100'>
-          <div className='h-6 w-48 bg-gray-200 rounded animate-pulse'></div>
-          <div className='h-4 w-64 bg-gray-200 rounded animate-pulse mt-2'></div>
-        </div>
-        <div className='p-6'>
-          {[...Array(5)].map((_, i) => (
-            <div
-              key={i}
-              className='h-16 bg-gray-100 rounded mb-2 animate-pulse'
-            ></div>
-          ))}
-        </div>
-      </div>
-    );
+    return <TableSkeleton />;
   }
 
   return (
     <div className='bg-white rounded-xl shadow-sm border border-gray-100 mb-8'>
       <div className='p-6 border-b border-gray-100'>
-        <div className='flex items-center justify-between'>
-          <div>
-            <h3 className='text-lg font-semibold text-gray-900'>
-              Recent Class Sessions
-            </h3>
-            <p className='text-sm text-gray-600 mt-1'>
-              Latest attendance sessions across all courses
-            </p>
-          </div>
-        </div>
+        <SectionIntro
+          title='Recent Class Sessions'
+          subTitle={`Latest attendance sessions across all courses`}
+        />
       </div>
 
       {!recentSessions.length ? (
-        <div className='h-72 flex flex-col justify-center items-center p-6 text-center text-gray-500'>
+        <div className='h-72 flex flex-col justify-center items-center p-6 text-center text-gray-500 '>
           <Calendar className='w-12 h-12 text-gray-300 mb-3' />
           <p className='font-medium text-gray-700'>No recent sessions found</p>
           <p className='text-sm text-gray-500 mt-1'>
@@ -50,7 +31,7 @@ function RecentSessionsTable() {
           </p>
         </div>
       ) : (
-        <div className='overflow-x-auto'>
+        <div className='overflow-x-auto '>
           <table className='w-full'>
             <thead className='bg-gray-50'>
               <tr>

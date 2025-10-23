@@ -11,7 +11,7 @@ export const useSchoolInfo = () => {
     firstName,
     semester,
     academicYear,
-    user,
+    user: user.user,
     ...rest,
   };
 };

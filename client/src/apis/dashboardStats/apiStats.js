@@ -66,3 +66,12 @@ export const getStudentDashboardStats = async () => {
     throw error.response.data;
   }
 };
+
+export const getStudentRecentSessions = async () => {
+  try {
+    const response = await axios.get('/api/student/dashboard/recent-sessions');
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};

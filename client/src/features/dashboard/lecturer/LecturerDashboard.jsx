@@ -21,6 +21,7 @@ import { useSchoolInfo } from '../../../hooks/useSchoolInfo';
 
 import EmptyCard from '../../../components/EmptyCard';
 import { useLecturerDashboardStats } from './useLecturerDashboardStats';
+import SectionIntro from '../../../components/SectionIntro';
 
 function LecturerDashboard() {
   const { data: courses, isPending: isAssignedCoursesPending } =
@@ -33,8 +34,6 @@ function LecturerDashboard() {
 
   const displayedCourses =
     courses?.data?.slice(0, DASHBOARD_COURSE_LIMIT) || [];
-
-  const hasMoreCourses = totalCourses > DASHBOARD_COURSE_LIMIT;
 
   const stats = [
     {
@@ -51,7 +50,7 @@ function LecturerDashboard() {
     },
     {
       label: 'Sessions Conducted',
-      value:totalSessions,
+      value: totalSessions,
       icon: Calendar,
       color: 'bg-green-100 text-green-600',
     },
@@ -86,7 +85,7 @@ function LecturerDashboard() {
       ) : (
         <>
           {/* Stats Cards */}
-          <div className='grid grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8'>
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8'>
             {stats.map((stat, index) => (
               <Card key={index} {...stat} isLink={false} />
             ))}
@@ -94,27 +93,13 @@ function LecturerDashboard() {
 
           {/* My Courses */}
           <div className='mb-6 lg:mb-8'>
-            <div className='flex items-center justify-between mb-4 lg:mb-5'>
-              <div>
-                <h2 className='text-lg lg:text-xl font-bold text-gray-900'>
-                  My Courses
-                </h2>
-                <p className='text-xs lg:text-sm text-gray-600 mt-1'>
-                  {hasMoreCourses
-                    ? `Showing ${DASHBOARD_COURSE_LIMIT} of ${totalCourses} courses`
-                    : `Courses you're teaching this semester`}
-                </p>
-              </div>
-              {totalCourses > 0 && (
-                <Link
-                  to='/courses'
-                  className='text-xs lg:text-sm text-blue-600 hover:underline font-medium'
-                >
-                  View all {hasMoreCourses && `(${totalCourses})`}
-                </Link>
-              )}
-            </div>
-
+            <SectionIntro
+              title='My Courses'
+              subTitle={` you're teaching this semester`}
+              linkTo='/courses'
+              length={totalCourses.length}
+              className='mb-4 lg:mb-5'
+            />
             {displayedCourses.length > 0 ? (
               <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 lg:gap-4'>
                 {displayedCourses.map((course) => (
