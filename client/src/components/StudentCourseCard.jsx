@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, BookOpen } from 'lucide-react';
+import { ArrowRight} from 'lucide-react';
 import { getBadgeColor, getProgressBarColor } from '../utils/courseHelpers';
 import { useSchoolInfo } from '../hooks/useSchoolInfo';
 
@@ -10,8 +10,6 @@ function StudentCourseCard({ course }) {
 
   return (
     <div className='group relative bg-white rounded-xl border border-gray-200 p-5 hover:shadow-lg hover:border-gray-300 transition-all duration-200'>
-
-
       {/* Header */}
       <div className='mb-4'>
         <div className='flex items-start justify-between gap-2 mb-3'>
@@ -32,11 +30,15 @@ function StudentCourseCard({ course }) {
       <div className='flex gap-3  items-center pb-4 border-b border-gray-100'>
         <div className='text-center flex  items-center gap-2'>
           <p className='text-xs  text-gray-500 '>Attended</p>
-          <p className='text-xs text-gray-900 font-bold'>{course.totalAttended}</p>
+          <p className='text-xs text-gray-900 font-bold'>
+            {course.totalAttended}
+          </p>
         </div>
         <div className='text-center flex  items-center gap-2'>
           <p className='text-xs  text-gray-500 '>Total Sessions</p>
-          <p className='text-xs text-gray-900 font-bold'>{course.totalSessions}</p>
+          <p className='text-xs text-gray-900 font-bold'>
+            {course.totalSessions}
+          </p>
         </div>
       </div>
 
@@ -56,13 +58,13 @@ function StudentCourseCard({ course }) {
         </div>
       </div>
 
-      {/* Action Button */}
+      {/* CTA */}
       <Link
         to={`/courses/${course.courseId}`}
         className='flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-blue-50 text-blue-700 rounded-lg font-medium text-sm hover:bg-blue-100 group-hover:shadow-sm transition-all'
       >
-        <BookOpen className='w-4 h-4' />
         <span>View Details</span>
+
         <ArrowRight className='w-4 h-4 group-hover:translate-x-1 transition-transform' />
       </Link>
     </div>

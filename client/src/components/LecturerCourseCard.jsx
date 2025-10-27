@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, BookOpen } from 'lucide-react';
 import { getBadgeColor } from '../utils/courseHelpers';
 
-function CourseCard({ course, actionText = 'Start Attendance', actionLink }) {
+function LecturerCourseCard({ course, actionText = 'Start Attendance', actionLink }) {
   const badgeColor = getBadgeColor(course.level);
 
   return (
@@ -56,4 +56,4 @@ function CourseCard({ course, actionText = 'Start Attendance', actionLink }) {
   );
 }
 
-export default CourseCard;
+export default LecturerCourseCard;

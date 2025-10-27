@@ -7,6 +7,8 @@ import {
   Clock,
   ArrowRight,
   AlertCircle,
+  Eye,
+  Plus,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import PageHeader from '../../../components/PageHeader';
@@ -71,6 +73,7 @@ function StudentDashboard() {
     },
   ];
 
+  const tableFormat = ['Course', 'Date & Time', 'Status'];
   if (isStatPending || isAttReportPending || isSessionPending) {
     return <StudentDashboardSkeleton />;
   }
@@ -158,15 +161,11 @@ function StudentDashboard() {
               <table className='w-full'>
                 <thead className='bg-gray-50'>
                   <tr>
-                    <th className='px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                      Course
-                    </th>
-                    <th className='px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                      Date & Time
-                    </th>
-                    <th className='px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                      Status
-                    </th>
+                    {tableFormat.map((f) => (
+                      <th className='px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                        {f}
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody className='bg-white divide-y divide-gray-200'>
@@ -213,6 +212,25 @@ function StudentDashboard() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+
+          {/* Quick Actions */}
+          <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-4 lg:p-6'>
+            <h3 className='text-base lg:text-lg font-semibold text-gray-900 mb-4'>
+              Quick Actions
+            </h3>
+            <div className='flex flex-wrap gap-3'>
+              <Link to='/courses'>
+                <Button variant='primary' icon={Eye} size='sm'>
+                  View My Courses
+                </Button>
+              </Link>
+              <Link to='/courses/register'>
+                <Button variant='primary' icon={Plus} size='sm'>
+                  Register Course
+                </Button>
+              </Link>
             </div>
           </div>
         </>

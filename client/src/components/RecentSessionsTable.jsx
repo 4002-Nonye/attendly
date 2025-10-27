@@ -9,6 +9,15 @@ function RecentSessionsTable() {
 
   const recentSessions = data?.sessions || [];
 
+  const tableFormat = [
+    'Course',
+    'Started By',
+    'Ended By',
+    'Date & Time',
+    'Attendance',
+    'Status',
+  ];
+
   if (isPending) {
     return <TableSkeleton />;
   }
@@ -35,26 +44,11 @@ function RecentSessionsTable() {
           <table className='w-full'>
             <thead className='bg-gray-50'>
               <tr>
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Course
-                </th>
-
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Started By
-                </th>
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Ended By
-                </th>
-
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Date & Time
-                </th>
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Attendance
-                </th>
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Status
-                </th>
+                {tableFormat.map((f) => (
+                  <th className='px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                    {f}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody className='bg-white divide-y divide-gray-200'>

@@ -7,7 +7,6 @@ const Faculty = mongoose.model('Faculty');
 const dayjs = require('dayjs');
 const Attendance = mongoose.model('Attendance');
 
-
 // for dashboard trends
 exports.getSchoolAttendanceTrend = async (req, res) => {
   try {
@@ -52,15 +51,14 @@ exports.getSchoolAttendanceTrend = async (req, res) => {
     // Calculate rate for each day
     weekData.forEach((day) => {
       if (day.total > 0) {
-        day.rate =Number((day.present / day.total) * 100);
+        day.rate = Number((day.present / day.total) * 100);
       }
     });
     // starts from Monday instead of Sunday
     const ordered = [...weekData.slice(1), weekData[0]];
 
-    res.json({ trend: ordered });
+    return res.json({ trend: ordered });
   } catch (error) {
-    console.log(error)
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -77,9 +75,9 @@ exports.getFacultyAttendanceTrend = async (req, res) => {
 
     // compute the date range (past 7 days)
     const today = dayjs().endOf('day');
-    const lastWeek = dayjs().subtract(5, 'day').startOf('day');
+    const lastWeek = dayjs().subtract(6, 'day').startOf('day');
 
-    // get all attendance records for the current academic year and semester
+    // get all attendance records for the current academic year and semester for last 7 days
     const attendances = await Attendance.find({
       createdAt: { $gte: lastWeek, $lte: today },
       academicYear: school.currentAcademicYear,
@@ -90,47 +88,63 @@ exports.getFacultyAttendanceTrend = async (req, res) => {
       populate: { path: 'faculty', select: 'name' },
     });
 
-    // group attendance records by faculty
-    const facultyStats = {};
-
-    // get all faculties in the school first (Reason - if no session has been held, attendance cant be tracked)
+    // get all faculties in the school
     const faculties = await Faculty.find({ schoolId }).select('name');
 
-    // store all faculties with zero stats
+    // Days structure for 1 week
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    const facultyWeekData = {};
+
+    // build data structure
     faculties.forEach((fac) => {
-      facultyStats[fac.name] = { total: 0, present: 0 };
+      facultyWeekData[fac.name] = {};
+      days.forEach((day) => {
+        facultyWeekData[fac.name][day] = { total: 0, present: 0 };
+      });
     });
 
-    // loop through attendance to update only existing faculties
+    // bui;d attendance records
     attendances.forEach((record) => {
       const faculty = record.student?.faculty?.name;
-      if (facultyStats[faculty]) {
-        facultyStats[faculty].total++;
-        if (record.status === 'Present') facultyStats[faculty].present++;
+      if (facultyWeekData[faculty]) {
+        const dayIndex = dayjs(record.createdAt).day();
+        const dayName = days[dayIndex];
+
+        facultyWeekData[faculty][dayName].total++;
+        if (record.status === 'Present') {
+          facultyWeekData[faculty][dayName].present++;
+        }
       }
     });
 
-    // calculate the rate
-    const result = faculties.map((fac) => {
-      const { total, present } = facultyStats[fac.name];
-      const rate = total > 0 ? (present / total) * 100 : 0;
-      return { faculty: fac.name, rate: Math.round(rate) };
+    // rearrange days to start from monday
+    const orderedWeekDays = [...days.slice(1), days[0]];
+    const chartData = orderedWeekDays.map((day) => {
+      const dayObject = { day };
+
+      faculties.forEach((fac) => {
+        const { total, present } = facultyWeekData[fac.name][day];
+        dayObject[fac.name] =
+          total > 0 ? Number(((present / total) * 100).toFixed(1)) : 0;
+      });
+
+      return dayObject;
     });
 
-    return res.status(200).json({ trend:result });
+
+    return res.status(200).json({ trend: chartData });
   } catch (error) {
-    
-    res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
-
 
 // for admin dashboard stat cards
 exports.getAdminDashboardStats = async (req, res) => {
   try {
     const { schoolId } = req.user;
 
-    // Get school info 
+    // Get school info
     const school = await School.findById(schoolId)
       .select('currentAcademicYear currentSemester')
       .lean();
@@ -139,36 +153,33 @@ exports.getAdminDashboardStats = async (req, res) => {
       return res.status(404).json({ error: 'School not found' });
     }
 
-    //  Get all stats 
+    //  Get all stats
     const [
       totalFaculties,
       totalDepartments,
       totalCourses,
       totalLecturers,
       totalStudents,
-
     ] = await Promise.all([
       Faculty.countDocuments({ schoolId }),
-      
+
       Department.countDocuments({ schoolId }),
-      
+
       Course.countDocuments({
         schoolId,
         academicYear: school.currentAcademicYear,
         semester: school.currentSemester,
       }),
-      
+
       User.countDocuments({
         schoolId,
         role: 'lecturer',
       }),
-      
+
       User.countDocuments({
         schoolId,
         role: 'student',
       }),
-      
-    
     ]);
 
     return res.status(200).json({
@@ -177,10 +188,8 @@ exports.getAdminDashboardStats = async (req, res) => {
       totalCourses,
       totalLecturers,
       totalStudents,
-      
     });
   } catch (error) {
-
     return res.status(500).json({ error: 'Internal server error' });
   }
 };

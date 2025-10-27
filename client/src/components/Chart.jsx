@@ -14,6 +14,12 @@ function Chart() {
   const facultyAttendanceTrend = facultyTrend?.trend;
   const schoolAttendanceTrend = schoolTrend?.trend;
 
+  // Extract faculty names 
+  const faculties =
+    facultyTrend?.trend?.length > 0
+      ? Object.keys(facultyTrend.trend[0]).filter((key) => key !== 'day')
+      : [];
+
   // Calculate average attendance rate
   const averageRate = Number(
     schoolAttendanceTrend?.length > 0
@@ -48,6 +54,7 @@ function Chart() {
         <FacultyAttendanceChart
           hasData={hasFacultyTrendData}
           data={facultyAttendanceTrend}
+          faculties={faculties}
         />
       )}
     </div>

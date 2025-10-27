@@ -15,13 +15,14 @@ import LecturerDashboardSkeleton from '../../../components/LecturerDashboardSkel
 import PageHeader from '../../../components/PageHeader';
 import Card from '../../../components/Card';
 import { useAssignedCourses } from './useAssignedCourses';
-import CourseCard from '../../../components/CourseCard';
+
 import { DASHBOARD_COURSE_LIMIT } from '../../../config/dashboard';
 import { useSchoolInfo } from '../../../hooks/useSchoolInfo';
 
 import EmptyCard from '../../../components/EmptyCard';
 import { useLecturerDashboardStats } from './useLecturerDashboardStats';
 import SectionIntro from '../../../components/SectionIntro';
+import LecturerCourseCard from '../../../components/LecturerCourseCard';
 
 function LecturerDashboard() {
   const { data: courses, isPending: isAssignedCoursesPending } =
@@ -103,7 +104,7 @@ function LecturerDashboard() {
             {displayedCourses.length > 0 ? (
               <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 lg:gap-4'>
                 {displayedCourses.map((course) => (
-                  <CourseCard
+                  <LecturerCourseCard
                     key={course._id}
                     course={course}
                     actionText='Start Attendance'

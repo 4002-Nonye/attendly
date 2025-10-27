@@ -4,37 +4,42 @@ import PropTypes from 'prop-types';
 import {
   BarChart,
   Bar,
-  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
+  Legend,
   ResponsiveContainer,
 } from 'recharts';
 import SectionIntro from './SectionIntro';
 
-function FacultyAttendanceChart({ hasData, data }) {
+function FacultyAttendanceChart({ hasData, data, faculties }) {
+  const colors = [
+    '#1e3a8a',
+    '#10b981',
+    '#f59e0b',
+    '#8b5cf6',
+    '#ef4444',
+    '#06b6d4',
+  ];
+
   return (
     <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-6'>
       <SectionIntro
         title='Attendance by Faculty'
-        subTitle='Average attendance rates across all faculties this week'
+        subTitle='Daily attendance rates across all faculties this week'
         className='mb-4 lg:mb-5'
       />
 
       {hasData ? (
-        <div className='overflow-x-auto '>
+        <div className='overflow-x-auto'>
           <ResponsiveContainer width='100%' height={250}>
             <BarChart data={data}>
               <CartesianGrid strokeDasharray='3 3' stroke='#f3f4f6' />
               <XAxis
-                dataKey='faculty'
+                dataKey='day'
                 stroke='#9ca3af'
                 style={{ fontSize: '12px' }}
-                interval={0}
-                angle={-30}
-                textAnchor='end'
-                height={60}
               />
               <YAxis
                 stroke='#9ca3af'
@@ -49,13 +54,17 @@ function FacultyAttendanceChart({ hasData, data }) {
                   borderRadius: '8px',
                   fontSize: '12px',
                 }}
-                formatter={(value) => [`${value}%`, 'Attendance Rate']}
+                formatter={(value) => `${value}%`}
               />
-              <Bar dataKey='rate' radius={[8, 8, 0, 0]} maxBarSize={60}>
-                {data.map((_, index) => (
-                  <Cell key={`cell-${index}`} fill='#1e3a8a' />
-                ))}
-              </Bar>
+              {faculties.map((faculty, index) => (
+                <Bar
+                  key={faculty}
+                  dataKey={faculty}
+                  fill={colors[index % colors.length]}
+                  radius={[8, 8, 0, 0]}
+                  maxBarSize={50}
+                />
+              ))}
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -74,10 +83,10 @@ FacultyAttendanceChart.propTypes = {
   hasData: PropTypes.bool.isRequired,
   data: PropTypes.arrayOf(
     PropTypes.shape({
-      faculty: PropTypes.string.isRequired,
-      rate: PropTypes.number.isRequired,
+      day: PropTypes.string.isRequired,
     })
   ),
+  faculties: PropTypes.arrayOf(PropTypes.string).isRequired,
 };
 
 export default FacultyAttendanceChart;
