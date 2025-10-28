@@ -12,9 +12,10 @@ function Button({
   icon: Icon,
   className = '',
   iconPosition = 'beforeText',
+  active = false,
 }) {
   const baseStyles =
-    'flex items-center justify-center font-medium rounded-lg transition-all duration-500 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ';
+    'flex items-center justify-center font-medium rounded-lg transition-all duration-500 focus:outline-none  disabled:opacity-50 disabled:cursor-not-allowed ';
 
   const variantStyles = {
     primary: 'bg-blue-900 text-white hover:bg-blue-800 focus:ring-blue-500',
@@ -23,7 +24,9 @@ function Button({
     danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
     outline:
       'border-2 border-gray-300 hover:bg-gray-100 focus:ring-gray-400',
-    
+    pill: active
+      ? 'bg-white text-blue-700 shadow-sm'
+      : 'bg-transparent text-gray-600 hover:text-gray-900',
   };
 
   const sizeStyles = {
@@ -61,7 +64,7 @@ function Button({
 Button.propTypes = {
   children: PropTypes.node.isRequired,
   type: PropTypes.oneOf(['button', 'submit', 'reset']),
-  variant: PropTypes.oneOf(['primary', 'secondary', 'danger', 'outline']),
+  variant: PropTypes.oneOf(['primary', 'secondary', 'danger', 'outline', 'pill']),
   size: PropTypes.oneOf(['sm', 'md', 'lg']),
   disabled: PropTypes.bool,
   fullWidth: PropTypes.bool,
@@ -69,6 +72,7 @@ Button.propTypes = {
   icon: PropTypes.elementType,
   className: PropTypes.string,
   iconPosition: PropTypes.oneOf(['beforeText', 'afterText']),
+  active: PropTypes.bool,
 };
 
 export default Button;

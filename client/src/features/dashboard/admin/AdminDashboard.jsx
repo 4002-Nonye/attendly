@@ -23,7 +23,7 @@ import { useAdminDashboardStats } from './useAdminDashboardStats';
 import AdminDashboardSkeleton from '../../../components/AdminDashboardSkeleton';
 
 function AdminDashboard() {
-  const { data: stat, isStatPending } = useAdminDashboardStats();
+  const { data: stat, isPending:isStatPending } = useAdminDashboardStats();
   const { semester, academicYear } = useSchoolInfo();
 
   const {

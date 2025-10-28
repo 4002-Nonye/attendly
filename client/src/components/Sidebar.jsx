@@ -5,7 +5,7 @@ import logo from '../assets/logo-black.svg';
 import Button from '../components/Button';
 function Sidebar({ options }) {
   return (
-    <aside className='w-64 xl:w-72 min-h-screen py-5 lg:flex flex-col  border-r border-gray-200 hidden'>
+    <aside className='w-60 xl:w-72 min-h-screen py-5 lg:flex flex-col  border-r border-gray-200 hidden'>
       {/* Logo */}
       <div className='h-16 flex items-center px-4  '>
         <img src={logo} alt='logo' className='h-10 w-auto' />

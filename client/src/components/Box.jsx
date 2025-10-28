@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types';
 
-function Box({ children, className = '' }) {
+function Box({ children, className = '', direction = 'flex-col' }) {
   return (
-    <div className={`flex flex-col space-y-2 w-full ${className}`}>
+    <div className={`flex ${direction} space-y-2 w-full ${className}`}>
       {children}
     </div>
   );
@@ -11,6 +11,7 @@ function Box({ children, className = '' }) {
 Box.propTypes = {
   children: PropTypes.node,
   className: PropTypes.string,
+  direction: PropTypes.string,
 };
 
 export default Box;

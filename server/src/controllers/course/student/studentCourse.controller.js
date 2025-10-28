@@ -16,15 +16,18 @@ exports.getRegisteredCoursesForStudent = async (req, res) => {
     }
 
     //  Fetch courses the student registered for in the active session
-    const courses = await StudentEnrollment.find({
+    const enrollments = await StudentEnrollment.find({
       student: studentId,
       school: schoolId,
       academicYear: school.currentAcademicYear,
       semester: school.currentSemester,
     })
-      .populate('course', 'courseTitle courseCode')
-      .populate('student', 'fullName')
+      .select('course -_id')
+      .populate('course', 'courseTitle courseCode unit')
       .lean();
+
+      // flatten
+    const courses = enrollments.map((e) => e.course);
 
     return res.status(200).json({ courses });
   } catch (error) {

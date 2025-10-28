@@ -14,7 +14,7 @@ function Chart() {
   const facultyAttendanceTrend = facultyTrend?.trend;
   const schoolAttendanceTrend = schoolTrend?.trend;
 
-  // Extract faculty names 
+  // Extract faculty names
   const faculties =
     facultyTrend?.trend?.length > 0
       ? Object.keys(facultyTrend.trend[0]).filter((key) => key !== 'day')
@@ -30,8 +30,10 @@ function Chart() {
       : 0
   );
 
-  // Empty state check (any item rate = 0)
-  const hasFacultyTrendData = facultyAttendanceTrend?.some((f) => f.rate !== 0);
+  // Empty state check (any item = 0)
+  const hasFacultyTrendData = facultyAttendanceTrend?.some((day) =>
+    Object.values(day).some((val) => typeof val === 'number' && val > 0)
+  );
   const hasSchoolTrendData = schoolAttendanceTrend?.some((s) => s.rate !== 0);
 
   return (

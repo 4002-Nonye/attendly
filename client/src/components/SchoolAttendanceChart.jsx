@@ -65,7 +65,7 @@ function SchoolAttendanceChart({ hasData, data, averageRate }) {
         <EmptyChart
           icon={BarChart3}
           message='No attendance data available'
-          subMessage='Once students start attending classes, data will appear here'
+          subMessage='Once students start attending classes for the week, data will appear here'
         />
       )}
     </div>

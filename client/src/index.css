@@ -19,7 +19,7 @@ input {
 }
 
 button{
-  @apply  not-disabled:cursor-pointer
+  @apply  not-disabled:cursor-pointer 
 }
 /* Hide arrows from input[type=number] */
 

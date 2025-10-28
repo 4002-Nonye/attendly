@@ -9,6 +9,8 @@ function RecentSessionsTable() {
 
   const recentSessions = data?.sessions || [];
 
+  // TODO : MAKE TABLE REUSABLE
+
   const tableFormat = [
     'Course',
     'Started By',
@@ -45,7 +47,7 @@ function RecentSessionsTable() {
             <thead className='bg-gray-50'>
               <tr>
                 {tableFormat.map((f) => (
-                  <th className='px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                  <th key={f} className='px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                     {f}
                   </th>
                 ))}

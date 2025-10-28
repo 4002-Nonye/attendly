@@ -97,7 +97,7 @@ function StudentDashboard() {
       ) : (
         <>
           {/* Stats Cards */}
-          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8'>
+          <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8'>
             {statsData.map((stat, index) => (
               <Card key={index} {...stat} isLink={false} />
             ))}
@@ -162,7 +162,7 @@ function StudentDashboard() {
                 <thead className='bg-gray-50'>
                   <tr>
                     {tableFormat.map((f) => (
-                      <th className='px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                      <th key={f} className='px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                         {f}
                       </th>
                     ))}

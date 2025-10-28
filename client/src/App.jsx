@@ -12,6 +12,7 @@ import AppLayout from './layouts/AppLayout';
 import CompleteProfileProtected from './components/CompleteProfileProtected';
 import DashboardPage from './pages/dashboard/DashboardPage';
 import PublicRoute from './components/PublicRoute';
+import CoursePage from './pages/course/CoursePage';
 
 function App() {
   return (
@@ -61,7 +62,7 @@ function App() {
           <Route path='dashboard' element={<DashboardPage />} />
           <Route path='faculties' element='faculties' />
           <Route path='departments' element='departments' />
-          <Route path='courses' element='courses' />
+          <Route path='courses' element=<CoursePage /> />
           <Route path='lecturers' element='lecturers' />
           <Route path='students' element='students' />
           <Route path='attendance' element='attendance' />
