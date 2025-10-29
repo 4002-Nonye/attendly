@@ -13,7 +13,6 @@ import Button from '../../../components/Button';
 import Card from '../../../components/Card';
 import Chart from '../../../components/Chart';
 
-import RecentSessionsTable from '../../../components/RecentSessionsTable';
 
 import { useSchoolInfo } from '../../../hooks/useSchoolInfo';
 import PageHeader from '../../../components/PageHeader';
@@ -21,6 +20,7 @@ import { Link } from 'react-router-dom';
 import EmptyCard from '../../../components/EmptyCard';
 import { useAdminDashboardStats } from './useAdminDashboardStats';
 import AdminDashboardSkeleton from '../../../components/AdminDashboardSkeleton';
+import RecentSessions from '../../../components/RecentSessions';
 
 function AdminDashboard() {
   const { data: stat, isPending:isStatPending } = useAdminDashboardStats();
@@ -110,7 +110,7 @@ function AdminDashboard() {
           <Chart />
 
           {/* Recent Sessions Table */}
-          <RecentSessionsTable />
+          <RecentSessions />
 
           {/* Quick Actions */}
           <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-6'>

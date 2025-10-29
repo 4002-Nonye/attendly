@@ -9,7 +9,6 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Button from '../../../components/Button';
-import RecentSessionsTable from '../../../components/RecentSessionsTable';
 
 import LecturerDashboardSkeleton from '../../../components/LecturerDashboardSkeleton';
 import PageHeader from '../../../components/PageHeader';
@@ -23,6 +22,7 @@ import EmptyCard from '../../../components/EmptyCard';
 import { useLecturerDashboardStats } from './useLecturerDashboardStats';
 import SectionIntro from '../../../components/SectionIntro';
 import LecturerCourseCard from '../../../components/LecturerCourseCard';
+import RecentSessions from '../../../components/RecentSessions';
 
 function LecturerDashboard() {
   const { data: courses, isPending: isAssignedCoursesPending } =
@@ -35,6 +35,10 @@ function LecturerDashboard() {
 
   const displayedCourses =
     courses?.data?.slice(0, DASHBOARD_COURSE_LIMIT) || [];
+
+
+
+
 
   const stats = [
     {
@@ -98,7 +102,7 @@ function LecturerDashboard() {
               title='My Courses'
               subTitle={` you're teaching this semester`}
               linkTo='/courses'
-              length={totalCourses.length}
+              length={totalCourses}
               className='mb-4 lg:mb-5'
             />
             {displayedCourses.length > 0 ? (
@@ -130,7 +134,7 @@ function LecturerDashboard() {
           </div>
 
           {/* Recent Sessions Table */}
-          <RecentSessionsTable />
+          <RecentSessions />
 
           {/* Quick Actions */}
           <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-4 lg:p-6'>

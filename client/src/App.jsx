@@ -13,6 +13,7 @@ import CompleteProfileProtected from './components/CompleteProfileProtected';
 import DashboardPage from './pages/dashboard/DashboardPage';
 import PublicRoute from './components/PublicRoute';
 import CoursePage from './pages/course/CoursePage';
+import FacultyPage from './pages/faculty/FacultyPage';
 
 function App() {
   return (
@@ -60,9 +61,16 @@ function App() {
           }
         >
           <Route path='dashboard' element={<DashboardPage />} />
-          <Route path='faculties' element='faculties' />
+          <Route
+            path='faculties'
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <FacultyPage />
+              </ProtectedRoute>
+            }
+          />
           <Route path='departments' element='departments' />
-          <Route path='courses' element=<CoursePage /> />
+          <Route path='courses' element={<CoursePage />} />
           <Route path='lecturers' element='lecturers' />
           <Route path='students' element='students' />
           <Route path='attendance' element='attendance' />

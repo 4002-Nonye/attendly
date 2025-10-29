@@ -20,7 +20,7 @@ function LecturerCourseCard({ course, actionText = 'Start Attendance', actionLin
           </span>
         </div>
         <p className='text-xs text-gray-500'>
-          {course.department?.name || course.department}
+          {course.department.name}
         </p>
       </div>
 

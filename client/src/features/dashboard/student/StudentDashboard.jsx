@@ -25,6 +25,7 @@ import { useSchoolInfo } from '../../../hooks/useSchoolInfo';
 import Button from '../../../components/Button';
 import SectionIntro from '../../../components/SectionIntro';
 import StudentCourseCard from '../../../components/StudentCourseCard';
+import DataTable from '../../../components/DataTable';
 
 function StudentDashboard() {
   const { data: stats, isPending: isStatPending } = useStudentDashboardStats();
@@ -73,7 +74,43 @@ function StudentDashboard() {
     },
   ];
 
-  const tableFormat = ['Course', 'Date & Time', 'Status'];
+  const columns = ['Course', 'Date & Time', 'Status'];
+
+  // table row
+  const renderRow = (session) => (
+    <tr
+      key={session.sessionId}
+      className={` hover:bg-gray-50 transition-colors cursor-pointer`}
+    >
+      <td className='px-4 lg:px-6 py-4 whitespace-nowrap'>
+        <div>
+          <div className='text-sm font-medium text-gray-900'>
+            {session.courseTitle}
+          </div>
+          <div className='text-sm text-gray-500'>{session.courseCode}</div>
+        </div>
+      </td>
+      <td className='px-4 lg:px-6 py-4 whitespace-nowrap'>
+        <div className='flex items-center gap-2 text-sm text-gray-900'>
+          <Calendar className='w-4 h-4 text-gray-400' />
+          <span>
+            {new Date(session.date).toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+            })}
+          </span>
+        </div>
+        <div className='flex items-center gap-2 text-sm text-gray-500 mt-1'>
+          <Clock className='w-4 h-4 text-gray-400' />
+          <span>{session.time}</span>
+        </div>
+      </td>
+      <td className='px-4 lg:px-6 py-4 whitespace-nowrap'>
+        <StatusBadge status={session.studentStatus} />
+      </td>
+    </tr>
+  );
+
   if (isStatPending || isAttReportPending || isSessionPending) {
     return <StudentDashboardSkeleton />;
   }
@@ -135,85 +172,21 @@ function StudentDashboard() {
           </div>
 
           {/* Recent Attendance Sessions */}
-          <div className='bg-white rounded-xl shadow-sm border border-gray-100 mb-6 lg:mb-8'>
-            <div className='p-4 lg:p-6 border-b border-gray-100'>
-              <div className='flex items-center justify-between'>
-                <div>
-                  <h3 className='text-lg font-semibold text-gray-900'>
-                    Recent Attendance
-                  </h3>
-                  <p className='text-sm text-gray-600 mt-1'>
-                    Your latest attendance records
-                  </p>
-                </div>
-                {recentSessions.length > 0 && (
-                  <Link
-                    to='/attendance'
-                    className='text-sm text-blue-600 hover:underline font-medium'
-                  >
-                    View all
-                  </Link>
-                )}
-              </div>
-            </div>
-
-            <div className='overflow-x-auto'>
-              <table className='w-full'>
-                <thead className='bg-gray-50'>
-                  <tr>
-                    {tableFormat.map((f) => (
-                      <th key={f} className='px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                        {f}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className='bg-white divide-y divide-gray-200'>
-                  {recentSessions.map((session, index) => (
-                    <tr
-                      key={session.sessionId}
-                      className={`
-                    hover:bg-gray-50 transition-colors cursor-pointer
-                    ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}
-                  `}
-                    >
-                      <td className='px-4 lg:px-6 py-4 whitespace-nowrap'>
-                        <div>
-                          <div className='text-sm font-medium text-gray-900'>
-                            {session.courseTitle}
-                          </div>
-                          <div className='text-sm text-gray-500'>
-                            {session.courseCode}
-                          </div>
-                        </div>
-                      </td>
-                      <td className='px-4 lg:px-6 py-4 whitespace-nowrap'>
-                        <div className='flex items-center gap-2 text-sm text-gray-900'>
-                          <Calendar className='w-4 h-4 text-gray-400' />
-                          <span>
-                            {new Date(session.date).toLocaleDateString(
-                              'en-US',
-                              {
-                                month: 'short',
-                                day: 'numeric',
-                              }
-                            )}
-                          </span>
-                        </div>
-                        <div className='flex items-center gap-2 text-sm text-gray-500 mt-1'>
-                          <Clock className='w-4 h-4 text-gray-400' />
-                          <span>{session.time}</span>
-                        </div>
-                      </td>
-                      <td className='px-4 lg:px-6 py-4 whitespace-nowrap'>
-                        <StatusBadge status={session.studentStatus} />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <DataTable
+            columns={columns}
+            renderRow={renderRow}
+            data={recentSessions}
+            title='Recent Attendance'
+            subTitle='Your latest attendance records'
+            showHeaderIntro={true}
+            length={recentSessions.length}
+            linkTo='/attendance'
+            isPending={isSessionPending}
+            EmptyIcon={Calendar}
+            emptyMessage='No recent sessions found'
+            emptySubMessage='Sessions will appear here once created'
+            emptyClassName='h-72'
+          />
 
           {/* Quick Actions */}
           <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-4 lg:p-6'>
