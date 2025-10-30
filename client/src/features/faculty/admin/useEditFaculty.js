@@ -1,11 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { editFaculty } from '../../../apis/faculty/apiFaculty';
+import { editFaculty as editFacultyApi } from '../../../apis/faculty/apiFaculty';
 
 export function useEditFaculty() {
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: editFaculty,
+    mutationFn: editFacultyApi,
     onSuccess: (data) => {
       toast.success(data.message || 'Faculty updated successfully');
       queryClient.invalidateQueries(['facultyStats']);

@@ -60,7 +60,7 @@ function AdminFaculty() {
       <tr key={faculty._id} className='hover:bg-gray-50 transition-colors'>
         <td className='px-6 py-4'>
           <span className='text-sm font-medium capitalize text-gray-900'>
-            {faculty.name}
+          Faculty of  {faculty.name}
           </span>
         </td>
         <td className='px-6 py-4 text-sm text-gray-700'>

@@ -6,6 +6,7 @@ import Button from '../../../components/Button';
 import { useCreateFaculty } from './useCreateFaculty';
 import PropTypes from 'prop-types';
 import { useEditFaculty } from './useEditFaculty';
+import toast from 'react-hot-toast';
 
 function FacultyForm({ onClose, initialData, isSubmitting }) {
   const { _id: editId, name } = initialData || {};
@@ -17,17 +18,23 @@ function FacultyForm({ onClose, initialData, isSubmitting }) {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isDirty },
     reset,
   } = useForm({
     defaultValues: isEditSession ? { facultyName: name } : {},
   });
 
   const onSubmit = (data) => {
-    if (isEditSession) return;
-    createNewFaculty(data, {
-      onSuccess: () => onClose(),
-    });
+    if (isEditSession && !isDirty) {
+      toast.error('No changes were made');
+      return;
+    }
+    if (!isEditSession)
+      createNewFaculty(data, {
+        onSuccess: () => onClose(),
+      });
+
+    editFaculty({ id: editId, ...data }, { onSuccess: () => onClose() });
   };
 
   return (

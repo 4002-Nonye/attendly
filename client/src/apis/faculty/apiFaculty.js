@@ -36,9 +36,9 @@ export const createFaculty = async (data) => {
 };
 
 // admin edit faculty
-export const editFaculty = async (id,data) => {
+export const editFaculty = async (data) => {
   try {
-    const response = await axios.put(`/api/faculties/${id}`, data);
+    const response = await axios.put(`/api/faculties/${data.id}`, data);
     return response.data;
   } catch (error) {
     throw error.response.data;
