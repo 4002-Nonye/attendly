@@ -84,7 +84,7 @@ exports.editFaculty = async (req, res) => {
 
     // update faculty name
     const updatedData = await Faculty.findOneAndUpdate(
-      { _id: facultyId, schoolId }, // restrict to admin's school
+      { _id: facultyId, schoolId },
       { name: facultyName },
       { new: true }
     );

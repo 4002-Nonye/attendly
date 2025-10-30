@@ -7,13 +7,15 @@ import { useCreateFaculty } from './useCreateFaculty';
 import PropTypes from 'prop-types';
 import { useEditFaculty } from './useEditFaculty';
 import toast from 'react-hot-toast';
+import { ClipLoader } from 'react-spinners';
 
-function FacultyForm({ onClose, initialData, isSubmitting }) {
+function FacultyForm({ onClose, initialData }) {
   const { _id: editId, name } = initialData || {};
-  const { createNewFaculty } = useCreateFaculty();
-  const { editFaculty } = useEditFaculty();
+  const { createNewFaculty, isPending: isCreating } = useCreateFaculty();
+  const { editFaculty, isPending: isEditing } = useEditFaculty();
 
   const isEditSession = Boolean(editId);
+  const isSubmitting = isCreating || isEditing;
 
   const {
     register,
@@ -29,12 +31,20 @@ function FacultyForm({ onClose, initialData, isSubmitting }) {
       toast.error('No changes were made');
       return;
     }
-    if (!isEditSession)
+
+    if (!isEditSession) {
       createNewFaculty(data, {
         onSuccess: () => onClose(),
       });
+      return;
+    }
 
-    editFaculty({ id: editId, ...data }, { onSuccess: () => onClose() });
+    editFaculty(
+      { id: editId, ...data },
+      {
+        onSuccess: () => onClose(),
+      }
+    );
   };
 
   return (
@@ -57,23 +67,25 @@ function FacultyForm({ onClose, initialData, isSubmitting }) {
         <div className='flex gap-3 justify-end pt-2'>
           <Button
             type='button'
+            className='w-36'
             variant='secondary'
             onClick={() => {
               onClose();
               reset();
             }}
             disabled={isSubmitting}
+            
           >
             Cancel
           </Button>
-          <Button type='submit' variant='primary' disabled={isSubmitting}>
-            {isSubmitting
-              ? isEditSession
-                ? 'Saving...'
-                : 'Adding...'
-              : isEditSession
-              ? 'Save Changes'
-              : 'Add Faculty'}
+          <Button type='submit' variant='primary' disabled={isSubmitting} className='w-36' >
+            {isSubmitting ? (
+              <ClipLoader size={16} color='white'  />
+            ) : isEditSession ? (
+              'Save Changes'
+            ) : (
+              'Add Faculty'
+            )}
           </Button>
         </div>
       </form>
@@ -84,7 +96,6 @@ function FacultyForm({ onClose, initialData, isSubmitting }) {
 FacultyForm.propTypes = {
   onClose: PropTypes.func.isRequired,
   initialData: PropTypes.object,
-  isSubmitting: PropTypes.bool,
 };
 
 export default FacultyForm;

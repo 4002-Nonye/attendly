@@ -8,7 +8,7 @@ export function useEditFaculty() {
     mutationFn: editFacultyApi,
     onSuccess: (data) => {
       toast.success(data.message || 'Faculty updated successfully');
-      queryClient.invalidateQueries(['facultyStats']);
+      queryClient.invalidateQueries({ queryKey: ['facultyStats'] });
     },
     onError: (err) => toast.error(err.error || 'Failed to update faculty'),
   });

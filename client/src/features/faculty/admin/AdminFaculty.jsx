@@ -9,6 +9,8 @@ import FacultyForm from './FacultyForm';
 import { useFacultyStats } from './useFacultyStats';
 import { useSearchParams } from 'react-router-dom';
 import { useDebounce } from 'use-debounce';
+import { useDeleteFaculty } from './useDeleteFaculty';
+import ConfirmDeletDialog from '../../../components/ConfirmDeleteDialog';
 
 function AdminFaculty() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -17,8 +19,10 @@ function AdminFaculty() {
   });
   const [debouncedQuery] = useDebounce(searchQuery, 500); // wait 500ms
   const [showModal, setShowModal] = useState(false);
+
   const { data: faculties, isPending } = useFacultyStats(debouncedQuery);
-  
+  const { deleteFaculty, isPending: isDeleting } = useDeleteFaculty();
+
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedFaculty, setSelectedFaculty] = useState(null);
 
@@ -41,6 +45,19 @@ function AdminFaculty() {
     setShowDeleteModal(true);
   };
 
+  const handleConfirmDelete = () => {
+    deleteFaculty(selectedFaculty._id, {
+      onSuccess: () => {
+        setShowDeleteModal(false);
+        setSelectedFaculty(null);
+      },
+    });
+  };
+  const handleCloseDeleteModal = () => {
+    setShowDeleteModal(false);
+    setSelectedFaculty(null);
+  };
+
   const handleCloseModal = () => {
     setShowModal(false);
     setSelectedFaculty(null);
@@ -60,7 +77,7 @@ function AdminFaculty() {
       <tr key={faculty._id} className='hover:bg-gray-50 transition-colors'>
         <td className='px-6 py-4'>
           <span className='text-sm font-medium capitalize text-gray-900'>
-          Faculty of  {faculty.name}
+            {faculty.name}
           </span>
         </td>
         <td className='px-6 py-4 text-sm text-gray-700'>
@@ -78,14 +95,14 @@ function AdminFaculty() {
         <td className='px-6 py-4'>
           <div className='flex items-start gap-3'>
             <Button
-            size=''
+              size=''
               onClick={() => handleEdit(faculty)}
               className='text-blue-500 hover:text-blue-700'
             >
               <Edit size={20} />
             </Button>
             <Button
-             size=''
+              size=''
               onClick={() => handleDelete(faculty)}
               className='text-red-500 hover:text-red-700'
             >
@@ -161,6 +178,18 @@ function AdminFaculty() {
       {/* Add/Edit Modal */}
       {showModal && (
         <FacultyForm onClose={handleCloseModal} initialData={selectedFaculty} />
+      )}
+
+      {/*confirm delete Modal */}
+      {showDeleteModal && (
+        <ConfirmDeletDialog
+          onClose={handleCloseDeleteModal}
+          onConfirm={handleConfirmDelete}
+          title='Confirm Deletion'
+          isDeleting={isDeleting}
+          message='Deleting this faculty will also delete all departments and courses
+            tied to it. This action cannot be undone.'
+        />
       )}
     </div>
   );

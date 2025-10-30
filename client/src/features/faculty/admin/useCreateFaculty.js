@@ -8,7 +8,8 @@ export function useCreateFaculty() {
     mutationFn: createFaculty,
     onSuccess: (data) => {
       toast.success(data.message || 'Faculty created successfully');
-      queryClient.invalidateQueries(['facultyStats']);
+      queryClient.invalidateQueries({ queryKey: ['facultyStats'] });
+     
     },
     onError: (err) => toast.error(err.error || 'Failed to create faculty'),
   });
