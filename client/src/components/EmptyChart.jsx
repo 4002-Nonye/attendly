@@ -9,7 +9,7 @@ function EmptyChart({
 }) {
   return (
     <div
-      className={`h-64 flex flex-col items-center  justify-center ${className} `}
+      className={`h-64  flex flex-col items-center  justify-center ${className} `}
     >
       {Icon ? (
         <Icon className='w-16 h-16 mb-4 text-gray-300' />

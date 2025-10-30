@@ -8,9 +8,10 @@ function SearchBar({
   className = '',
 }) {
   return (
-    <div className={`relative w-full sm:w-80 ${className}`}>
+    <div className={`relative w-full sm:w-96 ${className}`}>
       <Search className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5' />
       <input
+        id='input'
         type='text'
         placeholder={placeholder}
         value={value}

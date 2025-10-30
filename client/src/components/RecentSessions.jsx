@@ -1,13 +1,13 @@
 import { Calendar, Clock, CheckCircle2 } from 'lucide-react';
-
 import { useRecentSession } from '../features/dashboard/general/useRecentSession';
 import TableSkeleton from './TableSkeleton';
-
 import DataTable from './DataTable';
+import SectionIntro from './SectionIntro';
+import EmptyChart from './EmptyChart';
+import EmptyCard from './EmptyCard';
 
 function RecentSessions() {
   const { data, isPending } = useRecentSession();
-
   const recentSessions = data?.sessions || [];
 
   const columns = [
@@ -18,6 +18,7 @@ function RecentSessions() {
     'Attendance',
     'Status',
   ];
+
   const renderRow = (session) => (
     <tr key={session.id} className='hover:bg-gray-50 transition-colors'>
       <td className='px-6 py-4 whitespace-nowrap'>
@@ -28,12 +29,15 @@ function RecentSessions() {
           <div className='text-sm text-gray-500'>{session.courseCode}</div>
         </div>
       </td>
+
       <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900'>
         {session.startedBy}
       </td>
+
       <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900'>
         {session.status === 'active' ? 'In progress' : session.endedBy}
       </td>
+
       <td className='px-6 py-4 whitespace-nowrap'>
         <div className='flex items-center gap-2 text-sm text-gray-900'>
           <Calendar className='w-4 h-4 text-gray-400' />
@@ -50,6 +54,7 @@ function RecentSessions() {
           <span>{session.time}</span>
         </div>
       </td>
+
       <td className='px-6 py-4 whitespace-nowrap'>
         <div className='text-sm text-gray-900 font-medium'>
           {session.attended}/{session.enrolled}
@@ -61,6 +66,7 @@ function RecentSessions() {
           % present
         </div>
       </td>
+
       <td className='px-6 py-4 whitespace-nowrap'>
         {session.status === 'active' ? (
           <span className='inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800'>
@@ -77,24 +83,33 @@ function RecentSessions() {
     </tr>
   );
 
-  if (isPending) {
-    return <TableSkeleton />;
-  }
+  if (isPending) return <TableSkeleton />;
 
   return (
-    <DataTable
-      columns={columns}
-      renderRow={renderRow}
-      data={recentSessions}
-      title='Recent Class Sessions'
-      subTitle={`Latest attendance sessions across all courses`}
-      showHeaderIntro={true}
-      isPending={isPending}
-      EmptyIcon={Calendar}
-      emptyMessage='No recent sessions found'
-      emptySubMessage='Sessions will appear here once created'
-      emptyClassName='h-72'
-    />
+    <>
+      {!recentSessions.length ? (
+        <EmptyChart
+          icon={Calendar}
+          message='No recent sessions found'
+          subMessage='Sessions will appear here once created'
+          iconColor='w-8 h-8 mb-4 text-gray-300'
+          className='bg-white rounded-xl shadow-sm border border-gray-100 p-12 mb-8 h-96'
+        />
+      ) : (
+        <DataTable
+          columns={columns}
+          renderRow={renderRow}
+          data={recentSessions}
+        >
+          <div className='p-6 border-b border-gray-100'>
+            <SectionIntro
+              title='Recent Class Sessions'
+              subTitle='Latest attendance sessions across all courses'
+            />
+          </div>
+        </DataTable>
+      )}
+    </>
   );
 }
 

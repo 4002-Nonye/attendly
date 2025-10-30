@@ -18,14 +18,13 @@ exports.getFacultiesBySchool = async (req, res) => {
 
     res.status(200).json({ faculties });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
 
 exports.createFaculty = async (req, res) => {
   try {
-    const { name: facultyName } = req.body;
+    const {  facultyName } = req.body;
     const { schoolId, id: userId } = req.user;
 
     // ensure no empty fields
@@ -149,15 +148,15 @@ exports.deleteFaculty = async (req, res) => {
 exports.getFacultyStats = async (req, res) => {
   try {
     const { schoolId } = req.user;
-    const { searchQuery } = req.query;
+    const { name } = req.query;
 
     const matchFilter = {
       schoolId: mongoose.Types.ObjectId.createFromHexString(schoolId),
     };
 
     // Add search filter
-    if (searchQuery) {
-      matchFilter.name = { $regex: searchQuery, $options: 'i' };
+    if (name) {
+      matchFilter.name = { $regex: name, $options: 'i' };
     }
 
     const facultyStats = await Faculty.aggregate([
@@ -254,7 +253,7 @@ exports.getFacultyStats = async (req, res) => {
       },
 
       // 8. Sort by name
-      { $sort: { name: 1 } },
+      { $sort: { createdAt: -1 } },
     ]);
 
     return res.status(200).json({

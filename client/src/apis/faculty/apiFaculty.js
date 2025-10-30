@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // for dropdown (general)
-export const getFaculties = async (schoolId) => {
+export const getFacultyOptions = async (schoolId) => {
   try {
     if (!schoolId) return;
     const response = await axios.get(`/api/faculties/${schoolId}`);
@@ -12,11 +12,33 @@ export const getFaculties = async (schoolId) => {
   }
 };
 
-
 // admin
-export const getFacultyStats = async () => {
+export const getFacultyStats = async ({ queryKey }) => {
+  const [_key, query] = queryKey;
+  const params = new URLSearchParams(query).toString();
+
   try {
-    const response = await axios.get(`/api/faculties`);
+    const response = await axios.get(`/api/faculties?${params}`);
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+// admin create faculty
+export const createFaculty = async (data) => {
+  try {
+    const response = await axios.post('/api/faculties', data);
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+// admin edit faculty
+export const editFaculty = async (id,data) => {
+  try {
+    const response = await axios.put(`/api/faculties/${id}`, data);
     return response.data;
   } catch (error) {
     throw error.response.data;

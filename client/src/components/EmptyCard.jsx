@@ -7,9 +7,12 @@ function EmptyCard({
   icon: Icon,
   iconColor,
   iconBg,
+  wrapperClassName,
 }) {
   return (
-    <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-12'>
+    <div
+      className={`bg-white rounded-xl shadow-sm border border-gray-100 p-12 ${wrapperClassName}`}
+    >
       <div className='max-w-md mx-auto text-center flex flex-col justify-center items-center '>
         <div
           className={`w-16 h-16 ${iconBg} rounded-full flex items-center justify-center mx-auto mb-4`}
@@ -31,8 +34,7 @@ EmptyCard.propTypes = {
   icon: PropTypes.elementType,
   iconColor: PropTypes.string,
   iconBg: PropTypes.string,
+  wrapperClassName: PropTypes.string,
 };
-
-
 
 export default EmptyCard;
