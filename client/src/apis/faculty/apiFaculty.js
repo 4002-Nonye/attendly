@@ -38,7 +38,7 @@ export const createFaculty = async (data) => {
 // admin edit faculty
 export const editFaculty = async (data) => {
   try {
-        const { id, ...updateData } = data;
+    const { id, ...updateData } = data;
     const response = await axios.put(`/api/faculties/${id}`, updateData);
     return response.data;
   } catch (error) {
@@ -47,7 +47,6 @@ export const editFaculty = async (data) => {
 };
 
 export const deleteFaculty = async (id) => {
-  console.log(id)
   try {
     const response = await axios.delete(`/api/faculties/${id}`);
     return response.data;

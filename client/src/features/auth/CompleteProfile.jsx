@@ -1,5 +1,5 @@
 import { FormProvider, useForm } from 'react-hook-form';
-import { useState } from 'react';
+
 import AdminStepTwo from './steps/admin/AdminStepTwo';
 import SchoolInfo from './steps/general/SchoolInfo';
 import SelectRole from '../../components/SelectRole';
@@ -9,6 +9,7 @@ import Logo from '../../components/Logo';
 import { ClipLoader } from 'react-spinners';
 import ChangeRole from '../../components/ChangeRole';
 import { useCompleteProfile } from './hooks/useCompleteProfile';
+import { useState } from 'react';
 
 function CompleteProfile() {
   const methods = useForm();
@@ -24,6 +25,7 @@ function CompleteProfile() {
     setRole('');
     reset();
   };
+
   const onSubmit = (data) => {
     const { school: schoolInput, faculty, department, matricNo, level } = data;
     const baseData = {

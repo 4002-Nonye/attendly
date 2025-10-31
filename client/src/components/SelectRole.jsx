@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { GraduationCap, UserStar, BookOpenText } from 'lucide-react';
 import Button from './Button';
+import { useFormStep } from '../contexts/hooks/useFormStep';
 
 const roles = [
   {
@@ -29,12 +30,19 @@ const roles = [
 function SelectRole({ selectedRole, onSelect }) {
   // track the selected role within this component
   const [roleLocal, setRoleLocal] = useState(selectedRole || null);
+  const { resetStep } = useFormStep();
 
   const handleContinue = () => {
     if (roleLocal) {
       onSelect(roleLocal); // update parent component
     }
   };
+
+  useEffect(() => {
+    if (!roleLocal) {
+      resetStep();
+    }
+  }, [roleLocal, resetStep]);
 
   return (
     <div className='my-6 flex flex-col items-center w-full mt-20'>

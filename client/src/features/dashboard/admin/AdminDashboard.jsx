@@ -27,11 +27,11 @@ function AdminDashboard() {
   const { semester, academicYear } = useSchoolInfo();
 
   const {
-    totalFaculties,
-    totalDepartments,
-    totalCourses,
-    totalLecturers,
-    totalStudents,
+    totalFaculties=0,
+    totalDepartments=0,
+    totalCourses=0,
+    totalLecturers=0,
+    totalStudents=0,
   } = stat || {};
 
   const stats = [

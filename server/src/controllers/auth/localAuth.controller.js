@@ -112,6 +112,7 @@ exports.signup = async (req, res) => {
       user: safeToSendUser,
     });
   } catch (error) {
+    console.log(error)
     return res.status(500).json({ error: 'Internal server error' });
   }
 };

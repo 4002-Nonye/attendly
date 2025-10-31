@@ -42,6 +42,7 @@ function InputField({
           type={inputType}
           name={htmlFor}
           id={htmlFor}
+          autoFocus={true}
           placeholder={placeholder}
           autoComplete={autoComplete}
           className={` py-4 rounded-lg border border-gray-300 ${

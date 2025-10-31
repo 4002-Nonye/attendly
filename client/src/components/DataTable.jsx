@@ -1,4 +1,4 @@
-import SectionIntro from './SectionIntro';
+import { ClipLoader } from 'react-spinners';
 import TableSkeleton from './TableSkeleton';
 import PropTypes from 'prop-types';
 
@@ -10,10 +10,13 @@ function DataTable({
   onDelete,
   children,
   isPending = false,
+  skeleton = true,
 }) {
-  if (isPending) {
+
+  if (isPending && skeleton) {
     return <TableSkeleton />;
   }
+
   return (
     <div className='bg-white mb-8 rounded-xl shadow-sm border border-gray-100 overflow-hidden'>
       {children}
@@ -37,7 +40,20 @@ function DataTable({
             </tr>
           </thead>
           <tbody className='bg-white divide-y divide-gray-200'>
-            {data?.map((row) => renderRow(row))}
+
+
+            {isPending && !skeleton ? (
+              <tr>
+                <td colSpan={columns.length + (onEdit || onDelete ? 1 : 0)}>
+                  <div className='flex justify-center items-center h-48'>
+                    <ClipLoader size={40} color='#1e1b4b'  />
+                  </div>
+                </td>
+              </tr>
+            ) : (
+
+              data?.map((row) => renderRow(row))
+            )}
           </tbody>
         </table>
       </div>
@@ -52,6 +68,8 @@ DataTable.propTypes = {
   onEdit: PropTypes.func,
   onDelete: PropTypes.func,
   children: PropTypes.node,
+  isPending: PropTypes.bool,
+  skeleton: PropTypes.bool,
 };
 
 export default DataTable;

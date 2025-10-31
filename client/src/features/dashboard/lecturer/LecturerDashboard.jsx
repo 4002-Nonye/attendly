@@ -30,7 +30,7 @@ function LecturerDashboard() {
   const { academicYear, semester } = useSchoolInfo();
   const { data: stat, isStatPending } = useLecturerDashboardStats();
 
-  const { totalStudents, totalSessions, activeSessions, totalCourses } =
+  const { totalStudents=0, totalSessions=0, activeSessions=0, totalCourses=0 } =
     stat || {};
 
   const displayedCourses =

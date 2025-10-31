@@ -14,6 +14,7 @@ import DashboardPage from './pages/dashboard/DashboardPage';
 import PublicRoute from './components/PublicRoute';
 import CoursePage from './pages/course/CoursePage';
 import FacultyPage from './pages/faculty/FacultyPage';
+import DepartmentPage from './pages/department/DepartmentPage';
 
 function App() {
   return (
@@ -69,7 +70,14 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path='departments' element='departments' />
+          <Route
+            path='departments'
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <DepartmentPage />
+              </ProtectedRoute>
+            }
+          />
           <Route path='courses' element={<CoursePage />} />
           <Route path='lecturers' element='lecturers' />
           <Route path='students' element='students' />

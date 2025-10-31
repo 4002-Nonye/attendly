@@ -1,26 +1,25 @@
 import PropTypes from 'prop-types';
-import { AlertTriangle, X } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import { ClipLoader } from 'react-spinners';
 import Button from './Button';
 import Modal from './Modal';
 
-function ConfirmDeletDialog({
+function ConfirmDeleteDialog({
+  isOpen,
   onClose,
   onConfirm,
   title,
-  isDeleting,
   message,
+  isDeleting,
 }) {
   return (
-    <Modal onClose={onClose}>
-     
-      <div className='flex items-start justify-between mb-4'>
-        <div className='flex items-center gap-3'>
-          <h3 className='text-xl font-bold text-gray-900'>{title}</h3>
-        </div>
-      </div>
-
-      
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={title}
+      closeOnOutsideClick={!isDeleting}
+      closeOnEscape={!isDeleting}
+    >
       <div className='mb-6'>
         <div className='bg-red-50 border border-red-200 rounded-lg p-4'>
           <p className='text-sm font-semibold text-red-800 flex items-center gap-2'>
@@ -31,13 +30,13 @@ function ConfirmDeletDialog({
         </div>
       </div>
 
-      {/* CTA */}
+      {/* Cta */}
       <div className='flex gap-3 justify-end'>
         <Button
           type='button'
           variant='secondary'
-          size='md'
           className='w-26'
+          size='md'
           onClick={onClose}
           disabled={isDeleting}
         >
@@ -45,11 +44,11 @@ function ConfirmDeletDialog({
         </Button>
         <Button
           type='button'
+          variant='danger'
           size='md'
+          className='w-26'
           onClick={onConfirm}
           disabled={isDeleting}
-          variant='danger'
-          className='w-26'
         >
           {isDeleting ? <ClipLoader size={16} color='white' /> : 'Delete'}
         </Button>
@@ -58,12 +57,13 @@ function ConfirmDeletDialog({
   );
 }
 
-ConfirmDeletDialog.propTypes = {
+ConfirmDeleteDialog.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   onConfirm: PropTypes.func.isRequired,
-  isDeleting: PropTypes.bool,
   title: PropTypes.string.isRequired,
   message: PropTypes.string.isRequired,
+  isDeleting: PropTypes.bool,
 };
 
-export default ConfirmDeletDialog;
+export default ConfirmDeleteDialog;

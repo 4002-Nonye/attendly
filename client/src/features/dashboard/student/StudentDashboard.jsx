@@ -26,6 +26,7 @@ import Button from '../../../components/Button';
 import SectionIntro from '../../../components/SectionIntro';
 import StudentCourseCard from '../../../components/StudentCourseCard';
 import DataTable from '../../../components/DataTable';
+import EmptyChart from '../../../components/EmptyChart';
 
 function StudentDashboard() {
   const { data: stats, isPending: isStatPending } = useStudentDashboardStats();
@@ -127,8 +128,8 @@ function StudentDashboard() {
         <EmptyCard
           icon={AlertCircle}
           iconColor='text-orange-600'
-          title='No Active Academic Period'
-          message={`Your school administrator hasn't set up the current academic year and semester yet.  Please contact your admin to activate the academic period.`}
+          title='Academic Year Not Set'
+          message="Your school administrator hasn't configured the current academic year and semester yet. Please contact your admin or check back later."
           iconBg='bg-orange-100'
         />
       ) : (
@@ -172,21 +173,28 @@ function StudentDashboard() {
           </div>
 
           {/* Recent Attendance Sessions */}
-          <DataTable
-            columns={columns}
-            renderRow={renderRow}
-            data={recentSessions}
-            title='Recent Attendance'
-            subTitle='Your latest attendance records'
-            showHeaderIntro={true}
-            length={recentSessions.length}
-            linkTo='/attendance'
-            isPending={isSessionPending}
-            EmptyIcon={Calendar}
-            emptyMessage='No recent sessions found'
-            emptySubMessage='Sessions will appear here once created'
-            emptyClassName='h-72'
-          />
+          {!recentSessions.length ? (
+            <EmptyChart
+              icon={Calendar}
+              message='No recent sessions found'
+              subMessage='Sessions will appear here once created'
+              iconColor='w-8 h-8 mb-4 text-gray-300'
+              className='bg-white rounded-xl shadow-sm border border-gray-100 p-12 mb-8 h-96'
+            />
+          ) : (
+            <DataTable
+              columns={columns}
+              renderRow={renderRow}
+              data={recentSessions}
+            >
+              <div className='p-6 border-b border-gray-100'>
+                <SectionIntro
+                  title='Recent Class Sessions'
+                  subTitle='Latest attendance sessions across all courses'
+                />
+              </div>
+            </DataTable>
+          )}
 
           {/* Quick Actions */}
           <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-4 lg:p-6'>

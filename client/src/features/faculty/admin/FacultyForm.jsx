@@ -9,7 +9,7 @@ import { useEditFaculty } from './useEditFaculty';
 import toast from 'react-hot-toast';
 import { ClipLoader } from 'react-spinners';
 
-function FacultyForm({ onClose, initialData }) {
+function FacultyForm({ isOpen, onClose, initialData }) {
   const { _id: editId, name } = initialData || {};
   const { createNewFaculty, isPending: isCreating } = useCreateFaculty();
   const { editFaculty, isPending: isEditing } = useEditFaculty();
@@ -34,7 +34,10 @@ function FacultyForm({ onClose, initialData }) {
 
     if (!isEditSession) {
       createNewFaculty(data, {
-        onSuccess: () => onClose(),
+        onSuccess: () => {
+          reset();
+          onClose();
+        },
       });
       return;
     }
@@ -42,15 +45,26 @@ function FacultyForm({ onClose, initialData }) {
     editFaculty(
       { id: editId, ...data },
       {
-        onSuccess: () => onClose(),
+        onSuccess: () => {
+          reset();
+          onClose();
+        },
       }
     );
   };
 
+  const handleCancel = () => {
+    reset();
+    onClose();
+  };
+
   return (
     <Modal
-      onClose={onClose}
+      isOpen={isOpen}
+      onClose={handleCancel}
       title={isEditSession ? 'Edit Faculty' : 'Add New Faculty'}
+      closeOnOutsideClick={!isSubmitting}
+      closeOnEscape={!isSubmitting}
     >
       <form onSubmit={handleSubmit(onSubmit)}>
         <InputField
@@ -60,6 +74,10 @@ function FacultyForm({ onClose, initialData }) {
           placeholder='e.g. Science'
           {...register('facultyName', {
             required: 'Faculty name is required',
+            minLength: {
+              value: 2,
+              message: 'Faculty name must be at least 2 characters',
+            },
           })}
         />
         <Err msg={errors.facultyName?.message || ' '} />
@@ -69,20 +87,21 @@ function FacultyForm({ onClose, initialData }) {
             type='button'
             className='w-36'
             variant='secondary'
-            onClick={() => {
-              onClose();
-              reset();
-            }}
+            onClick={handleCancel}
             disabled={isSubmitting}
-            
           >
             Cancel
           </Button>
-          <Button type='submit' variant='primary' disabled={isSubmitting} className='w-36' >
+          <Button
+            type='submit'
+            variant='primary'
+            disabled={isSubmitting || (isEditSession && !isDirty)}
+            className='w-36'
+          >
             {isSubmitting ? (
-              <ClipLoader size={16} color='white'  />
+              <ClipLoader size={16} color='white' />
             ) : isEditSession ? (
-              'Save Changes'
+              'Save'
             ) : (
               'Add Faculty'
             )}
@@ -94,6 +113,7 @@ function FacultyForm({ onClose, initialData }) {
 }
 
 FacultyForm.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   initialData: PropTypes.object,
 };
