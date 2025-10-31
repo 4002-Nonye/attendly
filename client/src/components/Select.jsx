@@ -11,7 +11,14 @@ function Select({
   valueKey = '_id',
   labelKey = 'schoolName',
   ...rest
-}) {
+
+  
+}) 
+
+
+
+{
+  
   return (
     <>
       {label && (
@@ -26,10 +33,10 @@ function Select({
         <select
           id={htmlFor}
           className={`
-          border border-gray-300 rounded-md p-2 w-full
+          border border-gray-300 rounded-md pl-4 w-full
           focus:outline-none focus:ring-2 focus:ring-blue-500
           text-gray-600 text-sm cursor-pointer py-4
-          appearance-none bg-white
+          appearance-none bg-white capitalize
           ${selectClassname}
         `}
           {...rest}
@@ -37,7 +44,7 @@ function Select({
           <option value=''>{placeHolder}</option>
 
           {data?.map((item) => (
-            <option key={item[valueKey]} value={item[valueKey]}>
+            <option key={item[valueKey]} value={item[valueKey]}  >
               {item[labelKey]}
             </option>
           ))}

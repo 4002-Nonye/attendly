@@ -4,9 +4,33 @@ const Faculty = mongoose.model('Faculty');
 const Department = mongoose.model('Department');
 const Course = mongoose.model('Course');
 
-
-// FOR DROPDOWNS
+// FOR SIGNUP DROPDOWNS - only faculties that have departments
 exports.getFacultiesBySchool = async (req, res) => {
+  try {
+    const { schoolId } = req.params;
+
+    if (!schoolId) {
+      return res.status(400).json({ error: 'School ID is required' });
+    }
+
+    // Get faculty IDs that have departments
+    const facultyIds = await Department.distinct('faculty', { schoolId });
+
+    const faculties = await Faculty.find({
+      schoolId,
+      _id: { $in: facultyIds },
+    })
+      .select('name id')
+      .lean();
+
+    return res.status(200).json({ faculties });
+  } catch (error) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// FOR ADMIN DROPDOWNS - All faculties
+exports.getAllFacultiesBySchool = async (req, res) => {
   try {
     const { schoolId } = req.params;
 
@@ -16,15 +40,15 @@ exports.getFacultiesBySchool = async (req, res) => {
 
     const faculties = await Faculty.find({ schoolId }).select('name id').lean();
 
-    res.status(200).json({ faculties });
+    return res.status(200).json({ faculties });
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
 exports.createFaculty = async (req, res) => {
   try {
-    const {  facultyName } = req.body;
+    const { facultyName } = req.body;
     const { schoolId, id: userId } = req.user;
 
     // ensure no empty fields
@@ -98,7 +122,7 @@ exports.editFaculty = async (req, res) => {
       faculty: updatedData,
     });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -138,8 +162,7 @@ exports.deleteFaculty = async (req, res) => {
       return res.status(404).json({ error: 'Failed to delete faculty' });
     }
     return res.status(200).json({
-      message:
-        'Faculty deleted successfully',
+      message: 'Faculty deleted successfully',
     });
   } catch (error) {
     return res.status(500).json({ error: 'Internal server error' });
@@ -264,4 +287,3 @@ exports.getFacultyStats = async (req, res) => {
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
-

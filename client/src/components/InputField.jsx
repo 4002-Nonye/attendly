@@ -24,7 +24,7 @@ function InputField({
       {label && (
         <label
           htmlFor={htmlFor}
-          className={` font-medium text-gray-500 ${labelClassName}`}
+          className={` text-sm font-medium text-gray-500 ${labelClassName}`}
         >
           {label}
         </label>
@@ -42,7 +42,6 @@ function InputField({
           type={inputType}
           name={htmlFor}
           id={htmlFor}
-          autoFocus={true}
           placeholder={placeholder}
           autoComplete={autoComplete}
           className={` py-4 rounded-lg border border-gray-300 ${

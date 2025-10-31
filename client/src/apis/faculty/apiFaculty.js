@@ -1,11 +1,22 @@
 import axios from 'axios';
 
-// for dropdown (general)
+// for dropdown (signup)
 export const getFacultyOptions = async (schoolId) => {
   try {
     if (!schoolId) return;
     const response = await axios.get(`/api/faculties/${schoolId}`);
 
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+// for dropdown (creating a department)
+export const getAllFaculties = async (schoolId) => {
+  try {
+    if (!schoolId) return;
+    const response = await axios.get(`/api/faculties/${schoolId}/all`);
     return response.data;
   } catch (error) {
     throw error.response.data;

@@ -147,7 +147,7 @@ function SchoolInfo({ showLevel = false, showMatric = false }) {
             label='Faculty'
             placeHolder={
               !selectedSchoolId
-                ? 'Select a school first'
+                ? 'Select school first'
                 : isLoadingFaculties
                 ? 'Faculties loading...'
                 : '-- Select Faculty --'
@@ -169,12 +169,12 @@ function SchoolInfo({ showLevel = false, showMatric = false }) {
             label='Department'
             placeHolder={
               !selectedFacultyId
-                ? 'Select a faculty first'
+                ? 'Select faculty first'
                 : isLoadingDepartments
                 ? 'Departments loading...'
                 : '-- Select Department --'
             }
-            data={departmentData?.departments || []}
+            data={departmentData?.departments ||[]}
             labelKey='name'
             disabled={!selectedFacultyId || isLoadingDepartments}
             {...register('department', {
@@ -197,7 +197,7 @@ function SchoolInfo({ showLevel = false, showMatric = false }) {
               label='Level'
               placeHolder={
                 !selectedDepartmentId
-                  ? 'Select a department first'
+                  ? 'Select department first'
                   : '-- Select Level --'
               }
               data={levelOptions}

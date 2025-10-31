@@ -19,3 +19,31 @@ export const getDepartmentStats = async () => {
     throw error.response.data;
   }
 };
+
+export const createDepartment = async (data) => {
+  try {
+    const response = await axios.post('/api/departments',data);
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+export const editDepartment = async (data) => {
+  const { id, ...updateData } = data;
+  try {
+    const response = await axios.put(`/api/departments/${id}`,  updateData );
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+export const deleteDepartment = async (id) => {
+  try {
+    const response = await axios.delete(`/api/departments/${id}`);
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};

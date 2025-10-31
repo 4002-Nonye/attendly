@@ -12,7 +12,7 @@ const queryClient = new QueryClient({
     queries: {
       staleTime: 0,
       retry: 1, // TODO: MAYBE INCREASE RETRY
-      gcTime: 1000 * 60 * 5,
+      gcTime: 1000 * 60 * 10,
     },
   },
 });

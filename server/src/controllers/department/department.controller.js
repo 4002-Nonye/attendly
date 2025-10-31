@@ -6,7 +6,7 @@ const User = mongoose.model('User');
 
 exports.addDepartment = async (req, res) => {
   try {
-    const { name, faculty: facultyId, duration } = req.body;
+    const { name, faculty: facultyId, maxLevel } = req.body;
     const { schoolId } = req.user;
     if (!name || !facultyId) {
       return res.status(400).json({ error: 'Name and Faculty are required' });
@@ -27,7 +27,7 @@ exports.addDepartment = async (req, res) => {
       name,
       faculty: facultyId,
       schoolId,
-      maxLevel: duration,
+      maxLevel,
     });
     await newDepartment.save();
     return res.status(201).json({
@@ -63,6 +63,7 @@ exports.getDepartmentStats = async (req, res) => {
       .populate('faculty', 'name')
       .skip(skip)
       .limit(Number(limit))
+      .sort({ createdAt: -1 })
       .lean();
 
     // 2. For each department, calculate totals
@@ -108,13 +109,13 @@ exports.editDepartment = async (req, res) => {
   // allow faculty update too
   try {
     const { id: departmentId } = req.params;
-    const { name, facultyId } = req.body;
+    const { name, faculty } = req.body;
     const { schoolId } = req.user;
 
     // check if the department name already exist before assigning new name
     const existingDepartment = await Department.findOne({
       name,
-      faculty: facultyId,
+      faculty,
       schoolId,
     });
     if (
@@ -128,7 +129,7 @@ exports.editDepartment = async (req, res) => {
 
     const updatedDepartment = await Department.findByIdAndUpdate(
       departmentId,
-      { name: name.trim(), faculty: facultyId },
+      { name: name.trim(), faculty },
       { new: true }
     ).populate('faculty', 'name');
 
@@ -194,4 +195,3 @@ exports.getDepartmentsByFaculty = async (req, res) => {
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
-

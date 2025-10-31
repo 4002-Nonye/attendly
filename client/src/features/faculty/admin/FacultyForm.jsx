@@ -6,12 +6,12 @@ import Button from '../../../components/Button';
 import { useCreateFaculty } from './useCreateFaculty';
 import PropTypes from 'prop-types';
 import { useEditFaculty } from './useEditFaculty';
-import toast from 'react-hot-toast';
+
 import { ClipLoader } from 'react-spinners';
 
 function FacultyForm({ isOpen, onClose, initialData }) {
   const { _id: editId, name } = initialData || {};
-  const { createNewFaculty, isPending: isCreating } = useCreateFaculty();
+  const { createFaculty, isPending: isCreating } = useCreateFaculty();
   const { editFaculty, isPending: isEditing } = useEditFaculty();
 
   const isEditSession = Boolean(editId);
@@ -27,13 +27,10 @@ function FacultyForm({ isOpen, onClose, initialData }) {
   });
 
   const onSubmit = (data) => {
-    if (isEditSession && !isDirty) {
-      toast.error('No changes were made');
-      return;
-    }
+
 
     if (!isEditSession) {
-      createNewFaculty(data, {
+      createFaculty(data, {
         onSuccess: () => {
           reset();
           onClose();
@@ -68,7 +65,7 @@ function FacultyForm({ isOpen, onClose, initialData }) {
     >
       <form onSubmit={handleSubmit(onSubmit)}>
         <InputField
-          label='Faculty Name'
+          label='Faculty'
           type='text'
           htmlFor='faculty'
           placeholder='e.g. Science'
@@ -80,12 +77,12 @@ function FacultyForm({ isOpen, onClose, initialData }) {
             },
           })}
         />
-        <Err msg={errors.facultyName?.message || ' '} />
+        <Err className='mt-2 mb-4' msg={errors.facultyName?.message || ' '} />
 
         <div className='flex gap-3 justify-end pt-2'>
           <Button
             type='button'
-            className='w-36'
+            className='w-26'
             variant='secondary'
             onClick={handleCancel}
             disabled={isSubmitting}
@@ -96,15 +93,9 @@ function FacultyForm({ isOpen, onClose, initialData }) {
             type='submit'
             variant='primary'
             disabled={isSubmitting || (isEditSession && !isDirty)}
-            className='w-36'
+            className='w-26'
           >
-            {isSubmitting ? (
-              <ClipLoader size={16} color='white' />
-            ) : isEditSession ? (
-              'Save'
-            ) : (
-              'Add Faculty'
-            )}
+            {isSubmitting ? <ClipLoader size={16} color='white' /> : 'Save'}
           </Button>
         </div>
       </form>

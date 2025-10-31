@@ -41,14 +41,14 @@ function AdminDepartment() {
     setShowDeleteModal(true);
   };
 
-//   const handleConfirmDelete = () => {
-//     deleteFaculty(selectedFaculty._id, {
-//       onSuccess: () => {
-//         setShowDeleteModal(false);
-//         setSelectedDepartment(null);
-//       },
-//     });
-//   };
+  //   const handleConfirmDelete = () => {
+  //     deleteFaculty(selectedFaculty._id, {
+  //       onSuccess: () => {
+  //         setShowDeleteModal(false);
+  //         setSelectedDepartment(null);
+  //       },
+  //     });
+  //   };
 
   const handleCloseDeleteModal = () => {
     setShowDeleteModal(false);
@@ -57,7 +57,7 @@ function AdminDepartment() {
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setSelectedFaculty(null);
+    setSelectedDepartment(null);
   };
 
   const columns = [
@@ -73,10 +73,10 @@ function AdminDepartment() {
     <tr key={department._id} className='hover:bg-gray-50 transition-colors'>
       <td className='px-6 py-4'>
         <span className='text-sm font-medium capitalize text-gray-900'>
-          Department <span className='lowercase'>of</span> {department.name}
+          {department.name}
         </span>
       </td>
-      <td className='px-6 py-4 text-sm text-gray-700'>
+      <td className='px-6 py-4 text-sm text-gray-700 capitalize'>
         {department.faculty.name}
       </td>
       <td className='px-6 py-4 text-sm text-gray-700'>
@@ -182,7 +182,7 @@ function AdminDepartment() {
         <DepartmentForm
           isOpen={showModal}
           onClose={handleCloseModal}
-          //  initialData={selectedFaculty}
+          initialData={selectedDepartment}
         />
       )}
 
@@ -190,7 +190,7 @@ function AdminDepartment() {
       <ConfirmDeleteDialog
         isOpen={showDeleteModal}
         onClose={handleCloseDeleteModal}
-       //  onConfirm={handleConfirmDelete}
+        //  onConfirm={handleConfirmDelete}
         title='Delete Faculty'
         message='Deleting this faculty will also delete all departments and courses tied to it. This action cannot be undone.'
         // isDeleting={isDeleting}

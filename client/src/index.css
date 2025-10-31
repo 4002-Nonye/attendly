@@ -1,26 +1,32 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
-  --font-poppins: "Poppins", sans-serif; 
+  --font-poppins: 'Poppins', sans-serif;
 }
 
-*{
-    @apply font-poppins 
+* {
+  @apply font-poppins;
 }
-body{
-@apply w-full max-w-[2000px] m-auto h-full
-
+body {
+  @apply w-full max-w-[2000px] m-auto h-full;
 }
 input {
   @apply border-1 py-4 rounded-md border-gray-300 w-full outline-0 text-[15px]
   focus:border-transparent focus:ring-1 focus:ring-blue-500 focus:outline-none bg-transparent placeholder:text-gray-400 text-gray-600;
 }
 
-button{
-  @apply  not-disabled:cursor-pointer 
+button {
+  @apply not-disabled:cursor-pointer;
 }
+
+select option:not([value=""]) {
+  text-transform: capitalize;
+}
+
+
+
 /* Hide arrows from input[type=number] */
 
 /* For Chrome, Safari, Edge, Opera */
