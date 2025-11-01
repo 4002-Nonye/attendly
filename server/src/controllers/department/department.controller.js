@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const Department = mongoose.model('Department');
 const Course = mongoose.model('Course');
 const User = mongoose.model('User');
+const School = mongoose.model('School');
 
 exports.addDepartment = async (req, res) => {
   try {
@@ -11,6 +12,18 @@ exports.addDepartment = async (req, res) => {
     if (!name || !facultyId) {
       return res.status(400).json({ error: 'Name and Faculty are required' });
     }
+
+
+ // get school for academic year and semester
+    const school = await School.findById(schoolId).populate(
+      'currentAcademicYear'
+    );
+    if (!school.currentAcademicYear) {
+      return res
+        .status(400)
+        .json({ error: 'No active academic year found for this school' });
+    }
+
 
     // Check if department already exists in this faculty & school
     const existingDepartment = await Department.findOne({
@@ -42,63 +55,169 @@ exports.addDepartment = async (req, res) => {
 exports.getDepartmentStats = async (req, res) => {
   try {
     const { schoolId } = req.user;
-    const { searchQuery = '', page = 1, limit = 10, facultyId } = req.query;
+    const { name = '', page = 1, limit = 10, facultyId } = req.query;
 
-    const filter = { schoolId }; // Base filter
+    const matchFilter = {
+      schoolId: mongoose.Types.ObjectId.createFromHexString(schoolId),
+    };
 
     // OPTIONAL FILTERING
-    if (facultyId) filter.faculty = facultyId; // Filter by faculy id (dropdown)
-    if (searchQuery) {
-      // search by department
-      filter.name = { $regex: searchQuery, $options: 'i' };
+    if (facultyId) {
+      matchFilter.faculty =
+        mongoose.Types.ObjectId.createFromHexString(facultyId);
+    }
+    if (name) {
+      matchFilter.name = { $regex: name, $options: 'i' };
     }
 
     // PAGINATION
     const skip = (page - 1) * limit;
-    // Count total documents for pagination info
-    const totalDepartments = await Department.countDocuments(filter);
 
-    // 1. Fetch all departments for a given school, and populate name of faculty they belong to
-    const departments = await Department.find(filter)
-      .populate('faculty', 'name')
-      .skip(skip)
-      .limit(Number(limit))
-      .sort({ createdAt: -1 })
-      .lean();
+    const result = await Department.aggregate([
+      //  1: Match departments based on filters
+      { $match: matchFilter },
 
-    // 2. For each department, calculate totals
-    //    Promise.all for parallel execution
-    const departmentStats = await Promise.all(
-      departments.map(async (dept) => {
-        // total students in each department
-        const totalStudents = await User.countDocuments({
-          department: dept._id,
-          role: 'student',
-        });
-        // total lecturers in each department
-        const totalLecturers = await User.countDocuments({
-          department: dept._id,
-          role: 'lecturer',
-        });
-        // total courses in each department
-        const totalCourses = await Course.countDocuments({
-          department: dept._id,
-        });
+      //  2: Sort by creation date
+      { $sort: { createdAt: -1 } },
 
-        // store the department and totals
-        return {
-          ...dept,
-          totalDepartments,
-          totalStudents,
-          totalLecturers,
-          totalCourses,
-        };
-      })
-    );
+      //  3: Use $facet for parallel processing of count and data
+      {
+        $facet: {
+          // Get total count
+          metadata: [{ $count: 'totalDepartments' }],
+
+          // Get paginated data with stats
+          data: [
+            { $skip: skip },
+            { $limit: Number(limit) },
+
+            // Lookup faculty information
+            {
+              $lookup: {
+                from: 'faculties',
+                localField: 'faculty',
+                foreignField: '_id',
+                as: 'faculty',
+              },
+            },
+            {
+              $unwind: {
+                path: '$faculty',
+                preserveNullAndEmptyArrays: true,
+              },
+            },
+
+            // Lookup and count students
+            {
+              $lookup: {
+                from: 'users',
+                let: { deptId: '$_id' },
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $and: [
+                          { $eq: ['$department', '$$deptId'] },
+                          { $eq: ['$role', 'student'] },
+                        ],
+                      },
+                    },
+                  },
+                  { $count: 'count' },
+                ],
+                as: 'studentCount',
+              },
+            },
+
+            // Lookup and count lecturers
+            {
+              $lookup: {
+                from: 'users',
+                let: { deptId: '$_id' },
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $and: [
+                          { $eq: ['$department', '$$deptId'] },
+                          { $eq: ['$role', 'lecturer'] },
+                        ],
+                      },
+                    },
+                  },
+                  { $count: 'count' },
+                ],
+                as: 'lecturerCount',
+              },
+            },
+
+            // Lookup and count courses
+            {
+              $lookup: {
+                from: 'courses',
+                let: { deptId: '$_id' },
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: { $eq: ['$department', '$$deptId'] },
+                    },
+                  },
+                  { $count: 'count' },
+                ],
+                as: 'courseCount',
+              },
+            },
+
+            // Project final data
+            {
+              $project: {
+                _id: 1,
+                name: 1,
+                code: 1,
+                description: 1,
+                schoolId: 1,
+                maxLevel: 1,
+                createdAt: 1,
+                updatedAt: 1,
+                faculty: {
+                  _id: '$faculty._id',
+                  name: '$faculty.name',
+                },
+                totalStudents: {
+                  $ifNull: [{ $arrayElemAt: ['$studentCount.count', 0] }, 0],
+                },
+                totalLecturers: {
+                  $ifNull: [{ $arrayElemAt: ['$lecturerCount.count', 0] }, 0],
+                },
+                totalCourses: {
+                  $ifNull: [{ $arrayElemAt: ['$courseCount.count', 0] }, 0],
+                },
+              },
+            },
+          ],
+        },
+      },
+
+      //  4:  reshape output
+      {
+        $project: {
+          departmentStats: '$data',
+          totalDepartments: {
+            $ifNull: [{ $arrayElemAt: ['$metadata.totalDepartments', 0] }, 0],
+          },
+        },
+      },
+    ]);
+
+    const response = result[0] || {
+      departmentStats: [],
+      totalDepartments: 0,
+    };
 
     res.status(200).json({
-      departmentStats,
-      totalPages: Math.ceil(totalDepartments / limit),
+      departmentStats: response.departmentStats,
+      totalPages: Math.ceil(response.totalDepartments / limit),
+      totalDepartments: response.totalDepartments,
     });
   } catch (error) {
     return res.status(500).json({ error: 'Internal server error' });
@@ -152,26 +271,37 @@ exports.deleteDepartment = async (req, res) => {
     const { schoolId } = req.user;
 
     // Check if department exists
-    const department = await Department.findOne(departmentId, schoolId);
+    const department = await Department.findOne({
+      _id: departmentId,
+      schoolId,
+    });
     if (!department) {
       return res.status(404).json({ error: 'Department not found' });
     }
 
-    // Delete all courses linked to this department
-    await Course.deleteMany({ department: departmentId });
+    //  Check if any users are associated with this department
+    const usersCount = await User.countDocuments({ department: departmentId });
+    if (usersCount > 0) {
+      return res.status(400).json({
+        error: `Cannot delete department. ${usersCount} user(s) are still associated with it.`,
+      });
+    }
+
+    //  Delete all courses linked to this department
+    const coursesDeleted = await Course.deleteMany({
+      department: departmentId,
+    });
 
     // Delete department
     await Department.findByIdAndDelete(departmentId);
 
     return res.status(200).json({
-      message: 'Department and its courses deleted successfully',
+      message: 'Department deleted successfully',
     });
   } catch (error) {
-    console.error(error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
-
 exports.getDepartmentsByFaculty = async (req, res) => {
   try {
     const { facultyId } = req.params;

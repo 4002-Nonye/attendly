@@ -17,19 +17,6 @@ exports.createCourse = async (req, res) => {
 
     }
 
-    // Validate department and faculty belong to the school
-    const [departmentExists, facultyExists] = await Promise.all([
-      Department.findOne({ _id: department,  schoolId }),
-      Faculty.findOne({ _id: faculty,  schoolId }),
-    ]);
-
-    if (!departmentExists) {
-      return res.status(404).json({ error: 'Department not found in this school' });
-    }
-
-    if (!facultyExists) {
-      return res.status(404).json({ error: 'Faculty not found in this school' });
-    }
     // get school for academic year and semester
     const school = await School.findById(schoolId).populate(
       'currentAcademicYear'
@@ -38,6 +25,24 @@ exports.createCourse = async (req, res) => {
       return res
         .status(400)
         .json({ error: 'No active academic year found for this school' });
+    }
+
+    // Validate department and faculty belong to the school
+    const [departmentExists, facultyExists] = await Promise.all([
+      Department.findOne({ _id: department, schoolId }),
+      Faculty.findOne({ _id: faculty, schoolId }),
+    ]);
+
+    if (!departmentExists) {
+      return res
+        .status(404)
+        .json({ error: 'Department not found in this school' });
+    }
+
+    if (!facultyExists) {
+      return res
+        .status(404)
+        .json({ error: 'Faculty not found in this school' });
     }
 
     // Check if either courseTitle or courseCode already exists in the same department + school

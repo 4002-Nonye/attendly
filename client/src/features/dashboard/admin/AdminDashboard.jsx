@@ -25,6 +25,7 @@ import RecentSessions from '../../../components/RecentSessions';
 function AdminDashboard() {
   const { data: stat, isPending:isStatPending } = useAdminDashboardStats();
   const { semester, academicYear } = useSchoolInfo();
+const isAcademicYearIncomplete = !academicYear || !semester
 
   const {
     totalFaculties=0,
@@ -82,7 +83,7 @@ function AdminDashboard() {
         subtitle={`Here's an overview of your school`}
       />
 
-      {!academicYear || !semester ? (
+      {isAcademicYearIncomplete ? (
         <EmptyCard
           icon={Calendar}
           iconColor='text-blue-600'
@@ -92,7 +93,7 @@ function AdminDashboard() {
           iconBg='bg-blue-100'
         >
           <Link to='/academic-year' className='mt-4'>
-            <Button icon={Plus} variant='primary' size='lg'>
+            <Button icon={Plus} variant='primary' size='lg' >
               Create Academic Year
             </Button>
           </Link>

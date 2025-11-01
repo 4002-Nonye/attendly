@@ -58,6 +58,7 @@ function Sidebar({ options }) {
           icon={LogOut}
           fullWidth
           className='transition-colors justify-start duration-200 text-slate-500 hover:text-red-400 hover:bg-white/5 border-none text-sm '
+
         >
           Logout
         </Button>

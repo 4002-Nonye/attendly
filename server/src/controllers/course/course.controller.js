@@ -7,6 +7,7 @@ const School = mongoose.model('School');
 exports.getCourses = async (req, res) => {
   try {
     const { role, schoolId, id: userId } = req.user;
+    const { search, department, level } = req.query;
 
     // Find the user to access faculty, department, and level information
     const user = await User.findById(userId).lean();
@@ -27,10 +28,28 @@ exports.getCourses = async (req, res) => {
       semester: school.currentSemester,
     };
 
-    // Apply additional filtering based on user role
+    // search by course code or course title
+    if (search) {
+      filter.$or = [
+        { courseCode: { $regex: search, $options: 'i' } },
+        { courseTitle: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    // Filter by department
+    if (department) {
+      filter.department = department;
+    }
+
+    // Filter by level
+    if (level) {
+      filter.level = Number(level);
+    }
+
+    // Filtering based on user role
     if (role === 'lecturer' || role === 'student') {
-      // Lecturers and students can only see courses in their faculty & department
-      filter.faculty = user.faculty;
+      
+      // Filter by user's department
       filter.department = user.department;
 
       // Students additionally see only courses that match their level
@@ -39,24 +58,26 @@ exports.getCourses = async (req, res) => {
       }
     }
 
-
     // Fetch courses that match the filter
     const courses = await Course.find(filter)
-      // Populate relational fields for clearer response data
-      .populate('lecturers', 'fullName email') // Lecturer info
-      .populate('faculty', 'name') // Faculty name
-      .populate('department', 'name') // Department name
-      // Sort by level and course code for organized output
+      .select('department level unit courseCode courseTitle lecturers')
+      .populate({
+        path: 'department',
+        select: 'name faculty', 
+        populate: {
+          path: 'faculty', 
+          select: 'name'
+        }
+      })
+      .populate('lecturers', 'fullName email')
       .sort({ level: 1, courseCode: 1 })
       .lean();
 
-    // Return the list of filtered and populated courses
     return res.status(200).json({ courses });
   } catch (error) {
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
-
 exports.getCourseById = async (req, res) => {
   try {
     const { schoolId } = req.user;

@@ -19,6 +19,7 @@ function ConfirmDeleteDialog({
       title={title}
       closeOnOutsideClick={!isDeleting}
       closeOnEscape={!isDeleting}
+      variant='center'
     >
       <div className='mb-6'>
         <div className='bg-red-50 border border-red-200 rounded-lg p-4'>

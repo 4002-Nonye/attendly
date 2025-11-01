@@ -11,17 +11,20 @@ import { useSearchParams } from 'react-router-dom';
 import { useDebounce } from 'use-debounce';
 import { useDeleteFaculty } from './useDeleteFaculty';
 import ConfirmDeleteDialog from '../../../components/ConfirmDeleteDialog';
+import { useButtonState } from '../../../hooks/useButtonState';
 
 function AdminFaculty() {
+  const { disableButton } = useButtonState();
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(
     searchParams.get('name') || ''
   );
   const [debouncedQuery] = useDebounce(searchQuery, 500);
 
-  const { data: faculties, isPending } = useFacultyStats({
-    name: debouncedQuery,
-  });
+  const { data: faculties, isPending } = useFacultyStats(
+    { name: debouncedQuery }, // filters
+    { enabled: !disableButton } // options
+  );
   const { deleteFaculty, isPending: isDeleting } = useDeleteFaculty();
 
   const [showModal, setShowModal] = useState(false);
@@ -30,7 +33,8 @@ function AdminFaculty() {
 
   // Check if search is still pending (debouncing)
   const isSearchPending = searchQuery !== debouncedQuery;
-  const isLoading = isPending || isSearchPending;
+  const isLoading = disableButton ? false : (isPending || isSearchPending);
+
 
   // Update URL when search query changes
   const handleSearch = (value) => {
@@ -81,7 +85,7 @@ function AdminFaculty() {
     <tr key={faculty._id} className='hover:bg-gray-50 transition-colors'>
       <td className='px-6 py-4'>
         <span className='text-sm font-medium capitalize text-gray-900'>
-       Faculty <span className='lowercase'>of</span>  {faculty.name}
+          Faculty <span className='lowercase'>of</span> {faculty.name}
         </span>
       </td>
       <td className='px-6 py-4 text-sm text-gray-700'>
@@ -136,11 +140,13 @@ function AdminFaculty() {
             placeholder='Search faculties...'
             value={searchQuery}
             onChange={handleSearch}
+            disabled={disableButton}
           />
           <Button
             variant='primary'
             size='md'
             onClick={() => setShowModal(true)}
+            disabled={disableButton}
           >
             <Plus className='w-5 h-5' />
             <span className='hidden sm:inline font-medium'>Add Faculty</span>
@@ -167,6 +173,7 @@ function AdminFaculty() {
               size='md'
               icon={Plus}
               onClick={() => setShowModal(true)}
+              disabled={disableButton}
             >
               Add Faculty
             </Button>

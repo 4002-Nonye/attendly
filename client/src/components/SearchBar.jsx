@@ -6,6 +6,7 @@ function SearchBar({
   onChange,
   placeholder = 'Search...',
   className = '',
+  disabled
 }) {
   return (
     <div className={`relative w-full sm:w-96 ${className}`}>
@@ -16,6 +17,7 @@ function SearchBar({
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        disabled={disabled}
         className='w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
       />
     </div>
@@ -27,6 +29,7 @@ SearchBar.propTypes = {
   value: PropTypes.string.isRequired,
   onChange: PropTypes.func.isRequired,
   className: PropTypes.string,
+  disabled:PropTypes.bool
 };
 
 export default SearchBar;

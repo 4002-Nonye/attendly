@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { deleteDepartment as deleteDepartmentApi} from '../../../apis/department/apiDepartment';
+import { deleteDepartment as deleteDepartmentApi } from '../../../apis/department/apiDepartment';
 
 export function useDeleteDepartment() {
   const queryClient = useQueryClient();

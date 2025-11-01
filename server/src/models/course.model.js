@@ -13,7 +13,6 @@ const courseSchema = new Schema(
       default: 'First',
     },
     lecturers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-    faculty: { type: mongoose.Schema.Types.ObjectId, ref: 'Faculty' },
     department: { type: mongoose.Schema.Types.ObjectId, ref: 'Department' },
     level: { type: Number, required: true },
     schoolId: { type: mongoose.Schema.Types.ObjectId, ref: 'School' },

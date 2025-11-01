@@ -3,6 +3,8 @@ const mongoose = require('mongoose');
 const Faculty = mongoose.model('Faculty');
 const Department = mongoose.model('Department');
 const Course = mongoose.model('Course');
+const User = mongoose.model('User');
+const School = mongoose.model('School');
 
 // FOR SIGNUP DROPDOWNS - only faculties that have departments
 exports.getFacultiesBySchool = async (req, res) => {
@@ -55,6 +57,18 @@ exports.createFaculty = async (req, res) => {
     if (!facultyName) {
       return res.status(400).json({ error: 'All fields are required' });
     }
+
+
+ // get school for academic year and semester
+    const school = await School.findById(schoolId).populate(
+      'currentAcademicYear'
+    );
+    if (!school.currentAcademicYear) {
+      return res
+        .status(400)
+        .json({ error: 'No active academic year found for this school' });
+    }
+
 
     // prevent duplicates within a school
     const existingFaculty = await Faculty.findOne({
@@ -132,11 +146,12 @@ exports.deleteFaculty = async (req, res) => {
   try {
     const { facultyId } = req.params;
     const { schoolId } = req.user;
+
     if (!facultyId) {
       return res.status(400).json({ error: 'Faculty ID is required' });
     }
 
-    // Verify faculty exists in the user's school
+    // check if faculty exists in the user's school
     const faculty = await Faculty.findOne({ _id: facultyId, schoolId });
     if (!faculty) {
       return res.status(404).json({ error: 'Faculty not found' });
@@ -149,26 +164,51 @@ exports.deleteFaculty = async (req, res) => {
     }).select('_id');
     const departmentIds = departments.map((dep) => dep._id);
 
+    // Check if there are any users in this faculty
+    const usersInFaculty = await User.countDocuments({
+      faculty: facultyId,
+      schoolId,
+    });
+
+    if (usersInFaculty > 0) {
+      return res.status(400).json({
+        error: `Cannot delete faculty. ${usersCount} user(s) are still associated with it.`,
+      });
+    }
+
+    // Check if there are any users in facultys under this faculty
+    const usersInDepartments = await User.countDocuments({
+      department: { $in: departmentIds },
+      schoolId,
+    });
+
+    if (usersInDepartments > 0) {
+      return res.status(400).json({
+        error: `Cannot delete department. ${usersCount} user(s) are still associated with it.`,
+      });
+    }
+
     // Delete all courses linked to these departments
     await Course.deleteMany({ department: { $in: departmentIds } });
 
     // Delete all departments under this faculty
     await Department.deleteMany({ faculty: facultyId });
 
-    // Delete the faculty itself and capture the result
+    // Delete the faculty itself
     const deletedFaculty = await Faculty.findByIdAndDelete(facultyId);
 
     if (!deletedFaculty) {
       return res.status(404).json({ error: 'Failed to delete faculty' });
     }
+
     return res.status(200).json({
       message: 'Faculty deleted successfully',
     });
   } catch (error) {
+    console.log(error)
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
-
 exports.getFacultyStats = async (req, res) => {
   try {
     const { schoolId } = req.user;
@@ -187,13 +227,20 @@ exports.getFacultyStats = async (req, res) => {
       // 1. Match faculties for this school (with optional search)
       { $match: matchFilter },
 
-      // 2. Lookup and count departments
+      // 2. Lookup and count departments (optimized with pipeline)
       {
         $lookup: {
           from: 'departments',
-          localField: '_id',
-          foreignField: 'faculty',
-          as: 'departments',
+          let: { facultyId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ['$faculty', '$$facultyId'] },
+              },
+            },
+            { $count: 'count' },
+          ],
+          as: 'departmentCount',
         },
       },
 
@@ -201,9 +248,16 @@ exports.getFacultyStats = async (req, res) => {
       {
         $lookup: {
           from: 'courses',
-          localField: '_id',
-          foreignField: 'faculty',
-          as: 'courses',
+          let: { facultyId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ['$faculty', '$$facultyId'] },
+              },
+            },
+            { $count: 'count' },
+          ],
+          as: 'courseCount',
         },
       },
 
@@ -223,12 +277,13 @@ exports.getFacultyStats = async (req, res) => {
                 },
               },
             },
+            { $count: 'count' },
           ],
-          as: 'students',
+          as: 'studentCount',
         },
       },
 
-      // 5. Lookup and count lecturers
+      // 5. Lookup and count lecturers (already optimized)
       {
         $lookup: {
           from: 'users',
@@ -244,22 +299,13 @@ exports.getFacultyStats = async (req, res) => {
                 },
               },
             },
+            { $count: 'count' },
           ],
-          as: 'lecturers',
+          as: 'lecturerCount',
         },
       },
 
-      // 6. Add computed fields
-      {
-        $addFields: {
-          totalDepartments: { $size: '$departments' },
-          totalCourses: { $size: '$courses' },
-          totalStudents: { $size: '$students' },
-          totalLecturers: { $size: '$lecturers' },
-        },
-      },
-
-      // 7. Project only needed fields
+      // 6. Project with extracted counts
       {
         $project: {
           _id: 1,
@@ -267,16 +313,24 @@ exports.getFacultyStats = async (req, res) => {
           code: 1,
           dean: 1,
           description: 1,
-          totalDepartments: 1,
-          totalCourses: 1,
-          totalStudents: 1,
-          totalLecturers: 1,
+          totalDepartments: {
+            $ifNull: [{ $arrayElemAt: ['$departmentCount.count', 0] }, 0],
+          },
+          totalCourses: {
+            $ifNull: [{ $arrayElemAt: ['$courseCount.count', 0] }, 0],
+          },
+          totalStudents: {
+            $ifNull: [{ $arrayElemAt: ['$studentCount.count', 0] }, 0],
+          },
+          totalLecturers: {
+            $ifNull: [{ $arrayElemAt: ['$lecturerCount.count', 0] }, 0],
+          },
           createdAt: 1,
           updatedAt: 1,
         },
       },
 
-      // 8. Sort by name
+      // 7. Sort by creation date
       { $sort: { createdAt: -1 } },
     ]);
 
@@ -284,6 +338,7 @@ exports.getFacultyStats = async (req, res) => {
       facultyStats,
     });
   } catch (error) {
+    console.error('Error fetching faculty stats:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };

@@ -6,6 +6,7 @@ export function useUser() {
     queryKey: ['auth-user'],
     queryFn: getUser,
     retry: false,
+    
   });
 
   return {

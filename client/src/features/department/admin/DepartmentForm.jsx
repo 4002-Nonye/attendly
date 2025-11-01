@@ -116,6 +116,7 @@ function DepartmentForm({ isOpen, onClose, initialData }) {
           </Box>
 
           <Box>
+           
             <InputField
               label='Max Level'
               type='text'
@@ -123,9 +124,14 @@ function DepartmentForm({ isOpen, onClose, initialData }) {
               placeholder='e.g. 500'
               {...register('maxLevel', {
                 required: 'Max level is required',
-                pattern: {
-                  value: /^[1-9][0-9]*$/,
-                  message: 'Max level must be a valid number',
+                validate: {
+                  isNumber: (value) =>
+                    /^[1-9][0-9]*$/.test(value) ||
+                    'Max level must be a valid number',
+                  maxValue: (value) =>
+                    parseInt(value) <= 700 || 'Max level cannot exceed 700',
+                  minValue: (value) =>
+                    parseInt(value) >= 100 || 'Max level must be at least 100',
                 },
               })}
             />

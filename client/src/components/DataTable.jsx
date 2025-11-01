@@ -1,5 +1,5 @@
-import { ClipLoader } from 'react-spinners';
 import TableSkeleton from './TableSkeleton';
+import TableSkeletonRows from './TableSkeletonRows';
 import PropTypes from 'prop-types';
 
 function DataTable({
@@ -12,6 +12,8 @@ function DataTable({
   isPending = false,
   skeleton = true,
 }) {
+  // Calculate total columns
+  const totalColumns = columns.length + (onEdit || onDelete ? 1 : 0);
 
   if (isPending && skeleton) {
     return <TableSkeleton />;
@@ -40,18 +42,9 @@ function DataTable({
             </tr>
           </thead>
           <tbody className='bg-white divide-y divide-gray-200'>
-
-
             {isPending && !skeleton ? (
-              <tr>
-                <td colSpan={columns.length + (onEdit || onDelete ? 1 : 0)}>
-                  <div className='flex justify-center items-center h-48'>
-                    <ClipLoader size={40} color='#1e1b4b'  />
-                  </div>
-                </td>
-              </tr>
+              <TableSkeletonRows columns={totalColumns} rows={5} />
             ) : (
-
               data?.map((row) => renderRow(row))
             )}
           </tbody>
