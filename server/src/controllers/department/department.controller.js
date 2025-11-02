@@ -13,17 +13,15 @@ exports.addDepartment = async (req, res) => {
       return res.status(400).json({ error: 'Name and Faculty are required' });
     }
 
-
- // get school for academic year and semester
-    const school = await School.findById(schoolId).populate(
-      'currentAcademicYear'
-    );
+    // get school for academic year and semester
+    const school = await School.findById(schoolId)
+      .select('currentAcademicYear')
+      .populate('currentAcademicYear');
     if (!school.currentAcademicYear) {
       return res
         .status(400)
         .json({ error: 'No active academic year found for this school' });
     }
-
 
     // Check if department already exists in this faculty & school
     const existingDepartment = await Department.findOne({
@@ -56,12 +54,21 @@ exports.getDepartmentStats = async (req, res) => {
   try {
     const { schoolId } = req.user;
     const { name = '', page = 1, limit = 10, facultyId } = req.query;
+  
+    // Find the user's school and ensure it has an active academic year
+    const school = await School.findById(schoolId)
+    if (!school || !school.currentAcademicYear) {
+      return res.status(400).json({ error: 'No active academic year found' });
+    }
 
+    const currentSemesterId = school.currentSemester;
+    const currentAcademicYearId = school.currentAcademicYear;
+
+    // Build filters
     const matchFilter = {
       schoolId: mongoose.Types.ObjectId.createFromHexString(schoolId),
     };
 
-    // OPTIONAL FILTERING
     if (facultyId) {
       matchFilter.faculty =
         mongoose.Types.ObjectId.createFromHexString(facultyId);
@@ -70,28 +77,21 @@ exports.getDepartmentStats = async (req, res) => {
       matchFilter.name = { $regex: name, $options: 'i' };
     }
 
-    // PAGINATION
+    //  Pagination
     const skip = (page - 1) * limit;
 
+    // Aggregation pipeline
     const result = await Department.aggregate([
-      //  1: Match departments based on filters
       { $match: matchFilter },
-
-      //  2: Sort by creation date
       { $sort: { createdAt: -1 } },
-
-      //  3: Use $facet for parallel processing of count and data
       {
         $facet: {
-          // Get total count
           metadata: [{ $count: 'totalDepartments' }],
-
-          // Get paginated data with stats
           data: [
             { $skip: skip },
             { $limit: Number(limit) },
 
-            // Lookup faculty information
+            // Faculty lookup
             {
               $lookup: {
                 from: 'faculties',
@@ -107,7 +107,7 @@ exports.getDepartmentStats = async (req, res) => {
               },
             },
 
-            // Lookup and count students
+            // Student count
             {
               $lookup: {
                 from: 'users',
@@ -129,7 +129,7 @@ exports.getDepartmentStats = async (req, res) => {
               },
             },
 
-            // Lookup and count lecturers
+            // Lecturer count
             {
               $lookup: {
                 from: 'users',
@@ -151,15 +151,25 @@ exports.getDepartmentStats = async (req, res) => {
               },
             },
 
-            // Lookup and count courses
+            //  Course count filtered by current semester and year
             {
               $lookup: {
                 from: 'courses',
-                let: { deptId: '$_id' },
+                let: {
+                  deptId: '$_id',
+                  semesterId: currentSemesterId,
+                  academicYearId: currentAcademicYearId,
+                },
                 pipeline: [
                   {
                     $match: {
-                      $expr: { $eq: ['$department', '$$deptId'] },
+                      $expr: {
+                        $and: [
+                          { $eq: ['$department', '$$deptId'] },
+                          { $eq: ['$semester', '$$semesterId'] },
+                          { $eq: ['$academicYear', '$$academicYearId'] },
+                        ],
+                      },
                     },
                   },
                   { $count: 'count' },
@@ -168,7 +178,7 @@ exports.getDepartmentStats = async (req, res) => {
               },
             },
 
-            // Project final data
+            // Project final shape
             {
               $project: {
                 _id: 1,
@@ -197,8 +207,6 @@ exports.getDepartmentStats = async (req, res) => {
           ],
         },
       },
-
-      //  4:  reshape output
       {
         $project: {
           departmentStats: '$data',
@@ -220,15 +228,16 @@ exports.getDepartmentStats = async (req, res) => {
       totalDepartments: response.totalDepartments,
     });
   } catch (error) {
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error('Error fetching department stats:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
 
 exports.editDepartment = async (req, res) => {
-  // allow faculty update too
+  //dont  allow faculty update
   try {
     const { id: departmentId } = req.params;
-    const { name, faculty } = req.body;
+    const { name, faculty, maxLevel } = req.body;
     const { schoolId } = req.user;
 
     // check if the department name already exist before assigning new name
@@ -248,7 +257,7 @@ exports.editDepartment = async (req, res) => {
 
     const updatedDepartment = await Department.findByIdAndUpdate(
       departmentId,
-      { name: name.trim(), faculty },
+      { name: name.trim(), maxLevel },
       { new: true }
     ).populate('faculty', 'name');
 

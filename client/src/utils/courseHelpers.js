@@ -44,3 +44,18 @@ export const getStatusBadge = (status) => {
   };
   return statusConfig[status] || statusConfig.default;
 };
+
+// Generate level options dynamically
+export const generateLevel = (maxLevel) => {
+  const levelOptions = Array.from(
+    { length: Math.floor(maxLevel / 100) },
+    (_, i) => {
+      const levelValue = (i + 1) * 100;
+      return {
+        _id: levelValue.toString(),
+        level: `${levelValue} Level`,
+      };
+    }
+  );
+  return levelOptions;
+};

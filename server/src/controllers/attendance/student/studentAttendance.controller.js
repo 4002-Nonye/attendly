@@ -3,6 +3,7 @@ const Session = mongoose.model('Session');
 const StudentEnrollment = mongoose.model('StudentEnrollment');
 const School = mongoose.model('School');
 const Attendance = mongoose.model('Attendance');
+const User = mongoose.model('User');
 
 exports.markAttendance = async (req, res) => {
   // SUPPORTS BOTH QR CODE SCANNING AND BUTTON MARKING
@@ -94,6 +95,11 @@ exports.getStudentAttendanceReport = async (req, res) => {
         .status(400)
         .json({ error: 'No active academic period for this school' });
 
+    //  Get the student's level (so we only report courses for that level)
+    const student = await User.findById(id).select('level');
+    if (!student)
+      return res.status(404).json({ error: 'Student not found' });
+
     const report = await StudentEnrollment.aggregate([
       // 1. Get all enrollments for this student
       {
@@ -117,8 +123,12 @@ exports.getStudentAttendanceReport = async (req, res) => {
       // 3. Each enrollment - one course
       { $unwind: '$course' },
 
-      // 4. Lookup sessions for the current academic period
+      // 4. Filter out courses that are not for this student's level
+      {
+        $match: { 'course.level': student.level },
+      },
 
+      // 5. Lookup sessions for the current academic period
       {
         $lookup: {
           from: 'sessions',
@@ -138,7 +148,7 @@ exports.getStudentAttendanceReport = async (req, res) => {
         },
       },
 
-      // 5. Lookup attendances for this student in this course
+      // 6. Lookup attendances for this student in this course
       {
         $lookup: {
           from: 'attendances',
@@ -163,7 +173,7 @@ exports.getStudentAttendanceReport = async (req, res) => {
         },
       },
 
-      // 6. Compute totals
+      // 7. Compute totals
       {
         $addFields: {
           totalSessions: { $size: '$sessions' },
@@ -179,7 +189,7 @@ exports.getStudentAttendanceReport = async (req, res) => {
         },
       },
 
-      // 7. Compute percentage
+      // 8. Compute percentage
       {
         $addFields: {
           attendancePercentage: {
@@ -202,14 +212,14 @@ exports.getStudentAttendanceReport = async (req, res) => {
         },
       },
 
-      // 8. Eligibility (>= 70%)
+      // 9. Eligibility (>= 70%)
       {
         $addFields: {
           eligible: { $gte: ['$attendancePercentage', 70] },
         },
       },
 
-      // 9. Final projection
+      // 10. Final projection
       {
         $project: {
           _id: 0,
@@ -229,6 +239,7 @@ exports.getStudentAttendanceReport = async (req, res) => {
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
+
 
 exports.getStudentSessionDetails = async (req, res) => {
   // returns session date -> lecturer (startedBy) -> Time -> status (present/absent)

@@ -63,6 +63,7 @@ export const getStudentDashboardStats = async () => {
     const response = await axios.get('/api/student/dashboard/stats');
     return response.data;
   } catch (error) {
+    console.log(error)
     throw error.response.data;
   }
 };

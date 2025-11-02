@@ -21,6 +21,10 @@ import { useDebounce } from 'use-debounce';
 import CourseForm from './CourseForm';
 import { useAllCourses } from '../general/useAllCourses';
 import { useButtonState } from '../../../hooks/useButtonState';
+import { generateLevel } from '../../../utils/courseHelpers';
+import { MAX_LEVEL } from '../../../config/level';
+import Select from '../../../components/Select';
+import FilterBar from '../../../components/FilterBar';
 
 function AdminCourse() {
   const { disableButton } = useButtonState();
@@ -169,20 +173,12 @@ function AdminCourse() {
 
   const filteredCourses = courses?.courses || [];
 
-  // Mock departments for filter dropdown (replace with actual API data)
-  const departments = [
-    { _id: 'd1', name: 'Computer Science' },
-    { _id: 'd2', name: 'Mathematics' },
-    { _id: 'd3', name: 'English' },
-    { _id: 'd4', name: 'Physics' },
-    { _id: 'd5', name: 'Biology' },
-    { _id: 'd6', name: 'Economics' },
-    { _id: 'd7', name: 'Chemistry' },
-    { _id: 'd8', name: 'Political Science' },
-  ];
-
-  const levels = [100, 200, 300, 400, 500, 600, 700];
-
+  const departments = Array.from(
+    new Map(
+      filteredCourses.map((c) => [c.department?._id, c.department])
+    ).values() //prevent duplicate
+  );
+  const levels = generateLevel(MAX_LEVEL);
   const hasActiveFilters = filters.department || filters.level || searchQuery;
 
   return (
@@ -217,42 +213,29 @@ function AdminCourse() {
         </div>
 
         <div className='flex flex-wrap gap-3 mt-4'>
-          <select
-            disabled={disableButton}
-            value={filters.department}
-            onChange={(e) => handleFilterChange('department', e.target.value)}
-            className='px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-          >
-            <option value=''>All Departments</option>
-            {departments.map((dept) => (
-              <option key={dept._id} value={dept._id}>
-                {dept.name}
-              </option>
-            ))}
-          </select>
-
-          <select
-            disabled={disableButton}
-            value={filters.level}
-            onChange={(e) => handleFilterChange('level', e.target.value)}
-            className='px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-          >
-            <option value=''>All Levels</option>
-            {levels.map((level) => (
-              <option key={level} value={level}>
-                {level} Level
-              </option>
-            ))}
-          </select>
-
-          {hasActiveFilters && (
-            <button
-              onClick={clearFilters}
-              className='px-4 py-2 text-sm text-gray-600 hover:text-gray-900 underline'
-            >
-              Clear filters
-            </button>
-          )}
+          <FilterBar
+            filters={[
+              {
+                name: 'department',
+                htmlFor: 'department-filter',
+                placeHolder: 'All Departments',
+                data: departments,
+                labelKey: 'name',
+                value: filters.department,
+              },
+              {
+                name: 'level',
+                htmlFor: 'level-filter',
+                placeHolder: 'All Levels',
+                data: levels,
+                labelKey: 'level',
+                value: filters.level,
+              },
+            ]}
+            hasActiveFilters={hasActiveFilters}
+            clearFilters={clearFilters}
+            onFilterChange={handleFilterChange}
+          />
         </div>
       </div>
 

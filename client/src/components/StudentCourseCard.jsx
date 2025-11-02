@@ -13,12 +13,12 @@ function StudentCourseCard({ course }) {
       {/* Header */}
       <div className='mb-4'>
         <div className='flex items-start justify-between gap-2 mb-3'>
-          <div className='flex justify-between items-center w-full'>
-            <h3 className='font-semibold text-base text-gray-900 leading-tight mb-1 group-hover:text-blue-600 transition-colors'>
+          <div className='flex justify-between items-center w-full gap-1'>
+            <h3 className='font-medium capitalize text-base text-gray-900 leading-tight mb-1 group-hover:text-blue-600 transition-colors'>
               {course.courseTitle}
             </h3>
             <span
-              className={` text-xs font-medium px-2.5 py-1 rounded-md border ${badgeColor}`}
+              className={` text-xs font-medium text-center px-2.5 py-1 rounded-md border ${badgeColor}`}
             >
               {course.courseCode}
             </span>

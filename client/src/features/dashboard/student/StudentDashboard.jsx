@@ -5,7 +5,6 @@ import {
   CalendarClock,
   Calendar,
   Clock,
-  ArrowRight,
   AlertCircle,
   Eye,
   Plus,

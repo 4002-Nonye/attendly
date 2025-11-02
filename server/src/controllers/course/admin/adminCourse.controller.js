@@ -79,9 +79,8 @@ exports.createCourse = async (req, res) => {
       academicYear: school.currentAcademicYear._id,
     }).save();
 
-    return res.status(201).json({ message: 'Course created', newCourse });
+    return res.status(201).json({ message: 'Course created successfully', newCourse });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };

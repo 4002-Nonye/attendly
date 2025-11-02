@@ -20,7 +20,6 @@ export const getStudentRegisteredCourses = async () => {
   }
 };
 
-
 export const getAllCourses = async () => {
   try {
     const response = await axios.get('/api/courses');
@@ -31,9 +30,30 @@ export const getAllCourses = async () => {
 };
 
 // create course (admin)
-export const createCourse = async () => {
+export const createCourse = async (data) => {
   try {
-    const response = await axios.post('/api/admin/courses');
+    const response = await axios.post('/api/admin/courses', data);
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+// edit course (admin)
+export const editCourse = async (data) => {
+  try {
+    const { id, ...updateData } = data;
+    const response = await axios.put(`/api/admin/courses/${id}`, updateData);
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+// delete course (admin)
+export const deleteCourse = async (id) => {
+  try {
+    const response = await axios.delete(`/api/admin/courses/${id}`);
     return response.data;
   } catch (error) {
     throw error.response.data;

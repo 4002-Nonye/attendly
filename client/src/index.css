@@ -21,11 +21,7 @@ button {
   @apply not-disabled:cursor-pointer;
 }
 
-select option:not([value=""]) {
-  text-transform: capitalize;
-}
-
-
+select {@apply disabled:cursor-not-allowed disabled:text-gray-600}
 
 /* Hide arrows from input[type=number] */
 

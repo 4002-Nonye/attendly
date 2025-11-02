@@ -14,6 +14,7 @@ const courseSchema = new Schema(
     },
     lecturers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     department: { type: mongoose.Schema.Types.ObjectId, ref: 'Department' },
+      faculty: { type: mongoose.Schema.Types.ObjectId, ref: 'Faculty' },
     level: { type: Number, required: true },
     schoolId: { type: mongoose.Schema.Types.ObjectId, ref: 'School' },
    

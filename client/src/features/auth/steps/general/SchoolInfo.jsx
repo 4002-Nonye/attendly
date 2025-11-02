@@ -12,6 +12,7 @@ import { useDepartments } from '../../../department/general/useDeparments';
 
 import toast from 'react-hot-toast';
 import InputField from '../../../../components/InputField';
+import { generateLevel } from '../../../../utils/courseHelpers';
 
 function SchoolInfo({ showLevel = false, showMatric = false }) {
   const {
@@ -55,20 +56,11 @@ function SchoolInfo({ showLevel = false, showMatric = false }) {
     (dept) => dept._id === selectedDepartmentId
   );
 
-  // Get its maxLevel (default to 400 if not found)
+  // Get its maxLevel -default to 400 if not found
   const maxLevel = selectedDepartment?.maxLevel || 400;
 
   // Generate level options dynamically
-  const levelOptions = Array.from(
-    { length: Math.floor(maxLevel / 100) },
-    (_, i) => {
-      const levelValue = (i + 1) * 100;
-      return {
-        _id: levelValue.toString(),
-        level: `${levelValue} Level`,
-      };
-    }
-  );
+  const levelOptions = generateLevel(maxLevel);
 
   // Show toast error for faculties
   useEffect(() => {
@@ -174,7 +166,7 @@ function SchoolInfo({ showLevel = false, showMatric = false }) {
                 ? 'Departments loading...'
                 : '-- Select Department --'
             }
-            data={departmentData?.departments ||[]}
+            data={departmentData?.departments || []}
             labelKey='name'
             disabled={!selectedFacultyId || isLoadingDepartments}
             {...register('department', {

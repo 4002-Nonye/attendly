@@ -58,8 +58,7 @@ exports.createFaculty = async (req, res) => {
       return res.status(400).json({ error: 'All fields are required' });
     }
 
-
- // get school for academic year and semester
+    // get school for academic year and semester
     const school = await School.findById(schoolId).populate(
       'currentAcademicYear'
     );
@@ -68,7 +67,6 @@ exports.createFaculty = async (req, res) => {
         .status(400)
         .json({ error: 'No active academic year found for this school' });
     }
-
 
     // prevent duplicates within a school
     const existingFaculty = await Faculty.findOne({
@@ -172,7 +170,7 @@ exports.deleteFaculty = async (req, res) => {
 
     if (usersInFaculty > 0) {
       return res.status(400).json({
-        error: `Cannot delete faculty. ${usersCount} user(s) are still associated with it.`,
+        error: `Cannot delete faculty. ${usersInFaculty} user(s) are still associated with it.`,
       });
     }
 
@@ -184,7 +182,7 @@ exports.deleteFaculty = async (req, res) => {
 
     if (usersInDepartments > 0) {
       return res.status(400).json({
-        error: `Cannot delete department. ${usersCount} user(s) are still associated with it.`,
+        error: `Cannot delete faculty. ${usersInDepartments} user(s) are still associated with it.`,
       });
     }
 
@@ -205,7 +203,7 @@ exports.deleteFaculty = async (req, res) => {
       message: 'Faculty deleted successfully',
     });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -214,20 +212,31 @@ exports.getFacultyStats = async (req, res) => {
     const { schoolId } = req.user;
     const { name } = req.query;
 
+    // Find the user's school and ensure it has an active academic year
+    const school = await School.findById(schoolId);
+    if (!school || !school.currentAcademicYear) {
+      return res.status(400).json({ error: 'No active academic year found' });
+    }
+
+    const currentSemesterId = school.currentSemester;
+    const currentAcademicYearId = school.currentAcademicYear;
+
+    // Build base match filter
     const matchFilter = {
       schoolId: mongoose.Types.ObjectId.createFromHexString(schoolId),
     };
 
-    // Add search filter
+    // Optional name filter
     if (name) {
       matchFilter.name = { $regex: name, $options: 'i' };
     }
 
+    // Aggregation
     const facultyStats = await Faculty.aggregate([
-      // 1. Match faculties for this school (with optional search)
+      // Match faculties
       { $match: matchFilter },
 
-      // 2. Lookup and count departments (optimized with pipeline)
+      // Count departments
       {
         $lookup: {
           from: 'departments',
@@ -244,15 +253,25 @@ exports.getFacultyStats = async (req, res) => {
         },
       },
 
-      // 3. Lookup and count courses
+      //  Count courses of current semester and year
       {
         $lookup: {
           from: 'courses',
-          let: { facultyId: '$_id' },
+          let: {
+            facultyId: '$_id',
+            semesterId: currentSemesterId,
+            academicYearId: currentAcademicYearId,
+          },
           pipeline: [
             {
               $match: {
-                $expr: { $eq: ['$faculty', '$$facultyId'] },
+                $expr: {
+                  $and: [
+                    { $eq: ['$faculty', '$$facultyId'] },
+                    { $eq: ['$semester', '$$semesterId'] },
+                    { $eq: ['$academicYear', '$$academicYearId'] },
+                  ],
+                },
               },
             },
             { $count: 'count' },
@@ -261,7 +280,7 @@ exports.getFacultyStats = async (req, res) => {
         },
       },
 
-      // 4. Lookup and count students
+      // Count students
       {
         $lookup: {
           from: 'users',
@@ -283,7 +302,7 @@ exports.getFacultyStats = async (req, res) => {
         },
       },
 
-      // 5. Lookup and count lecturers (already optimized)
+      // Count lecturers
       {
         $lookup: {
           from: 'users',
@@ -305,7 +324,7 @@ exports.getFacultyStats = async (req, res) => {
         },
       },
 
-      // 6. Project with extracted counts
+      // Project computed stats
       {
         $project: {
           _id: 1,
@@ -330,7 +349,7 @@ exports.getFacultyStats = async (req, res) => {
         },
       },
 
-      // 7. Sort by creation date
+      // Sort by newest first
       { $sort: { createdAt: -1 } },
     ]);
 
@@ -338,7 +357,6 @@ exports.getFacultyStats = async (req, res) => {
       facultyStats,
     });
   } catch (error) {
-    console.error('Error fetching faculty stats:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };

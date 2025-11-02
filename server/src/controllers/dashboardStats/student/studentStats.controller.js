@@ -3,16 +3,36 @@ const StudentEnrollment = mongoose.model('StudentEnrollment');
 const Session = mongoose.model('Session');
 const School = mongoose.model('School');
 const Attendance = mongoose.model('Attendance');
+const User = mongoose.model('User');
+const Course = mongoose.model('Course');
 
 // stats card
 exports.getStudentDashboardStats = async (req, res) => {
   try {
     const { id: studentId, schoolId } = req.user;
 
+    // Get school’s current academic period
     const school = await School.findById(schoolId)
       .select('currentAcademicYear currentSemester')
       .lean();
 
+    if (!school || !school.currentAcademicYear || !school.currentSemester) {
+      return res
+        .status(400)
+        .json({ error: 'No active academic year or semester found' });
+    }
+
+    // Get student details (level & department)
+    const student = await User.findById(studentId)
+      .select('level department')
+      .populate('department', '_id name')
+      .lean();
+
+    if (!student) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+
+    // Get all current enrollments
     const enrollments = await StudentEnrollment.find({
       student: studentId,
       academicYear: school.currentAcademicYear,
@@ -21,45 +41,75 @@ exports.getStudentDashboardStats = async (req, res) => {
       .select('course')
       .lean();
 
+    if (!enrollments.length) {
+      return res.status(200).json({
+        totalCourses: 0,
+        totalSessions: 0,
+        attendedSessions: 0,
+        activeSessions: 0,
+      });
+    }
+
     const courseIds = enrollments.map((e) => e.course);
 
-    // Get all stats
-    const [totalSessions, attendedSessions, activeSessions] = await Promise.all(
-      [
-        Session.countDocuments({
-          schoolId,
-          course: { $in: courseIds },
-          academicYear: school.currentAcademicYear,
-          semester: school.currentSemester,
-        }),
-        Attendance.countDocuments({
-          student: studentId,
-          course: { $in: courseIds },
-          academicYear: school.currentAcademicYear,
-          semester: school.currentSemester,
-          status: 'Present',
-        }),
+    // Filter courses to only those matching student's level & department
+    const validCourses = await Course.find({
+      _id: { $in: courseIds },
+      level: student.level,
+      department: student.department._id,
+    })
+      .select('_id')
+      .lean();
 
-        Session.countDocuments({
-          schoolId,
-          course: { $in: courseIds },
-          academicYear: school.currentAcademicYear,
-          semester: school.currentSemester,
-          status: 'active',
-        }),
-      ]
-    );
+    const validCourseIds = validCourses.map((c) => c._id);
+    if (!validCourseIds.length) {
+      return res.status(200).json({
+        totalCourses: 0,
+        totalSessions: 0,
+        attendedSessions: 0,
+        activeSessions: 0,
+      });
+    }
+
+    // Run stats in parallel
+    const [totalSessions, attendedSessions, activeSessions] = await Promise.all([
+      Session.countDocuments({
+        school: schoolId,
+        course: { $in: validCourseIds },
+        academicYear: school.currentAcademicYear,
+        semester: school.currentSemester,
+      }),
+      Attendance.countDocuments({
+        student: studentId,
+        course: { $in: validCourseIds },
+        academicYear: school.currentAcademicYear,
+        semester: school.currentSemester,
+        status: 'Present',
+      }),
+      Session.countDocuments({
+        school: schoolId,
+        course: { $in: validCourseIds },
+        academicYear: school.currentAcademicYear,
+        semester: school.currentSemester,
+        status: 'active',
+      }),
+    ]);
 
     return res.status(200).json({
-      totalCourses: enrollments.length,
+      totalCourses: validCourseIds.length,
       totalSessions,
       attendedSessions,
       activeSessions,
+      academicYear: school.currentAcademicYear,
+      semester: school.currentSemester,
     });
   } catch (error) {
+    console.error(error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+
 
 // recent sessions
 exports.getStudentRecentSessions = async (req, res) => {
@@ -157,7 +207,6 @@ exports.getStudentRecentSessions = async (req, res) => {
         studentStatus: studentStatus,
       };
     });
-    console.log(recentSessions)
 
     return res.status(200).json({ recentSessions });
   } catch (error) {

@@ -36,6 +36,7 @@ function DepartmentForm({ isOpen, onClose, initialData }) {
   });
 
   const onSubmit = (data) => {
+  
     if (!isEditSession) {
       createDepartment(data, {
         onSuccess: () => {
@@ -102,9 +103,10 @@ function DepartmentForm({ isOpen, onClose, initialData }) {
               htmlFor='faculty'
               label='Faculty'
               labelKey='name'
+             
               placeHolder='-- Select Faculty --'
               data={data?.faculties || []}
-              disabled={isLoadingFaculties}
+              disabled={isLoadingFaculties ||isEditSession}
               {...register('faculty', {
                 required: 'Please select your faculty',
               })}

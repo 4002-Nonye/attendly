@@ -1,21 +1,32 @@
 const mongoose = require('mongoose');
 const StudentEnrollment = mongoose.model('StudentEnrollment');
 const School = mongoose.model('School');
+const User = mongoose.model('User');
+const Course = mongoose.model('Course');
 
 exports.getRegisteredCoursesForStudent = async (req, res) => {
   try {
     const { id: studentId, schoolId } = req.user;
 
-    //  Get the active academic year and semester for the student's school
+    // Get the active academic year and semester for the student's school
     const school = await School.findById(schoolId);
-
     if (!school || !school.currentAcademicYear || !school.currentSemester) {
       return res
         .status(400)
         .json({ error: 'No active academic year or semester found' });
     }
 
-    //  Fetch courses the student registered for in the active session
+    // Get the student's level and department
+    const student = await User.findById(studentId)
+      .select('level department')
+      .populate('department', 'name _id')
+      .lean();
+
+    if (!student) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+
+    // Fetch courses the student registered for in the active session
     const enrollments = await StudentEnrollment.find({
       student: studentId,
       school: schoolId,
@@ -23,17 +34,33 @@ exports.getRegisteredCoursesForStudent = async (req, res) => {
       semester: school.currentSemester,
     })
       .select('course -_id')
-      .populate('course', 'courseTitle courseCode unit')
+      .populate({
+        path: 'course',
+        select: 'courseTitle courseCode unit level department faculty',
+        populate: [
+          { path: 'department', select: 'name _id' },
+          { path: 'faculty', select: 'name _id' },
+        ],
+      })
       .lean();
 
-      // flatten
-    const courses = enrollments.map((e) => e.course);
+    // Flatten and filter to ensure only valid courses (matching level)
+    const courses = enrollments
+      .map((e) => e.course)
+      .filter(
+        (course) =>
+          course &&
+          course.level === student.level &&
+          String(course.department?._id) === String(student.department?._id)
+      );
 
     return res.status(200).json({ courses });
   } catch (error) {
+    console.error(error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
+
 
 exports.registerCourse = async (req, res) => {
   try {
@@ -53,12 +80,36 @@ exports.registerCourse = async (req, res) => {
       return res.status(400).json({ error: 'Some course IDs are invalid' });
     }
 
+    //  Fetch student info
+    const student = await User.findById(studentId).select('level department faculty').lean();
+    if (!student) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+
     //  Fetch school and confirm there’s an active academic year & semester
     const school = await School.findById(schoolId);
     if (!school || !school.currentAcademicYear || !school.currentSemester) {
       return res
         .status(400)
         .json({ error: 'No active academic year or semester found' });
+    }
+
+    //  Fetch selected courses
+    const courses = await Course.find({ _id: { $in: validIds } })
+      .select('level department faculty')
+      .lean();
+
+    //  Validate all courses belong to student's level (and optionally department)
+    const invalidCourses = courses.filter(
+      (c) =>
+        c.level !== student.level ||
+        String(c.department) !== String(student.department)
+    );
+
+    if (invalidCourses.length > 0) {
+      return res.status(400).json({
+        error: 'Some selected courses are not available for your level or department',
+      });
     }
 
     //  Prepare enrollment documents for the active session
@@ -82,6 +133,7 @@ exports.registerCourse = async (req, res) => {
       message: 'Courses registered successfully',
     });
   } catch (error) {
+    console.error(error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };

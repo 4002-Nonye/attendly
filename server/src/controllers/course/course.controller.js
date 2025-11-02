@@ -16,7 +16,7 @@ exports.getCourses = async (req, res) => {
     }
 
     // Find the user's school and ensure it has an active academic year
-    const school = await School.findById(schoolId);
+    const school = await School.findById(schoolId)
     if (!school || !school.currentAcademicYear) {
       return res.status(400).json({ error: 'No active academic year found' });
     }
@@ -48,7 +48,9 @@ exports.getCourses = async (req, res) => {
 
     // Filtering based on user role
     if (role === 'lecturer' || role === 'student') {
-      
+      // Lecturers and students can only see courses in their faculty & department
+      filter.faculty = user.faculty;
+
       // Filter by user's department
       filter.department = user.department;
 
@@ -59,17 +61,12 @@ exports.getCourses = async (req, res) => {
     }
 
     // Fetch courses that match the filter
-    const courses = await Course.find(filter)
-      .select('department level unit courseCode courseTitle lecturers')
-      .populate({
-        path: 'department',
-        select: 'name faculty', 
-        populate: {
-          path: 'faculty', 
-          select: 'name'
-        }
-      })
-      .populate('lecturers', 'fullName email')
+ const courses = await Course.find(filter)
+      // Populate relational fields for clearer response data
+      .populate('lecturers', 'fullName email') // Lecturer info
+      .populate('faculty', 'name') // Faculty name
+      .populate('department', 'name maxLevel') // Department name
+      // Sort by level and course code for organized output
       .sort({ level: 1, courseCode: 1 })
       .lean();
 

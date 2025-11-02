@@ -7,6 +7,8 @@ function StudentCourse() {
   const [activeTab, setActiveTab] = useState('my-courses');
   const { data: registeredCourses } = useRegisteredCourses();
 
+
+
   const courses = registeredCourses?.courses;
 
   return (
