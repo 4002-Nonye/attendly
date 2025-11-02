@@ -20,9 +20,13 @@ export const getStudentRegisteredCourses = async () => {
   }
 };
 
-export const getAllCourses = async () => {
+export const getAllCourses = async ({ queryKey }) => {
+  const [_key, query] = queryKey;
+  const params = new URLSearchParams(query).toString()
+
+
   try {
-    const response = await axios.get('/api/courses');
+    const response = await axios.get(`/api/courses?${params}`);
     return response.data;
   } catch (error) {
     throw error.response.data;

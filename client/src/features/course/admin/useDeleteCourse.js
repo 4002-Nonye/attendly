@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 
 import { deleteCourse as deleteCourseApi } from '../../../apis/course/apiCourse';
 
-export function useDeleteFaculty() {
+export function useDeleteCourse() {
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: deleteCourseApi,

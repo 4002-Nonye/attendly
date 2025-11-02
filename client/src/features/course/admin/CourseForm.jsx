@@ -41,8 +41,8 @@ function CourseForm({ isOpen, onClose, initialData }) {
           courseTitle,
           unit,
           level,
-          faculty: faculty._id,
-          department: department._id,
+          faculty: faculty?._id,
+          department: department?._id,
         }
       : {},
   });
@@ -72,7 +72,7 @@ function CourseForm({ isOpen, onClose, initialData }) {
 
   const selectedDepartment = watch('department');
 
-  // Find the selected department's maxLevel dynamically
+  // Find the selected department's maxLevel
   const selectedDeptData = useMemo(() => {
     if (isEditSession) {
       return department;
@@ -82,10 +82,10 @@ function CourseForm({ isOpen, onClose, initialData }) {
     );
   }, [selectedDepartment, departmentOpts, isEditSession, department]);
 
-  // Level options - dynamically update based on selected department
+  // Level options - update based on selected department
   const levelOptions = useMemo(() => {
     const maxLevel = selectedDeptData?.maxLevel;
-    return generateLevel(maxLevel);
+    return generateLevel(maxLevel)
   }, [selectedDeptData]);
 
   const onSubmit = (data) => {
@@ -105,8 +105,8 @@ function CourseForm({ isOpen, onClose, initialData }) {
         id: editId,
         courseCode,
         courseTitle,
-        level,
-        unit,
+        level: parseInt(level),
+        unit: parseInt(unit),
       },
       {
         onSuccess: () => {
@@ -131,9 +131,10 @@ function CourseForm({ isOpen, onClose, initialData }) {
       closeOnEscape={!isSubmitting}
       size='lg'
     >
-      {isLoadingFaculties || isPendingDept ? (
+     
+      { isLoadingFaculties ? (
         <div className='flex justify-center items-center py-8'>
-          <ClipLoader size={32} color='#1e1b4b' />
+          <ClipLoader size={50} color='#1e1b4b' />
         </div>
       ) : (
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -186,7 +187,7 @@ function CourseForm({ isOpen, onClose, initialData }) {
               data={facultiesData?.faculties || []}
               disabled={isLoadingFaculties || isEditSession}
               {...register('faculty', {
-                required: 'Please select a faculty',
+                required: 'Please select a faculty', 
               })}
             />
             <Err
@@ -201,7 +202,7 @@ function CourseForm({ isOpen, onClose, initialData }) {
               label='Department'
               labelKey='name'
               placeHolder='-- Select Department --'
-              data={departmentOpts?.departments}
+              data={departmentOpts?.departments || []}
               disabled={!selectedFaculty || isEditSession || isPendingDept}
               {...register('department', {
                 required: 'Please select a department',
@@ -220,7 +221,7 @@ function CourseForm({ isOpen, onClose, initialData }) {
               labelKey='level'
               placeHolder='-- Select Level --'
               data={levelOptions}
-              disabled={!selectedDepartment}
+              disabled={!selectedDepartment && !isEditSession}
               {...register('level', {
                 required: 'Please select a level',
               })}

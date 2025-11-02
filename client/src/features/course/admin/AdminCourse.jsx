@@ -15,7 +15,7 @@ import SearchBar from '../../../components/SearchBar';
 import DataTable from '../../../components/DataTable';
 
 import ConfirmDeleteDialog from '../../../components/ConfirmDeleteDialog';
-//import { useDeleteCourse } from './useDeleteCourse';
+import { useDeleteCourse } from './useDeleteCourse';
 import { useSearchParams } from 'react-router-dom';
 import { useDebounce } from 'use-debounce';
 import CourseForm from './CourseForm';
@@ -23,7 +23,7 @@ import { useAllCourses } from '../general/useAllCourses';
 import { useButtonState } from '../../../hooks/useButtonState';
 import { generateLevel } from '../../../utils/courseHelpers';
 import { MAX_LEVEL } from '../../../config/level';
-import Select from '../../../components/Select';
+
 import FilterBar from '../../../components/FilterBar';
 
 function AdminCourse() {
@@ -38,12 +38,17 @@ function AdminCourse() {
     level: searchParams.get('level') || '',
   });
   const [debouncedQuery] = useDebounce(searchQuery, 500);
-  const { data: courses, isPending: isCoursesPending } = useAllCourses({
-    enabled: !disableButton,
-  });
 
-  //const { data, isPending } = useCourses({ search: debouncedQuery });
-  //const { deleteCourse, isPending: isDeleting } = useDeleteCourse();
+  const { data: courses, isPending: isCoursesPending } = useAllCourses(
+    {
+      search: debouncedQuery,
+      department: filters.department,
+      level: filters.level,
+    },
+    { enabled: !disableButton }
+  );
+
+  const { deleteCourse, isPending: isDeleting } = useDeleteCourse();
 
   const [showModal, setShowModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -95,12 +100,12 @@ function AdminCourse() {
   };
 
   const handleConfirmDelete = () => {
-    // deleteCourse(selectedCourse._id, {
-    //   onSuccess: () => {
-    //     setShowDeleteModal(false);
-    //     setSelectedCourse(null);
-    //   },
-    // });
+    deleteCourse(selectedCourse._id, {
+      onSuccess: () => {
+        setShowDeleteModal(false);
+        setSelectedCourse(null);
+      },
+    });
   };
 
   const handleCloseDeleteModal = () => {
@@ -290,7 +295,7 @@ function AdminCourse() {
         onConfirm={handleConfirmDelete}
         title='Delete Course'
         message='Deleting this course will remove all associated data including enrolled students and materials. This action cannot be undone.'
-        //   isDeleting={isDeleting}
+        isDeleting={isDeleting}
       />
     </div>
   );

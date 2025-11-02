@@ -2,13 +2,11 @@ import { useQuery } from '@tanstack/react-query';
 
 import { getAllCourses } from '../../../apis/course/apiCourse';
 
-export function useAllCourses(options={}) {
+export function useAllCourses(filters, options = {}) {
   const { data, isPending, error, isError } = useQuery({
-    queryKey: ['courses'],
+    queryKey: ['courses', filters],
     queryFn: getAllCourses,
-    ...options
-    
-    
+    ...options,
   });
   return { data, isPending, error, isError };
 }
