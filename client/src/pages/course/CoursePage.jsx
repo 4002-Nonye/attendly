@@ -1,5 +1,6 @@
 import { useUser } from '../../features/auth/hooks/useUser';
 import AdminCourse from '../../features/course/admin/AdminCourse';
+import LecturerCourse from '../../features/course/lecturer/LecturerCourse';
 import StudentCourse from '../../features/course/student/StudentCourse';
 
 function CoursePage() {
@@ -8,8 +9,8 @@ function CoursePage() {
   const role = user?.user?.role;
   return (
     <div className='flex'>
-      {role === 'admin' && <AdminCourse/>}
-      {role === 'lecturer' && 'Lecturer course page'}
+      {role === 'admin' && <AdminCourse />}
+      {role === 'lecturer' && <LecturerCourse />}
       {role === 'student' && <StudentCourse />}
     </div>
   );

@@ -24,12 +24,10 @@ export const getAllFaculties = async (schoolId) => {
 };
 
 // admin
-export const getFacultyStats = async ({ queryKey }) => {
-  const [_key, query] = queryKey;
-  const params = new URLSearchParams(query).toString();
-
+export const getFacultyStats = async () => {
+ 
   try {
-    const response = await axios.get(`/api/faculties?${params}`);
+    const response = await axios.get(`/api/faculties`);
     return response.data;
   } catch (error) {
     throw error.response.data;

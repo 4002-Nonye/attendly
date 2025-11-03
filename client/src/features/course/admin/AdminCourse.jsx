@@ -48,6 +48,11 @@ function AdminCourse() {
     { enabled: !disableButton }
   );
 
+  // use unfiltered course to generate department options for dropdown
+  const { data: deptOptions, isPending: isOptPending } = useAllCourses({
+    enabled: !disableButton,
+  });
+
   const { deleteCourse, isPending: isDeleting } = useDeleteCourse();
 
   const [showModal, setShowModal] = useState(false);
@@ -55,7 +60,9 @@ function AdminCourse() {
   const [selectedCourse, setSelectedCourse] = useState(null);
 
   const isSearchPending = searchQuery !== debouncedQuery;
-  const isLoading = disableButton ? false : isCoursesPending || isSearchPending;
+  const isLoading = disableButton
+    ? false
+    : isCoursesPending || isSearchPending || isOptPending;
 
   const handleSearch = (value) => {
     setSearchQuery(value);
@@ -177,12 +184,15 @@ function AdminCourse() {
   );
 
   const filteredCourses = courses?.courses || [];
+  const allCourses = deptOptions?.courses || [];
 
+  // generate options for dept dropdown
   const departments = Array.from(
     new Map(
-      filteredCourses.map((c) => [c.department?._id, c.department])
-    ).values() //prevent duplicate
+      allCourses?.map((course) => [course.department._id, course.department])
+    ).values()
   );
+
   const levels = generateLevel(MAX_LEVEL);
   const hasActiveFilters = filters.department || filters.level || searchQuery;
 
@@ -205,6 +215,7 @@ function AdminCourse() {
             value={searchQuery}
             onChange={handleSearch}
             disabled={disableButton}
+
           />
           <Button
             variant='primary'
@@ -247,17 +258,17 @@ function AdminCourse() {
       {/* Courses Table or Empty States */}
       {!filteredCourses.length && !isLoading ? (
         <EmptyCard
-          icon={searchQuery ? Search : BookOpen}
-          title={searchQuery ? 'No courses found' : 'No courses yet'}
+          icon={hasActiveFilters ? Search : BookOpen}
+          title={hasActiveFilters ? 'No courses found' : 'No courses yet'}
           message={
-            searchQuery
-              ? 'Try adjusting your search query'
+            hasActiveFilters
+              ? 'Try adjusting your search or filter settings'
               : 'Get started by adding your first course'
           }
           iconBg='bg-gray-100'
           iconColor='text-gray-400'
         >
-          {!searchQuery && (
+          {!hasActiveFilters && (
             <Button
               variant='primary'
               size='md'
@@ -280,13 +291,12 @@ function AdminCourse() {
       )}
 
       {/* Add/Edit Modal */}
-      {showModal && (
-        <CourseForm
-          isOpen={showModal}
-          onClose={handleCloseModal}
-          initialData={selectedCourse}
-        />
-      )}
+
+      <CourseForm
+        isOpen={showModal}
+        onClose={handleCloseModal}
+        initialData={selectedCourse}
+      />
 
       {/* Confirm Delete Dialog */}
       <ConfirmDeleteDialog

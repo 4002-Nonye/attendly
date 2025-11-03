@@ -142,10 +142,11 @@ function AdminDepartment() {
       <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6'>
         <div className='flex justify-between gap-3 items-center'>
           <SearchBar
-            placeholder='Search departments...'
+            placeholder='Search courses...'
             value={searchQuery}
             onChange={handleSearch}
             disabled={disableButton}
+            
           />
           <Button
             variant='primary'
@@ -195,13 +196,11 @@ function AdminDepartment() {
       )}
 
       {/* Add/Edit Modal */}
-      {showModal && (
-        <DepartmentForm
-          isOpen={showModal}
-          onClose={handleCloseModal}
-          initialData={selectedDepartment}
-        />
-      )}
+      <DepartmentForm
+        isOpen={showModal}
+        onClose={handleCloseModal}
+        initialData={selectedDepartment}
+      />
 
       {/* Confirm Delete Dialog */}
       <ConfirmDeleteDialog

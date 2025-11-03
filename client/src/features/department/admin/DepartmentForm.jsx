@@ -12,6 +12,7 @@ import { useSchoolInfo } from '../../../hooks/useSchoolInfo';
 import { useAllFaculties } from '../../faculty/admin/useAllFaculties';
 import { useCreateDepartment } from './useCreateDepartment';
 import { useEditDepartment } from './useEditDepartment';
+import { useEffect } from 'react';
 
 function DepartmentForm({ isOpen, onClose, initialData }) {
   const { _id: editId, name, maxLevel, faculty } = initialData || {};
@@ -35,8 +36,22 @@ function DepartmentForm({ isOpen, onClose, initialData }) {
       : {},
   });
 
+  useEffect(() => {
+    if (isEditSession) {
+      reset({
+        name,
+        faculty: faculty._id,
+        maxLevel,
+      });
+    } else
+      reset({
+        name: '',
+        faculty: '',
+        maxLevel: '',
+      });
+  }, [reset, name, maxLevel, faculty, isEditSession]);
+
   const onSubmit = (data) => {
-  
     if (!isEditSession) {
       createDepartment(data, {
         onSuccess: () => {
@@ -103,10 +118,9 @@ function DepartmentForm({ isOpen, onClose, initialData }) {
               htmlFor='faculty'
               label='Faculty'
               labelKey='name'
-             
               placeHolder='-- Select Faculty --'
               data={data?.faculties || []}
-              disabled={isLoadingFaculties ||isEditSession}
+              disabled={isLoadingFaculties || isEditSession}
               {...register('faculty', {
                 required: 'Please select your faculty',
               })}
@@ -118,7 +132,6 @@ function DepartmentForm({ isOpen, onClose, initialData }) {
           </Box>
 
           <Box>
-           
             <InputField
               label='Max Level'
               type='text'

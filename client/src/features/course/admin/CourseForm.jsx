@@ -1,3 +1,4 @@
+import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import Modal from '../../../components/Modal';
 import PropTypes from 'prop-types';
@@ -12,7 +13,6 @@ import { useAllFaculties } from '../../faculty/admin/useAllFaculties';
 import { useDepartments } from '../../department/general/useDeparments';
 import { generateLevel } from '../../../utils/courseHelpers';
 import { useCreateCourse } from './useCreateCourse';
-import { useMemo } from 'react';
 import { useEditCourse } from './useEditCourse';
 
 function CourseForm({ isOpen, onClose, initialData }) {
@@ -47,53 +47,83 @@ function CourseForm({ isOpen, onClose, initialData }) {
       : {},
   });
 
-  // use to fetch faculties in the school
   const { schoolId: id } = useSchoolInfo();
 
-  // Fetch faculties
+  // Faculties
   const { data: facultiesData, isPending: isLoadingFaculties } =
     useAllFaculties({ id });
 
-  // Watch selected faculty to populate departments
+  // Watch selected faculty to load departments
   const selectedFaculty = watch('faculty');
 
-  // get departments based on the faculty
+  // Use faculty from initialData during edit, watched value during create
+  const facultyIdForQuery = isEditSession ? faculty?._id : selectedFaculty;
+
+  // Get departments for selected (or initial) faculty
   const { data: departmentOpts, isPending: isPendingDept } = useDepartments({
-    id: selectedFaculty,
+    id: facultyIdForQuery,
   });
 
-  // Create course
-  const { createCourse, isPending: isCreatingCourse } = useCreateCourse();
+  useEffect(() => {
+    if (!isOpen) {
+      // Reset form when modal closes
+      reset();
+    } else if (
+      isEditSession &&
+      initialData &&
+      departmentOpts?.departments?.length > 0
+    ) {
+      // populate form for editing after departments load
+      reset({
+        courseCode,
+        courseTitle,
+        unit,
+        level,
+        faculty: faculty?._id,
+        department: department?._id,
+      });
+    } else if (!isEditSession) {
+      reset();
+    }
+  }, [
+    isOpen,
+    isEditSession,
+    initialData,
+    departmentOpts,
+    reset,
+    courseCode,
+    courseTitle,
+    unit,
+    level,
+    faculty,
+    department,
+  ]);
 
-  // Edit course
+  const { createCourse, isPending: isCreatingCourse } = useCreateCourse();
   const { editCourse, isPending: isEditingCourse } = useEditCourse();
 
   const isSubmitting = isCreatingCourse || isEditingCourse;
-
   const selectedDepartment = watch('department');
 
-  // Find the selected department's maxLevel
+  // For generating levels
   const selectedDeptData = useMemo(() => {
-    if (isEditSession) {
-      return department;
-    }
+    if (isEditSession) return department;
     return departmentOpts?.departments?.find(
       (dept) => dept._id === selectedDepartment
     );
-  }, [selectedDepartment, departmentOpts, isEditSession, department]);
+  }, [isEditSession, departmentOpts, selectedDepartment, department]);
 
-  // Level options - update based on selected department
   const levelOptions = useMemo(() => {
     const maxLevel = selectedDeptData?.maxLevel;
-    return generateLevel(maxLevel)
+    return generateLevel(maxLevel) || [];
   }, [selectedDeptData]);
 
   const onSubmit = (data) => {
     if (!isEditSession) {
       createCourse(data, {
         onSuccess: () => {
+          reset({});
           onClose();
-          reset();
         },
       });
       return;
@@ -110,15 +140,15 @@ function CourseForm({ isOpen, onClose, initialData }) {
       },
       {
         onSuccess: () => {
+          reset({});
           onClose();
-          reset();
         },
       }
     );
   };
 
   const handleCancel = () => {
-    reset();
+    reset({});
     onClose();
   };
 
@@ -131,13 +161,13 @@ function CourseForm({ isOpen, onClose, initialData }) {
       closeOnEscape={!isSubmitting}
       size='lg'
     >
-     
-      { isLoadingFaculties ? (
+      {isLoadingFaculties ? (
         <div className='flex justify-center items-center py-8'>
-          <ClipLoader size={50} color='#1e1b4b' />
+          <ClipLoader size={40} color='#1e1b4b' />
         </div>
       ) : (
         <form onSubmit={handleSubmit(onSubmit)}>
+          {/* Course Code */}
           <Box>
             <InputField
               label='Course Code'
@@ -152,12 +182,10 @@ function CourseForm({ isOpen, onClose, initialData }) {
                 },
               })}
             />
-            <Err
-              className={errors.courseCode?.message && 'mb-3'}
-              msg={errors.courseCode?.message || ' '}
-            />
+            <Err msg={errors.courseCode?.message || ' '} />
           </Box>
 
+          {/* Course Title */}
           <Box>
             <InputField
               label='Course Title'
@@ -172,12 +200,10 @@ function CourseForm({ isOpen, onClose, initialData }) {
                 },
               })}
             />
-            <Err
-              className={errors.courseTitle?.message && 'mb-3'}
-              msg={errors.courseTitle?.message || ' '}
-            />
+            <Err msg={errors.courseTitle?.message || ' '} />
           </Box>
 
+          {/* Faculty */}
           <Box>
             <Select
               htmlFor='faculty'
@@ -187,15 +213,13 @@ function CourseForm({ isOpen, onClose, initialData }) {
               data={facultiesData?.faculties || []}
               disabled={isLoadingFaculties || isEditSession}
               {...register('faculty', {
-                required: 'Please select a faculty', 
+                required: !isEditSession && 'Please select a faculty',
               })}
             />
-            <Err
-              className={errors.faculty?.message && 'mb-3'}
-              msg={errors.faculty?.message || ' '}
-            />
+            <Err msg={errors.faculty?.message || ' '} />
           </Box>
 
+          {/* Department */}
           <Box>
             <Select
               htmlFor='department'
@@ -203,17 +227,15 @@ function CourseForm({ isOpen, onClose, initialData }) {
               labelKey='name'
               placeHolder='-- Select Department --'
               data={departmentOpts?.departments || []}
-              disabled={!selectedFaculty || isEditSession || isPendingDept}
+              disabled={isEditSession || !selectedFaculty || isPendingDept}
               {...register('department', {
-                required: 'Please select a department',
+                required: !isEditSession && 'Please select a department',
               })}
             />
-            <Err
-              className={errors.department?.message && 'mb-3'}
-              msg={errors.department?.message || ' '}
-            />
+            <Err msg={errors.department?.message || ' '} />
           </Box>
 
+          {/* Level */}
           <Box>
             <Select
               htmlFor='level'
@@ -221,17 +243,17 @@ function CourseForm({ isOpen, onClose, initialData }) {
               labelKey='level'
               placeHolder='-- Select Level --'
               data={levelOptions}
-              disabled={!selectedDepartment && !isEditSession}
+              disabled={
+                (!selectedDepartment && !isEditSession) || !levelOptions.length
+              }
               {...register('level', {
                 required: 'Please select a level',
               })}
             />
-            <Err
-              className={errors.level?.message && 'mb-3'}
-              msg={errors.level?.message || ' '}
-            />
+            <Err msg={errors.level?.message || ' '} />
           </Box>
 
+          {/* Unit */}
           <Box>
             <InputField
               label='Credit Unit'
@@ -244,26 +266,17 @@ function CourseForm({ isOpen, onClose, initialData }) {
                   value: /^[1-9][0-9]*$/,
                   message: 'Credit unit must be a valid number',
                 },
-                max: {
-                  value: 10,
-                  message: 'Credit unit cannot exceed 10',
-                },
-                min: {
-                  value: 1,
-                  message: 'Credit unit must be at least 1',
-                },
+                max: { value: 10, message: 'Credit unit cannot exceed 10' },
+                min: { value: 1, message: 'Credit unit must be at least 1' },
               })}
             />
-            <Err
-              className={errors.unit?.message && 'mb-3'}
-              msg={errors.unit?.message || ' '}
-            />
+            <Err msg={errors.unit?.message || ' '} />
           </Box>
 
-          <div className='flex gap-3 justify-end pt-2'>
+          {/* Buttons */}
+          <div className='flex justify-end gap-3 pt-3'>
             <Button
               type='button'
-              className='w-26'
               variant='secondary'
               onClick={handleCancel}
               disabled={isSubmitting}
@@ -274,7 +287,6 @@ function CourseForm({ isOpen, onClose, initialData }) {
               type='submit'
               variant='primary'
               disabled={isSubmitting || (isEditSession && !isDirty)}
-              className='w-26'
             >
               {isSubmitting ? <ClipLoader size={16} color='white' /> : 'Save'}
             </Button>

@@ -8,7 +8,6 @@ import DataTable from '../../../components/DataTable';
 import FacultyForm from './FacultyForm';
 import { useFacultyStats } from './useFacultyStats';
 import { useSearchParams } from 'react-router-dom';
-import { useDebounce } from 'use-debounce';
 import { useDeleteFaculty } from './useDeleteFaculty';
 import ConfirmDeleteDialog from '../../../components/ConfirmDeleteDialog';
 import { useButtonState } from '../../../hooks/useButtonState';
@@ -19,10 +18,8 @@ function AdminFaculty() {
   const [searchQuery, setSearchQuery] = useState(
     searchParams.get('name') || ''
   );
-  const [debouncedQuery] = useDebounce(searchQuery, 500);
 
   const { data: faculties, isPending } = useFacultyStats(
-    { name: debouncedQuery }, // filters
     { enabled: !disableButton } // options
   );
   const { deleteFaculty, isPending: isDeleting } = useDeleteFaculty();
@@ -31,10 +28,7 @@ function AdminFaculty() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedFaculty, setSelectedFaculty] = useState(null);
 
-  // Check if search is still pending (debouncing)
-  const isSearchPending = searchQuery !== debouncedQuery;
-  const isLoading = disableButton ? false : (isPending || isSearchPending);
-
+  const isLoading = disableButton ? false : isPending;
 
   // Update URL when search query changes
   const handleSearch = (value) => {
@@ -123,7 +117,13 @@ function AdminFaculty() {
     </tr>
   );
 
-  const filteredFaculties = faculties?.facultyStats || [];
+const filteredFaculties =
+  faculties?.facultyStats?.filter((faculty) => {
+    const fullName = `faculty of ${faculty.name}`.toLowerCase(); // 'append faculty of'
+    const query = searchQuery.toLowerCase();
+    return faculty.name.toLowerCase().includes(query) || fullName.includes(searchQuery);
+  }) || [];
+
 
   return (
     <div className='w-full'>
@@ -185,18 +185,17 @@ function AdminFaculty() {
           renderRow={renderRow}
           data={filteredFaculties}
           isPending={isLoading}
-          skeleton={false}
+          showHead={false}
         />
       )}
 
       {/* Add/Edit Modal */}
-      {showModal && (
-        <FacultyForm
-          isOpen={showModal}
-          onClose={handleCloseModal}
-          initialData={selectedFaculty}
-        />
-      )}
+
+      <FacultyForm
+        isOpen={showModal}
+        onClose={handleCloseModal}
+        initialData={selectedFaculty}
+      />
 
       {/* Confirm Delete Dialog */}
       <ConfirmDeleteDialog

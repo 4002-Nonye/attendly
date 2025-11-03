@@ -8,6 +8,7 @@ import PropTypes from 'prop-types';
 import { useEditFaculty } from './useEditFaculty';
 
 import { ClipLoader } from 'react-spinners';
+import { useEffect } from 'react';
 
 function FacultyForm({ isOpen, onClose, initialData }) {
   const { _id: editId, name } = initialData || {};
@@ -25,6 +26,17 @@ function FacultyForm({ isOpen, onClose, initialData }) {
   } = useForm({
     defaultValues: isEditSession ? { facultyName: name } : {},
   });
+
+
+useEffect(() => {
+  if (isEditSession) {
+    reset({ facultyName: name || '' });
+  } else {
+    reset({ facultyName: '' });
+  }
+}, [isEditSession, name, reset]);
+
+
 
   const onSubmit = (data) => {
 
