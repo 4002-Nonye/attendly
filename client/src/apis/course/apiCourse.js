@@ -63,3 +63,16 @@ export const deleteCourse = async (id) => {
     throw error.response.data;
   }
 };
+
+
+
+// lecturer assign self to course
+export const assignToCourse = async (data) => {
+ 
+  try {
+    const response = await axios.post(`/api/lecturer/courses/assign`,data);
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};

@@ -81,12 +81,12 @@ exports.assignLecturer = async (req, res) => {
     const lecturerId = req.user.id;
     const { schoolId } = req.user;
 
-    //   Validate that courseIds exist and are in array form
+    //   validate that courseIds exist and are in array form
     if (!courseIds || !Array.isArray(courseIds) || courseIds.length === 0) {
       return res.status(400).json({ error: 'No courses selected' });
     }
 
-    //   Filter out invalid ObjectIds
+    //   filetr out invalid ObjectIds
     const validIds = courseIds.filter((id) =>
       mongoose.Types.ObjectId.isValid(id)
     );
@@ -94,7 +94,7 @@ exports.assignLecturer = async (req, res) => {
       return res.status(400).json({ error: 'Some course IDs are invalid' });
     }
 
-    //   Get the school's active academic year and semester
+    //   get the school's active academic year and semester
     const school = await School.findById(schoolId);
     if (!school || !school.currentAcademicYear || !school.currentSemester) {
       return res
@@ -102,7 +102,7 @@ exports.assignLecturer = async (req, res) => {
         .json({ error: 'No active academic year or semester found' });
     }
 
-    //   Verify that the selected courses exist for this school and session
+    //   check that the selected courses exist for this school and session
     const existingCourses = await Course.find({
       _id: { $in: validIds },
       schoolId,
@@ -116,7 +116,7 @@ exports.assignLecturer = async (req, res) => {
         .json({ error: 'No valid courses found for the active session' });
     }
 
-    //   Assign the lecturer to all valid courses (without duplicates)
+    //   asign the lecturer to all valid courses - prevent duplicates
     await Course.updateMany(
       {
         _id: { $in: existingCourses.map((c) => c._id) },
@@ -138,12 +138,12 @@ exports.unassignLecturer = async (req, res) => {
     const { courseId } = req.params;
     const { id: lecturerId, schoolId } = req.user;
 
-    //  Validate the courseId
+    //  validate the courseId
     if (!courseId) {
       return res.status(400).json({ error: 'Course ID is required' });
     }
 
-    //  Get the school's active academic year and semester
+    //  get the school's active academic year and semester
     const school = await School.findById(schoolId);
     if (!school || !school.currentAcademicYear || !school.currentSemester) {
       return res
@@ -151,7 +151,7 @@ exports.unassignLecturer = async (req, res) => {
         .json({ error: 'No active academic year or semester found' });
     }
 
-    //  Find and update the course if it’s in the current active session
+    //  find and update the course if it’s in the current active session
     const updatedCourse = await Course.findOneAndUpdate(
       {
         _id: courseId,
@@ -164,7 +164,6 @@ exports.unassignLecturer = async (req, res) => {
       { new: true }
     );
 
-    //  If not found, return proper error
     if (!updatedCourse) {
       return res.status(404).json({
         error:
@@ -172,7 +171,6 @@ exports.unassignLecturer = async (req, res) => {
       });
     }
 
-    //
     return res.status(200).json({
       message: 'Lecturer unassigned successfully',
     });

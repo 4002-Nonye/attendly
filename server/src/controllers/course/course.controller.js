@@ -16,7 +16,7 @@ exports.getCourses = async (req, res) => {
     }
 
     // Find the user's school and ensure it has an active academic year
-    const school = await School.findById(schoolId)
+    const school = await School.findById(schoolId);
     if (!school || !school.currentAcademicYear) {
       return res.status(400).json({ error: 'No active academic year found' });
     }
@@ -36,39 +36,50 @@ exports.getCourses = async (req, res) => {
       ];
     }
 
-    // Filter by department
+    // filter by department
     if (department) {
       filter.department = department;
     }
 
-    // Filter by level
+    // filter by level
     if (level) {
       filter.level = Number(level);
     }
 
-    // Filtering based on user role
+    // filtering based on user role
     if (role === 'lecturer' || role === 'student') {
       // Lecturers and students can only see courses in their faculty & department
       filter.faculty = user.faculty;
 
-      // Filter by user's department
+      // filter by user's department
       filter.department = user.department;
 
-      // Students additionally see only courses that match their level
+      // students additionally see only courses that match their level
       if (role === 'student') {
         filter.level = user.level;
       }
     }
 
-    // Fetch courses that match the filter
- const courses = await Course.find(filter)
-      // Populate relational fields for clearer response data
+    // fetch courses that match the filter
+    const courses = await Course.find(filter)
+      // populate relational fields for clearer response data
       .populate('lecturers', 'fullName email') // Lecturer info
       .populate('faculty', 'name') // Faculty name
       .populate('department', 'name maxLevel') // Department name
-      // Sort by level and course code for organized output
-      .sort({ level: 1, courseCode: 1 })
+      // sort by last created
+      .sort({ createdAt: -1 })
       .lean();
+
+    // add status for lecturer
+    if (role === 'lecturer') {
+      const formattedCourses = courses.map((course) => ({
+        ...course,
+        status: course.lecturers.some(
+          (l) => l._id.toString() === userId.toString()
+        ),
+      }));
+      return res.status(200).json({ courses: formattedCourses });
+    }
 
     return res.status(200).json({ courses });
   } catch (error) {

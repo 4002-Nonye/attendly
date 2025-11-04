@@ -192,6 +192,7 @@ function AdminDepartment() {
           data={filteredDepartments}
           isPending={isLoading}
           skeleton={false}
+
         />
       )}
 

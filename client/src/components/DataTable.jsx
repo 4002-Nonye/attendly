@@ -11,13 +11,13 @@ function DataTable({
   children,
   isPending = false,
   skeleton = true,
-  showHead,
+  showSkeletonHead,
 }) {
   // Calculate total columns
   const totalColumns = columns.length + (onEdit || onDelete ? 1 : 0);
 
   if (isPending && skeleton) {
-    return <TableSkeleton showHead={showHead} />;
+    return <TableSkeleton showSkeletonHead={showSkeletonHead} />;
   }
 
   return (
@@ -64,7 +64,7 @@ DataTable.propTypes = {
   children: PropTypes.node,
   isPending: PropTypes.bool,
   skeleton: PropTypes.bool,
-  showHead: PropTypes.bool,
+  showSkeletonHead: PropTypes.bool,
 };
 
 export default DataTable;

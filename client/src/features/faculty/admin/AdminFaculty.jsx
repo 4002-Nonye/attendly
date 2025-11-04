@@ -185,7 +185,7 @@ const filteredFaculties =
           renderRow={renderRow}
           data={filteredFaculties}
           isPending={isLoading}
-          showHead={false}
+          showSkeletonHead={false}
         />
       )}
 
