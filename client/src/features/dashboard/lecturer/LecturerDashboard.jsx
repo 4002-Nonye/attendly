@@ -27,6 +27,7 @@ import RecentSessions from '../../../components/RecentSessions';
 function LecturerDashboard() {
   const { data: courses, isPending: isAssignedCoursesPending } =
     useAssignedCourses();
+    
   const { academicYear, semester } = useSchoolInfo();
   const { data: stat, isStatPending } = useLecturerDashboardStats();
 

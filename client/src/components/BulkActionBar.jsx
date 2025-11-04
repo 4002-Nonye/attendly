@@ -1,21 +1,23 @@
 import PropTypes from 'prop-types';
 import { Check } from 'lucide-react';
 import Button from './Button';
+import { ClipLoader } from 'react-spinners';
 
 function BulkActionBar({
   count,
   onClear,
   actionLabel = 'Assign Selected',
   onAction,
-  icon: Icon ,
+  icon: Icon,
   variant = 'primary',
   disabled = false,
+  isPending,
 }) {
   if (count === 0) return null;
 
   return (
     <div className='rounded-xl shadow-sm border border-gray-100 p-4 mt-8'>
-      <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3'>
+      <div className='flex flex-row items-center justify-between gap-3'>
         {/* Count info */}
         <div className='text-sm text-gray-600 text-center sm:text-left'>
           <span className='font-medium text-gray-900'>{count}</span> course
@@ -38,10 +40,16 @@ function BulkActionBar({
             size='md'
             onClick={onAction}
             disabled={disabled}
-            className='flex items-center gap-2'
+            className='flex items-center gap-2 w-30'
           >
-            {Icon && <Icon size={18} />}
-            {actionLabel}
+            {isPending ? (
+                <ClipLoader size={22} color='white' />
+            ) : (
+              <>
+                {Icon && <Icon size={18} />}
+                {actionLabel}
+              </>
+            )}
           </Button>
         </div>
       </div>
@@ -57,6 +65,7 @@ BulkActionBar.propTypes = {
   Icon: PropTypes.elementType,
   variant: PropTypes.string,
   disabled: PropTypes.bool,
+  isPending: PropTypes.bool,
 };
 
 export default BulkActionBar;

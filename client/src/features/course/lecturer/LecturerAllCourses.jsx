@@ -10,10 +10,13 @@ import { useAllCourses } from '../general/useAllCourses';
 import BulkActionBar from '../../../components/BulkActionBar';
 import SelectionInfoBar from '../../../components/SelectionInfoBar';
 import { useAssignCourse } from './useAssignCourse';
+import { useUnassignCourse } from './useUnassignCourse';
+import { ClipLoader } from 'react-spinners';
 
 function LecturerAllCourses() {
   const { data: coursesData, isPending } = useAllCourses();
-  const { assignToCourse, isPending: isAssigning } = useAssignCourse();
+  const { assignToCourse } = useAssignCourse();
+  const { unassignFromCourse } = useUnassignCourse();
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedCourses, setSelectedCourses] = useState([]);
   const [searchQuery, setSearchQuery] = useState(
@@ -21,16 +24,12 @@ function LecturerAllCourses() {
   );
   const { disableButton } = useButtonState();
 
-  // course structure
-  const courses =
-    coursesData?.courses?.map((course) => ({
-      _id: course._id,
-      courseCode: course.courseCode,
-      courseTitle: course.courseTitle,
-      level: course.level,
-      unit: course.unit,
-      status: course.status, // true = assigned , fasle = unassigned
-    })) || [];
+  //track which course is currently pending in action
+  const [activeCourseId, setActiveCourseId] = useState(null);
+  const [isBulkAssigning, setIsBulkAssigning] = useState(false);
+
+  // course
+  const courses = coursesData?.courses || [];
 
   // filter courses based on search
   const filteredCourses = courses.filter(
@@ -52,7 +51,7 @@ function LecturerAllCourses() {
     setSearchParams(params);
   };
 
-  // toggle individual course selection
+  // toggle course selection
   const handleToggleSelect = (courseId) => {
     setSelectedCourses((prev) =>
       prev.includes(courseId)
@@ -63,103 +62,134 @@ function LecturerAllCourses() {
 
   // handle single assign
   const handleAssignSingle = (courseId) => {
-    assignToCourse({
-      courseIds: [courseId],
-    });
+    setActiveCourseId(courseId); // tract which course is assigning
+    assignToCourse(
+      {
+        courseIds: [courseId],
+      },
+      {
+        onSettled: () => setActiveCourseId(null),
+      }
+    );
   };
 
   // handle unassign
   const handleUnassign = (courseId) => {
-    console.log('Unassign course:', courseId);
+    setActiveCourseId(courseId); // track which course is unassigning
+
+    setSelectedCourses((prev) => prev.filter((id) => id !== courseId)); // remove from selected courses when unassigning
+
+    unassignFromCourse(courseId, {
+      onSettled: () => setActiveCourseId(null),
+    });
   };
 
   // handle bulk assign
   const handleBulkAssign = (courseIds = selectedCourses) => {
+    setIsBulkAssigning(true);
+
     const unassignedIds = filteredCourses
       .filter((c) => courseIds.includes(c._id) && !c.status)
       .map((c) => c._id);
 
-    console.log('Bulk assign courses:', unassignedIds);
+    assignToCourse(
+      {
+        courseIds: unassignedIds,
+      },
+      {
+        onSettled: () => setIsBulkAssigning(false),
+      }
+    );
   };
 
-  const renderRow = (course) => (
-    <tr
-      key={course._id}
-      className={`hover:bg-gray-50 transition-colors ${
-        selectedCourses.includes(course._id) ? 'bg-blue-50' : ''
-      }`}
-    >
-      <td className='px-4 py-4'>
-        <input
-          type='checkbox'
-          checked={course.status || selectedCourses.includes(course._id)}
-          disabled={course.status}
-          onChange={() => handleToggleSelect(course._id)}
-          className={`w-4 h-4 rounded border-gray-300 focus:ring-0 transition-colors ${
-            course.status
-              ? 'text-green-600 cursor-not-allowed opacity-60'
-              : 'text-blue-600 cursor-pointer hover:border-blue-400'
-          }`}
-        />
-      </td>
+  const renderRow = (course) => {
+    const isCourseActionPending = activeCourseId === course._id;
+    return (
+      <tr
+        key={course._id}
+        className={`hover:bg-gray-50 transition-colors ${
+          selectedCourses.includes(course._id) ? 'bg-blue-50' : ''
+        }`}
+      >
+        <td className='px-4 py-4'>
+          <input
+            type='checkbox'
+            checked={!course.status && selectedCourses.includes(course._id)}
+            disabled={course.status}
+            onChange={() => handleToggleSelect(course._id)}
+            className={`w-4 h-4 rounded border-gray-300 focus:ring-0 transition-colors ${
+              course.status
+                ? 'text-green-600 cursor-not-allowed opacity-60'
+                : 'text-blue-600 cursor-pointer hover:border-blue-400'
+            }`}
+          />
+        </td>
 
-      <td className='px-6 py-4'>
-        <div>
-          <div className='text-sm font-semibold text-gray-900 uppercase'>
-            {course.courseCode}
+        <td className='px-6 py-4'>
+          <div>
+            <div className='text-sm font-semibold text-gray-900 uppercase'>
+              {course.courseCode}
+            </div>
+            <div className='text-sm text-gray-600 capitalize'>
+              {course.courseTitle}
+            </div>
           </div>
-          <div className='text-sm text-gray-600 capitalize'>
-            {course.courseTitle}
-          </div>
-        </div>
-      </td>
+        </td>
 
-      <td className='px-6 py-4 text-sm text-gray-700'>{course.level}L</td>
-      <td className='px-6 py-4 text-sm text-gray-700'>{course.unit}</td>
+        <td className='px-6 py-4 text-sm text-gray-700'>{course.level}L</td>
+        <td className='px-6 py-4 text-sm text-gray-700'>{course.unit}</td>
 
-      <td className='px-6 py-4'>
-        {course.status ? (
-          <span className='inline-flex items-center gap-1 px-2.5 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full'>
-            <Check size={14} />
-            Assigned
-          </span>
-        ) : (
-          <span className='inline-flex items-center gap-1 px-2.5 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full'>
-            Unassigned
-          </span>
-        )}
-      </td>
+        <td className='px-6 py-4'>
+          {course.status ? (
+            <span className='inline-flex items-center gap-1 px-2.5 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full'>
+              <Check size={14} />
+              Assigned
+            </span>
+          ) : (
+            <span className='inline-flex items-center gap-1 px-2.5 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full'>
+              Unassigned
+            </span>
+          )}
+        </td>
 
-      <td className='px-6 py-4'>
-        {course.status ? (
-          <Button
-            onClick={() => handleUnassign(course._id)}
-            variant='secondaryDanger'
-            className='gap-1 w-30'
-            size='sm'
-          >
-            <X size={16} />
-            Unassign
-          </Button>
-        ) : (
-          <Button
-            onClick={() => handleAssignSingle(course._id)}
-            variant='primary'
-            className='gap-1 w-30'
-            size='sm'
-          >
-            {isAssigning ? (
-              <ClipLoader size={16} color='white' />
-            ) : (
-              <>
-                <Check size={16} /> Assign
-              </>
-            )}
-          </Button>
-        )}
-      </td>
-    </tr>
-  );
+        <td className='px-6 py-4'>
+          {course.status ? (
+            <Button
+              onClick={() => handleUnassign(course._id)}
+              variant='secondaryDanger'
+              className='gap-1 w-30'
+              size='sm'
+            >
+              {isCourseActionPending ? (
+                <ClipLoader size={16} color='white' />
+              ) : (
+                <>
+                  {' '}
+                  <X size={16} />
+                  Unassign
+                </>
+              )}
+            </Button>
+          ) : (
+            <Button
+              onClick={() => handleAssignSingle(course._id)}
+              variant='primary'
+              className='gap-1 w-30'
+              size='sm'
+            >
+              {isCourseActionPending ? (
+                <ClipLoader size={16} color='white' />
+              ) : (
+                <>
+                  <Check size={16} /> Assign
+                </>
+              )}
+            </Button>
+          )}
+        </td>
+      </tr>
+    );
+  };
 
   const columns = ['', 'Course', 'Level', 'Unit', 'Status', 'Actions'];
 
@@ -206,8 +236,9 @@ function LecturerAllCourses() {
       {unassignedSelectedCourses.length > 0 && (
         <BulkActionBar
           count={unassignedSelectedCourses.length}
-          actionLabel='Assign Selected'
+          actionLabel='Assign'
           icon={Check}
+          isPending={isBulkAssigning}
           onAction={() =>
             handleBulkAssign(unassignedSelectedCourses.map((c) => c._id))
           }

@@ -22,8 +22,7 @@ export const getStudentRegisteredCourses = async () => {
 
 export const getAllCourses = async ({ queryKey }) => {
   const [_key, query] = queryKey;
-  const params = new URLSearchParams(query).toString()
-
+  const params = new URLSearchParams(query).toString();
 
   try {
     const response = await axios.get(`/api/courses?${params}`);
@@ -64,13 +63,23 @@ export const deleteCourse = async (id) => {
   }
 };
 
-
-
 // lecturer assign self to course
 export const assignToCourse = async (data) => {
- 
   try {
-    const response = await axios.post(`/api/lecturer/courses/assign`,data);
+    const response = await axios.post(`/api/lecturer/courses/assign`, data);
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+// lecturer unassign self to course
+export const unassignFromCourse = async (id) => {
+  console.log(id)
+  try {
+    const response = await axios.delete(
+      `/api/lecturer/courses/${id}/unassign`
+    );
     return response.data;
   } catch (error) {
     throw error.response.data;

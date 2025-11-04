@@ -7,10 +7,10 @@ export function useAssignCourse() {
   const mutation = useMutation({
     mutationFn: assignToCourseApi,
     onSuccess: (data) => {
-      toast.success(data.message || 'Courses assigned successfully');
+      toast.success(data.message || 'Course(s) assigned successfully');
       queryClient.invalidateQueries(['courses']);
     },
-    onError: (err) => toast.error(err.error || 'Failed to assign courses'),
+    onError: (err) => toast.error(err.error || 'Failed to assign course(s)'),
   });
 
   return { assignToCourse: mutation.mutate, isPending: mutation.isPending };
