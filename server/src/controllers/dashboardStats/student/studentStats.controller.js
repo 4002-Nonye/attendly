@@ -11,7 +11,7 @@ exports.getStudentDashboardStats = async (req, res) => {
   try {
     const { id: studentId, schoolId } = req.user;
 
-    // Get school’s current academic period
+    // get school’s current academic period
     const school = await School.findById(schoolId)
       .select('currentAcademicYear currentSemester')
       .lean();
@@ -22,7 +22,7 @@ exports.getStudentDashboardStats = async (req, res) => {
         .json({ error: 'No active academic year or semester found' });
     }
 
-    // Get student details (level & department)
+    // get student details (level & department)
     const student = await User.findById(studentId)
       .select('level department')
       .populate('department', '_id name')
@@ -32,7 +32,7 @@ exports.getStudentDashboardStats = async (req, res) => {
       return res.status(404).json({ error: 'Student not found' });
     }
 
-    // Get all current enrollments
+    // get all current enrollments
     const enrollments = await StudentEnrollment.find({
       student: studentId,
       academicYear: school.currentAcademicYear,
@@ -116,7 +116,7 @@ exports.getStudentRecentSessions = async (req, res) => {
   try {
     const { id: studentId, schoolId } = req.user;
 
-    // Get current academic year and semester
+    // get current academic year and semester
     const school = await School.findById(schoolId)
       .select('currentAcademicYear currentSemester')
       .lean();
@@ -127,7 +127,7 @@ exports.getStudentRecentSessions = async (req, res) => {
         .json({ error: 'No current academic period found for this school' });
     }
 
-    // Get all courses the student is enrolled in
+    // get all courses the student is enrolled in
     const enrollments = await StudentEnrollment.find({
       student: studentId,
       academicYear: school.currentAcademicYear,
@@ -142,7 +142,7 @@ exports.getStudentRecentSessions = async (req, res) => {
 
     const courseIds = enrollments.map((e) => e.course);
 
-    // Get recent sessions across all enrolled courses
+    // get recent sessions across all enrolled courses
     const sessions = await Session.find({
       course: { $in: courseIds },
       academicYear: school.currentAcademicYear,
@@ -160,10 +160,10 @@ exports.getStudentRecentSessions = async (req, res) => {
       return res.status(200).json({ recentSessions: [] });
     }
 
-    // Get session IDs for attendance lookup
+    // get session IDs for attendance lookup
     const sessionIds = sessions.map((s) => s._id);
 
-    // Get attendance records for these sessions
+    // get attendance records for these sessions
     const attendanceRecords = await Attendance.find({
       student: studentId,
       session: { $in: sessionIds },
@@ -185,7 +185,7 @@ exports.getStudentRecentSessions = async (req, res) => {
       if (attendanceStatus) {
         studentStatus = attendanceStatus; // "Present" or "Absent"
       } else if (session.status === 'ended') {
-        studentStatus = 'Absent'; // Session ended but no attendance record
+        studentStatus = 'Absent'; // session ended but no attendance record
       } else if (session.status === 'active') {
         studentStatus = 'Not yet taken'; // Session ongoing
       } else {

@@ -21,8 +21,9 @@ import { useSchoolInfo } from '../../../hooks/useSchoolInfo';
 import EmptyCard from '../../../components/EmptyCard';
 import { useLecturerDashboardStats } from './useLecturerDashboardStats';
 import SectionIntro from '../../../components/SectionIntro';
-import LecturerCourseCard from '../../../components/LecturerCourseCard';
+
 import RecentSessions from '../../../components/RecentSessions';
+import CourseCard from '../../../components/CourseCard';
 
 function LecturerDashboard() {
   const { data: courses, isPending: isAssignedCoursesPending } =
@@ -109,7 +110,7 @@ function LecturerDashboard() {
             {displayedCourses.length > 0 ? (
               <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 lg:gap-4'>
                 {displayedCourses.map((course) => (
-                  <LecturerCourseCard
+                  <CourseCard
                     key={course._id}
                     course={course}
                     actionText='Start Attendance'
@@ -125,7 +126,7 @@ function LecturerDashboard() {
                 message={`You haven't registered for any courses yet. Register for courses to start tracking attendance.`}
                 iconBg='bg-blue-100'
               >
-                <Link to='/courses/register'>
+                <Link to='/courses?tab=all-courses'>
                   <Button icon={Plus} variant='primary'>
                     Register Course
                   </Button>
@@ -148,7 +149,7 @@ function LecturerDashboard() {
                   View My Courses
                 </Button>
               </Link>
-              <Link to='/courses/register'>
+              <Link to='/courses?tab=all-courses'>
                 <Button variant='primary' icon={Plus} size='sm'>
                   Register Course
                 </Button>

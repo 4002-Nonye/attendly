@@ -1,5 +1,5 @@
 import axios from 'axios';
-
+axios.defaults.withCredentials = true;
 /* ----------------------- ADMIN -----------------------------*/
 
 export const getAdminDashboardStats = async () => {

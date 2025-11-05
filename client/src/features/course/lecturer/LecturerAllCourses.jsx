@@ -12,9 +12,15 @@ import SelectionInfoBar from '../../../components/SelectionInfoBar';
 import { useAssignCourse } from './useAssignCourse';
 import { useUnassignCourse } from './useUnassignCourse';
 import { ClipLoader } from 'react-spinners';
+import LecturerCourseCard from '../../../components/CourseCard';
+import CourseAssignmentCard from '../../../components/CourseAssignmentCard';
+import LecturerCourseCardSkeleton from '../../../components/LecturerCourseCardSkeleton';
 
 function LecturerAllCourses() {
-  const { data: coursesData, isPending } = useAllCourses();
+  const { disableButton } = useButtonState();
+  const { data: courseData, isPending } = useAllCourses({
+    enabled: !disableButton,
+  });
   const { assignToCourse } = useAssignCourse();
   const { unassignFromCourse } = useUnassignCourse();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -22,14 +28,15 @@ function LecturerAllCourses() {
   const [searchQuery, setSearchQuery] = useState(
     searchParams.get('search') || ''
   );
-  const { disableButton } = useButtonState();
 
   //track which course is currently pending in action
   const [activeCourseId, setActiveCourseId] = useState(null);
   const [isBulkAssigning, setIsBulkAssigning] = useState(false);
 
   // course
-  const courses = coursesData?.courses || [];
+  const courses = courseData?.courses || [];
+
+  const isLoading = disableButton ? false : isPending;
 
   // filter courses based on search
   const filteredCourses = courses.filter(
@@ -38,8 +45,8 @@ function LecturerAllCourses() {
       course.courseTitle.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  //  count 'unassigned' courses in selected list
-  const unassignedSelectedCourses = filteredCourses.filter(
+  //  count 'unassigned' courses
+  const unassignedSelectedCourses = courses.filter(
     (course) => selectedCourses.includes(course._id) && !course.status
   );
 
@@ -117,7 +124,7 @@ function LecturerAllCourses() {
             checked={!course.status && selectedCourses.includes(course._id)}
             disabled={course.status}
             onChange={() => handleToggleSelect(course._id)}
-            className={`w-4 h-4 rounded border-gray-300 focus:ring-0 transition-colors ${
+            className={`w-4 h-4  rounded border-gray-300 focus:ring-0 transition-colors ${
               course.status
                 ? 'text-green-600 cursor-not-allowed opacity-60'
                 : 'text-blue-600 cursor-pointer hover:border-blue-400'
@@ -156,9 +163,10 @@ function LecturerAllCourses() {
           {course.status ? (
             <Button
               onClick={() => handleUnassign(course._id)}
-              variant='secondaryDanger'
+              variant='danger'
               className='gap-1 w-30'
               size='sm'
+              disabled={isCourseActionPending}
             >
               {isCourseActionPending ? (
                 <ClipLoader size={16} color='white' />
@@ -176,6 +184,7 @@ function LecturerAllCourses() {
               variant='primary'
               className='gap-1 w-30'
               size='sm'
+              disabled={isCourseActionPending}
             >
               {isCourseActionPending ? (
                 <ClipLoader size={16} color='white' />
@@ -214,29 +223,60 @@ function LecturerAllCourses() {
       )}
 
       {/* Table */}
-      {!filteredCourses.length && !isPending ? (
+      {!filteredCourses.length && !isLoading ? (
         <EmptyCard
           icon={BookOpen}
-          title='No courses found'
-          message='Try adjusting your search query'
+          title={searchQuery ? 'No courses found' : 'No courses available'}
+          message={
+            searchQuery
+              ? 'Try adjusting your search query'
+              : 'No courses available for your department yet'
+          }
           iconColor='text-gray-400'
           iconBg='bg-gray-100'
         />
       ) : (
-        <DataTable
-          columns={columns}
-          renderRow={renderRow}
-          data={filteredCourses}
-          isPending={isPending}
-          showSkeletonHead={false}
-        />
+        <>
+        {/* Desktop */}
+          <div className='hidden lg:block'>
+            <DataTable
+              columns={columns}
+              renderRow={renderRow}
+              data={filteredCourses}
+              isPending={isLoading}
+              showSkeletonHead={false}
+            />
+          </div>
+
+          {/* Mobile */}
+          <div className=' lg:hidden '>
+            {isLoading ? (
+              <LecturerCourseCardSkeleton showSkeletonHead={false} />
+            ) : (
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-5 w-full'>
+                {filteredCourses.map((course) => (
+                  <CourseAssignmentCard
+                    key={course._id}
+                    course={course}
+                    onAssign={handleAssignSingle}
+                    onUnassign={handleUnassign}
+                    isLoading={activeCourseId === course._id}
+                    showCheckbox
+                    isSelected={selectedCourses.includes(course._id)}
+                    onToggleSelect={handleToggleSelect}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </>
       )}
 
       {/* Bulk Actions Footer */}
       {unassignedSelectedCourses.length > 0 && (
         <BulkActionBar
           count={unassignedSelectedCourses.length}
-          actionLabel='Assign'
+          actionLabel='Assign Selected'
           icon={Check}
           isPending={isBulkAssigning}
           onAction={() =>

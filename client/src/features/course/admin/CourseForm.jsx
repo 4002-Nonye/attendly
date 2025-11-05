@@ -82,9 +82,7 @@ function CourseForm({ isOpen, onClose, initialData }) {
         faculty: faculty?._id,
         department: department?._id,
       });
-    } else if (!isEditSession) {
-      reset();
-    }
+    } 
   }, [
     isOpen,
     isEditSession,
@@ -280,12 +278,14 @@ function CourseForm({ isOpen, onClose, initialData }) {
               variant='secondary'
               onClick={handleCancel}
               disabled={isSubmitting}
+                            className='w-30'
             >
               Cancel
             </Button>
             <Button
               type='submit'
               variant='primary'
+              className='w-30'
               disabled={isSubmitting || (isEditSession && !isDirty)}
             >
               {isSubmitting ? <ClipLoader size={16} color='white' /> : 'Save'}

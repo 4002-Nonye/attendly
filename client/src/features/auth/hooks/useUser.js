@@ -5,8 +5,6 @@ export function useUser() {
   const { data, isPending } = useQuery({
     queryKey: ['auth-user'],
     queryFn: getUser,
-    retry: false,
-    
   });
 
   return {

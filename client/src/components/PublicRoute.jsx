@@ -6,7 +6,7 @@ import { ClipLoader } from 'react-spinners';
 function PublicRoute({ children }) {
   const { data, isPending } = useUser();
 
-  // Show loading while checking auth
+  // show loading while checking auth
   if (isPending) {
     return (
       <div className='flex h-screen items-center justify-center bg-gray-50'>
@@ -15,17 +15,17 @@ function PublicRoute({ children }) {
     );
   }
 
-  // If authenticated, redirect based on profile completion
+  // if authenticated, redirect based on profile completion
   if (data?.user) {
-    // Has role - go to dashboard
+    // has role - go to dashboard
     if (data.user.role) {
       return <Navigate to='/dashboard' replace />;
     }
-    // No role - complete profile first
+    // no role - complete profile first
     return <Navigate to='/complete-profile' replace />;
   }
 
-  // Not authenticated -  show login/signup
+  // not authenticated -  show login/signup
   return children;
 }
 

@@ -16,10 +16,10 @@ function BulkActionBar({
   if (count === 0) return null;
 
   return (
-    <div className='rounded-xl shadow-sm border border-gray-100 p-4 mt-8'>
+    <div className='rounded-xl shadow-sm border border-gray-100 p-2 md:p-4 mt-8'>
       <div className='flex flex-row items-center justify-between gap-3'>
         {/* Count info */}
-        <div className='text-sm text-gray-600 text-center sm:text-left'>
+        <div className='text-sm text-gray-600 text-center '>
           <span className='font-medium text-gray-900'>{count}</span> course
           {count > 1 ? 's' : ''} selected
         </div>
@@ -37,10 +37,10 @@ function BulkActionBar({
 
           <Button
             variant={variant}
-            size='md'
+            size='sm'
             onClick={onAction}
             disabled={disabled}
-            className='flex items-center gap-2 w-30'
+            className='flex items-center gap-2 w-48'
           >
             {isPending ? (
                 <ClipLoader size={22} color='white' />

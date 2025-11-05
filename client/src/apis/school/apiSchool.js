@@ -1,5 +1,5 @@
 import axios from 'axios';
-
+axios.defaults.withCredentials = true;
 // for dropdown (general)
 export const getSchools = async () => {
   try {
