@@ -69,7 +69,7 @@ exports.getAssignedCoursesForLecturer = async (req, res) => {
       totalSessions: sessionMap[course._id.toString()] || 0,
     }));
 
-    return res.status(200).json({ data });
+    return res.status(200).json({ courses:data });
   } catch (error) {
     return res.status(500).json({ error: 'Internal server error' });
   }

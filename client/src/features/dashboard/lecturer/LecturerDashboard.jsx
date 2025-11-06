@@ -24,49 +24,25 @@ import SectionIntro from '../../../components/SectionIntro';
 
 import RecentSessions from '../../../components/RecentSessions';
 import CourseCard from '../../../components/CourseCard';
+import { getLecturerStats } from '../../../utils/dashboardStats';
+import QuickActions from '../../../components/QuickActions';
 
 function LecturerDashboard() {
   const { data: courses, isPending: isAssignedCoursesPending } =
     useAssignedCourses();
-    
+
   const { academicYear, semester } = useSchoolInfo();
   const { data: stat, isStatPending } = useLecturerDashboardStats();
 
-  const { totalStudents=0, totalSessions=0, activeSessions=0, totalCourses=0 } =
-    stat || {};
+  const { totalCourses = 0 } = stat || {};
+  const stats = getLecturerStats(stat);
 
   const displayedCourses =
-    courses?.data?.slice(0, DASHBOARD_COURSE_LIMIT) || [];
+    courses?.courses?.slice(0, DASHBOARD_COURSE_LIMIT) || [];
 
-
-
-
-
-  const stats = [
-    {
-      label: 'My Courses',
-      value: totalCourses,
-      icon: BookOpen,
-      color: 'bg-blue-100 text-blue-600',
-    },
-    {
-      label: 'Total Students',
-      value: totalStudents,
-      icon: Users,
-      color: 'bg-purple-100 text-purple-600',
-    },
-    {
-      label: 'Sessions Conducted',
-      value: totalSessions,
-      icon: Calendar,
-      color: 'bg-green-100 text-green-600',
-    },
-    {
-      label: 'Active Sessions',
-      value: activeSessions,
-      icon: CalendarClock,
-      color: 'bg-orange-100 text-orange-600',
-    },
+  const actions = [
+    { to: '/courses', label: 'View My Courses', icon: Eye },
+    { to: '/courses?tab=all-courses', label: 'Register Course', icon: Plus },
   ];
 
   if (isAssignedCoursesPending || isStatPending) {
@@ -139,23 +115,7 @@ function LecturerDashboard() {
           <RecentSessions />
 
           {/* Quick Actions */}
-          <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-4 lg:p-6'>
-            <h3 className='text-base lg:text-lg font-semibold text-gray-900 mb-4'>
-              Quick Actions
-            </h3>
-            <div className='flex flex-wrap gap-3'>
-              <Link to='/courses'>
-                <Button variant='primary' icon={Eye} size='sm'>
-                  View My Courses
-                </Button>
-              </Link>
-              <Link to='/courses?tab=all-courses'>
-                <Button variant='primary' icon={Plus} size='sm'>
-                  Register Course
-                </Button>
-              </Link>
-            </div>
-          </div>
+          <QuickActions actions={actions} />
         </>
       )}
     </div>

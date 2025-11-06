@@ -4,21 +4,21 @@ import PageHeader from '../../../components/PageHeader';
 import DepartmentForm from './DepartmentForm';
 import SearchBar from '../../../components/SearchBar';
 import ConfirmDeleteDialog from '../../../components/ConfirmDeleteDialog';
-import { useState } from 'react';
 import { useDebounce } from 'use-debounce';
-import { useSearchParams } from 'react-router-dom';
+
 import EmptyCard from '../../../components/EmptyCard';
 import DataTable from '../../../components/DataTable';
 import { useDepartmentStats } from './useDepartmentStats';
 import { useDeleteDepartment } from './useDeleteDepartment';
 import { useButtonState } from '../../../hooks/useButtonState';
+import { useSearchQuery } from '../../../hooks/useSearchQuery';
+import { useOpenModalFromActions } from '../../../hooks/useOpenModalFromActions';
+import { useState } from 'react';
+
 
 function AdminDepartment() {
   const { disableButton } = useButtonState();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [searchQuery, setSearchQuery] = useState(
-    searchParams.get('name') || ''
-  );
+  const [searchQuery, setSearchQuery] = useSearchQuery('name');
   const [debouncedQuery] = useDebounce(searchQuery, 500);
 
   const { data, isPending } = useDepartmentStats(
@@ -38,12 +38,8 @@ function AdminDepartment() {
 
   const filteredDepartments = data?.departmentStats || [];
 
-  // Update URL when search query changes
-  const handleSearch = (value) => {
-    setSearchQuery(value);
-    if (value) setSearchParams({ name: value });
-    else setSearchParams({});
-  };
+  // open modal when quick actions button is clicked in dashboard
+  useOpenModalFromActions('mode', 'add', setShowModal);
 
   const handleEdit = (department) => {
     setSelectedDepartment(department);
@@ -144,9 +140,8 @@ function AdminDepartment() {
           <SearchBar
             placeholder='Search courses...'
             value={searchQuery}
-            onChange={handleSearch}
+            onChange={setSearchQuery}
             disabled={disableButton}
-            
           />
           <Button
             variant='primary'
@@ -192,7 +187,6 @@ function AdminDepartment() {
           data={filteredDepartments}
           isPending={isLoading}
           skeleton={false}
-
         />
       )}
 

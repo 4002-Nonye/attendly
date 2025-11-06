@@ -1,18 +1,9 @@
-import {
-  Building2,
-  Users,
-  BookOpen,
-  GraduationCap,
-  Layers,
-  Plus,
-  Calendar,
-} from 'lucide-react';
+import { Plus, Calendar } from 'lucide-react';
 
 import Button from '../../../components/Button';
 
 import Card from '../../../components/Card';
 import Chart from '../../../components/Chart';
-
 
 import { useSchoolInfo } from '../../../hooks/useSchoolInfo';
 import PageHeader from '../../../components/PageHeader';
@@ -21,57 +12,36 @@ import EmptyCard from '../../../components/EmptyCard';
 import { useAdminDashboardStats } from './useAdminDashboardStats';
 import AdminDashboardSkeleton from '../../../components/AdminDashboardSkeleton';
 import RecentSessions from '../../../components/RecentSessions';
+import { getAdminStats } from '../../../utils/dashboardStats';
+import QuickActions from '../../../components/QuickActions';
 
 function AdminDashboard() {
-  const { data: stat, isPending:isStatPending } = useAdminDashboardStats();
+  const { data: stat, isPending: isStatPending } = useAdminDashboardStats();
+
+  const stats = getAdminStats(stat);
+
   const { semester, academicYear } = useSchoolInfo();
-const isAcademicYearIncomplete = !academicYear || !semester
 
-  const {
-    totalFaculties=0,
-    totalDepartments=0,
-    totalCourses=0,
-    totalLecturers=0,
-    totalStudents=0,
-  } = stat || {};
+  const isAcademicYearIncomplete = !academicYear || !semester;
 
-  const stats = [
+  const actions = [
     {
-      label: 'Total Faculties',
-      value: totalFaculties,
-      icon: Building2,
-      color: 'bg-blue-100 text-blue-600',
-      link: '/faculties',
+      label: 'Add Faculty',
+      icon: Plus,
+      to: '/faculties?mode=add',
     },
     {
-      label: 'Total Departments',
-      value: totalDepartments,
-      icon: Layers,
-      color: 'bg-purple-100 text-purple-600',
-      link: '/departments',
+      label: 'Add Department',
+      icon: Plus,
+      to: '/departments?mode=add',
     },
     {
-      label: 'Total Courses',
-      value: totalCourses,
-      icon: BookOpen,
-      color: 'bg-green-100 text-green-600',
-      link: '/courses',
-    },
-    {
-      label: 'Total Lecturers',
-      value: totalLecturers,
-      icon: Users,
-      color: 'bg-orange-100 text-orange-600',
-      link: '/lecturers',
-    },
-    {
-      label: 'Total Students',
-      value: totalStudents,
-      icon: GraduationCap,
-      color: 'bg-pink-100 text-pink-600',
-      link: '/students',
+      label: 'Add Course',
+      icon: Plus,
+      to: '/courses?mode=add',
     },
   ];
+
   if (isStatPending) return <AdminDashboardSkeleton />;
 
   return (
@@ -93,7 +63,7 @@ const isAcademicYearIncomplete = !academicYear || !semester
           iconBg='bg-blue-100'
         >
           <Link to='/academic-year' className='mt-4'>
-            <Button icon={Plus} variant='primary' size='lg' >
+            <Button icon={Plus} variant='primary' size='lg'>
               Create Academic Year
             </Button>
           </Link>
@@ -114,22 +84,7 @@ const isAcademicYearIncomplete = !academicYear || !semester
           <RecentSessions />
 
           {/* Quick Actions */}
-          <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-6'>
-            <h3 className='text-lg font-semibold text-gray-900 mb-4'>
-              Quick Actions
-            </h3>
-            <div className='flex flex-wrap gap-3'>
-              <Button variant='primary' icon={Plus} size='sm'>
-                Add Faculty
-              </Button>
-              <Button variant='primary' icon={Plus} size='sm'>
-                Add Department
-              </Button>
-              <Button variant='primary' icon={Plus} size='sm'>
-                Add Course
-              </Button>
-            </div>
-          </div>
+          <QuickActions actions={actions} />
         </>
       )}
     </div>

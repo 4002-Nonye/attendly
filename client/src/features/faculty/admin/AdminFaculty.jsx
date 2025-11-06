@@ -7,36 +7,31 @@ import SearchBar from '../../../components/SearchBar';
 import DataTable from '../../../components/DataTable';
 import FacultyForm from './FacultyForm';
 import { useFacultyStats } from './useFacultyStats';
-import { useSearchParams } from 'react-router-dom';
+
 import { useDeleteFaculty } from './useDeleteFaculty';
 import ConfirmDeleteDialog from '../../../components/ConfirmDeleteDialog';
 import { useButtonState } from '../../../hooks/useButtonState';
+import { useSearchQuery } from '../../../hooks/useSearchQuery';
+import { useOpenModalFromActions } from '../../../hooks/useOpenModalFromActions';
+
+
 
 function AdminFaculty() {
   const { disableButton } = useButtonState();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [searchQuery, setSearchQuery] = useState(
-    searchParams.get('name') || ''
-  );
-
   const { data: faculties, isPending } = useFacultyStats(
     { enabled: !disableButton } // options
   );
   const { deleteFaculty, isPending: isDeleting } = useDeleteFaculty();
-
+  const [searchQuery, setSearchQuery] = useSearchQuery('name');
   const [showModal, setShowModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedFaculty, setSelectedFaculty] = useState(null);
 
   const isLoading = disableButton ? false : isPending;
 
-  // Update URL when search query changes
-  const handleSearch = (value) => {
-    setSearchQuery(value);
-    if (value) setSearchParams({ name: value });
-    else setSearchParams({});
-  };
-
+  // open modal when quick actions button is clicked in dashboard
+  useOpenModalFromActions('mode', 'add', setShowModal);
+  
   const handleEdit = (faculty) => {
     setSelectedFaculty(faculty);
     setShowModal(true);
@@ -117,12 +112,15 @@ function AdminFaculty() {
     </tr>
   );
 
-const filteredFaculties =
-  faculties?.facultyStats?.filter((faculty) => {
-    const fullName = `faculty of ${faculty.name}`.toLowerCase(); // 'append faculty of'
-    const query = searchQuery.toLowerCase();
-    return faculty.name.toLowerCase().includes(query) || fullName.includes(searchQuery);
-  }) || [];
+  const filteredFaculties =
+    faculties?.facultyStats?.filter((faculty) => {
+      const fullName = `faculty of ${faculty.name}`.toLowerCase(); // 'append faculty of'
+      const query = searchQuery.toLowerCase();
+      return (
+        faculty.name.toLowerCase().includes(query) ||
+        fullName.includes(searchQuery)
+      );
+    }) || [];
 
 
   return (
@@ -139,7 +137,7 @@ const filteredFaculties =
           <SearchBar
             placeholder='Search faculties...'
             value={searchQuery}
-            onChange={handleSearch}
+            onChange={setSearchQuery}
             disabled={disableButton}
           />
           <Button

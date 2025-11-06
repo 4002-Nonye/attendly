@@ -1,4 +1,3 @@
-import { useSearchParams } from 'react-router-dom';
 import { useButtonState } from '../../../hooks/useButtonState';
 import { useAllCourses } from '../general/useAllCourses';
 import { useEnrollCourse } from './useEnrollCourse';
@@ -7,53 +6,32 @@ import { useState } from 'react';
 import SearchBar from '../../../components/SearchBar';
 import CourseAssignmentCard from '../../../components/CourseAssignmentCard';
 import LecturerCourseCardSkeleton from '../../../components/LecturerCourseCardSkeleton';
-import DataTable from '../../../components/DataTable';
 import { BookOpen, Check, X } from 'lucide-react';
 import EmptyCard from '../../../components/EmptyCard';
-import Button from '../../../components/Button';
-import { ClipLoader } from 'react-spinners';
 import BulkActionBar from '../../../components/BulkActionBar';
+import SelectionInfoBar from '../../../components/SelectionInfoBar';
+import { useSearchQuery } from '../../../hooks/useSearchQuery';
+import { useFilteredCourses } from '../../../hooks/useFilteredCourses';
+import { useSelection } from '../../../hooks/useSelection';
 
 function StudentAllCourses() {
   const { disableButton } = useButtonState();
   const { data: courseData, isPending } = useAllCourses({
     enabled: !disableButton,
   });
-  // course
-  const courses = courseData?.courses || [];
+
   const { enrollCourse } = useEnrollCourse();
   const { unenrollCourse } = useUnenrollCourse();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [selectedCourses, setSelectedCourses] = useState([]);
-  const [searchQuery, setSearchQuery] = useState(
-    searchParams.get('search') || ''
-  );
+  const [searchQuery, setSearchQuery] = useSearchQuery();
+
 
   const isLoading = disableButton ? false : isPending;
 
   // filter courses based on search
-  const filteredCourses = courses.filter(
-    (course) =>
-      course.courseCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      course.courseTitle.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const handleSearch = (value) => {
-    setSearchQuery(value);
-    const params = new URLSearchParams(searchParams);
-    if (value.trim()) params.set('search', value);
-    else params.delete('search');
-    setSearchParams(params);
-  };
+  const filteredCourses = useFilteredCourses(courseData?.courses, searchQuery);
 
   // toggle course selection
-  const handleToggleSelect = (courseId) => {
-    setSelectedCourses((prev) =>
-      prev.includes(courseId)
-        ? prev.filter((id) => id !== courseId)
-        : [...prev, courseId]
-    );
-  };
+  const { selected, toggle, isSelected, clear } = useSelection();
 
   //track which course is currently pending in action
   const [activeCourseId, setActiveCourseId] = useState(null);
@@ -74,7 +52,7 @@ function StudentAllCourses() {
   const handleUnenroll = (courseId) => {
     setActiveCourseId(courseId); // track which course is enrolling
 
-    setSelectedCourses((prev) => prev.filter((id) => id !== courseId)); // remove from selected courses when unassigning
+    if (isSelected(courseId)) toggle(courseId); // remove from selection if selected
     unenrollCourse(courseId, {
       onSettled: () => setActiveCourseId(null),
     });
@@ -85,10 +63,13 @@ function StudentAllCourses() {
 
     enrollCourse(
       {
-        courseIds: selectedCourses,
+        courseIds: selected,
       },
       {
-        onSettled: () => setIsBulkEnrolling(null),
+        onSettled: () => {
+          setIsBulkEnrolling(null);
+          clear();
+        },
       }
     );
   };
@@ -100,10 +81,16 @@ function StudentAllCourses() {
         <SearchBar
           placeholder='Search courses...'
           value={searchQuery}
-          onChange={handleSearch}
+          onChange={setSearchQuery}
           disabled={disableButton}
         />
       </div>
+
+      {/* Selection Info */}
+      {selected.length > 0 && (
+        <SelectionInfoBar count={selected.length} onClear={clear} />
+      )}
+
       {/* Table */}
       {!filteredCourses.length && !isLoading ? (
         <EmptyCard
@@ -129,12 +116,12 @@ function StudentAllCourses() {
                   <CourseAssignmentCard
                     key={course._id}
                     course={course}
-                    onPrimaryAction ={handleSingleEnroll}
-                    // onUnassign={handleUnassign}
+                    onPrimaryAction={handleSingleEnroll}
+                    onSecondaryAction={handleUnenroll}
                     isLoading={activeCourseId === course._id}
                     showCheckbox
-                    isSelected={selectedCourses.includes(course._id)}
-                    onToggleSelect={handleToggleSelect}
+                    isSelected={isSelected(course._id) || course.status}
+                    onToggleSelect={toggle}
                     primaryActionText='Enroll'
                     secondaryActionText='Unenroll'
                   />
@@ -145,13 +132,15 @@ function StudentAllCourses() {
         </>
       )}
       {/* Bulk Actions Footer */}
-      <BulkActionBar
-        // count={unassignedSelectedCourses.length}
-        actionLabel='Enroll Selected'
-        icon={Check}
-        isPending={isBulkEnrolling}
-        onAction={() => handleBulkEnroll()}
-      />
+      {selected.length > 0 && (
+        <BulkActionBar
+          count={selected.length}
+          actionLabel='Enroll Selected'
+          icon={Check}
+          isPending={isBulkEnrolling}
+          onAction={() => handleBulkEnroll()}
+        />
+      )}
     </div>
   );
 }

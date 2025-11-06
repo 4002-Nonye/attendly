@@ -5,7 +5,6 @@ import EmptyCard from '../../../components/EmptyCard';
 import DataTable from '../../../components/DataTable';
 import SearchBar from '../../../components/SearchBar';
 import { useButtonState } from '../../../hooks/useButtonState';
-import { useSearchParams } from 'react-router-dom';
 import { useAllCourses } from '../general/useAllCourses';
 import BulkActionBar from '../../../components/BulkActionBar';
 import SelectionInfoBar from '../../../components/SelectionInfoBar';
@@ -14,57 +13,31 @@ import { useUnassignCourse } from './useUnassignCourse';
 import { ClipLoader } from 'react-spinners';
 import CourseAssignmentCard from '../../../components/CourseAssignmentCard';
 import LecturerCourseCardSkeleton from '../../../components/LecturerCourseCardSkeleton';
+import { useSearchQuery } from '../../../hooks/useSearchQuery';
+import { useFilteredCourses } from '../../../hooks/useFilteredCourses';
+import { useSelection } from '../../../hooks/useSelection';
 
 function LecturerAllCourses() {
   const { disableButton } = useButtonState();
   const { data: courseData, isPending } = useAllCourses({
     enabled: !disableButton,
   });
+  const [searchQuery, setSearchQuery] = useSearchQuery();
+
   const { assignToCourse } = useAssignCourse();
   const { unassignFromCourse } = useUnassignCourse();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [selectedCourses, setSelectedCourses] = useState([]);
-  const [searchQuery, setSearchQuery] = useState(
-    searchParams.get('search') || ''
-  );
 
   //track which course is currently pending in action
   const [activeCourseId, setActiveCourseId] = useState(null);
   const [isBulkAssigning, setIsBulkAssigning] = useState(false);
 
-  // course
-  const courses = courseData?.courses || [];
-
   const isLoading = disableButton ? false : isPending;
 
   // filter courses based on search
-  const filteredCourses = courses.filter(
-    (course) =>
-      course.courseCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      course.courseTitle.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  //  check 'unassigned' courses
-  const unassignedSelectedCourses = courses.filter(
-    (course) => selectedCourses.includes(course._id) && !course.status
-  );
-
-  const handleSearch = (value) => {
-    setSearchQuery(value);
-    const params = new URLSearchParams(searchParams);
-    if (value.trim()) params.set('search', value);
-    else params.delete('search');
-    setSearchParams(params);
-  };
+  const filteredCourses = useFilteredCourses(courseData?.courses, searchQuery);
 
   // toggle course selection
-  const handleToggleSelect = (courseId) => {
-    setSelectedCourses((prev) =>
-      prev.includes(courseId)
-        ? prev.filter((id) => id !== courseId)
-        : [...prev, courseId]
-    );
-  };
+  const { selected, toggle, isSelected, clear } = useSelection();
 
   // handle single assign
   const handleAssignSingle = (courseId) => {
@@ -83,7 +56,7 @@ function LecturerAllCourses() {
   const handleUnassign = (courseId) => {
     setActiveCourseId(courseId); // track which course is unassigning
 
-    setSelectedCourses((prev) => prev.filter((id) => id !== courseId)); // remove from selected courses when unassigning
+    if (isSelected(courseId)) toggle(courseId); // remove from selection if selected
 
     unassignFromCourse(courseId, {
       onSettled: () => setActiveCourseId(null),
@@ -91,14 +64,17 @@ function LecturerAllCourses() {
   };
 
   // handle bulk assign
-  const handleBulkAssign = (courseIds = selectedCourses) => {
+  const handleBulkAssign = (courseIds = selected) => {
     setIsBulkAssigning(true);
     assignToCourse(
       {
         courseIds,
       },
       {
-        onSettled: () => setIsBulkAssigning(false),
+        onSettled: () => {
+          setIsBulkAssigning(false);
+          clear();
+        },
       }
     );
   };
@@ -110,9 +86,9 @@ function LecturerAllCourses() {
         <td className='px-4 py-4'>
           <input
             type='checkbox'
-            checked={selectedCourses.includes(course._id)}
+            checked={isSelected(course._id) || course.status}
             disabled={course.status}
-            onChange={() => handleToggleSelect(course._id)}
+            onChange={() => toggle(course._id)}
             className={`w-4 h-4  rounded border-gray-300 focus:ring-0 `}
           />
         </td>
@@ -187,17 +163,14 @@ function LecturerAllCourses() {
         <SearchBar
           placeholder='Search courses...'
           value={searchQuery}
-          onChange={handleSearch}
+          onChange={setSearchQuery}
           disabled={disableButton}
         />
       </div>
 
       {/* Selection Info */}
-      {unassignedSelectedCourses.length > 0 && (
-        <SelectionInfoBar
-          count={unassignedSelectedCourses.length}
-          onClear={() => setSelectedCourses([])}
-        />
+      {selected.length > 0 && (
+        <SelectionInfoBar count={selected.length} onClear={clear} />
       )}
 
       {/* Table */}
@@ -240,8 +213,8 @@ function LecturerAllCourses() {
                     onSecondaryAction={handleUnassign}
                     isLoading={activeCourseId === course._id}
                     showCheckbox
-                    isSelected={selectedCourses.includes(course._id)}
-                    onToggleSelect={handleToggleSelect}
+                    isSelected={isSelected(course._id) || course.status}
+                    onToggleSelect={toggle}
                     primaryActionText='Assign'
                     secondaryActionText='Unassign'
                   />
@@ -253,9 +226,9 @@ function LecturerAllCourses() {
       )}
 
       {/* Bulk Actions Footer */}
-      {unassignedSelectedCourses.length > 0 && (
+      {selected.length > 0 && (
         <BulkActionBar
-          count={unassignedSelectedCourses.length}
+          count={selected.length}
           actionLabel='Assign Selected'
           icon={Check}
           isPending={isBulkAssigning}

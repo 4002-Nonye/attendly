@@ -26,6 +26,8 @@ import SectionIntro from '../../../components/SectionIntro';
 import StudentCourseCard from '../../../components/StudentCourseCard';
 import DataTable from '../../../components/DataTable';
 import EmptyChart from '../../../components/EmptyChart';
+import { getStudentStats } from '../../../utils/dashboardStats';
+import QuickActions from '../../../components/QuickActions';
 
 function StudentDashboard() {
   const { data: stats, isPending: isStatPending } = useStudentDashboardStats();
@@ -40,39 +42,7 @@ function StudentDashboard() {
   const courseAttendance =
     attReport?.report?.slice(0, DASHBOARD_COURSE_LIMIT) || [];
 
-  const {
-    // Default to 0 to prevent NaN error
-    totalCourses = 0,
-    totalSessions = 0,
-    attendedSessions = 0,
-  } = stats || {};
-
-  const statsData = [
-    {
-      label: 'My Courses',
-      value: totalCourses,
-      icon: BookOpen,
-      color: 'bg-blue-100 text-blue-600',
-    },
-    {
-      label: 'Total Sessions',
-      value: totalSessions,
-      icon: CalendarClock,
-      color: 'bg-purple-100 text-purple-600',
-    },
-    {
-      label: 'Attended Sessions',
-      value: attendedSessions,
-      icon: CheckCircle,
-      color: 'bg-green-100 text-green-600',
-    },
-    {
-      label: 'Missed Classes',
-      value: totalSessions - attendedSessions,
-      icon: XCircle,
-      color: 'bg-red-100 text-red-600',
-    },
-  ];
+  const statsData = getStudentStats(stats);
 
   const columns = ['Course', 'Date & Time', 'Status'];
 
@@ -110,6 +80,11 @@ function StudentDashboard() {
       </td>
     </tr>
   );
+
+  const actions = [
+    { to: '/courses', label: 'View My Courses', icon: Eye },
+    { to: '/courses?tab=all-courses', label: 'Register Course', icon: Plus },
+  ];
 
   if (isStatPending || isAttReportPending || isSessionPending) {
     return <StudentDashboardSkeleton />;
@@ -196,23 +171,7 @@ function StudentDashboard() {
           )}
 
           {/* Quick Actions */}
-          <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-4 lg:p-6'>
-            <h3 className='text-base lg:text-lg font-semibold text-gray-900 mb-4'>
-              Quick Actions
-            </h3>
-            <div className='flex flex-wrap gap-3'>
-              <Link to='/courses'>
-                <Button variant='primary' icon={Eye} size='sm'>
-                  View My Courses
-                </Button>
-              </Link>
-              <Link to='/courses?tab=all-courses'>
-                <Button variant='primary' icon={Plus} size='sm'>
-                  Register Course
-                </Button>
-              </Link>
-            </div>
-          </div>
+          <QuickActions actions={actions} />
         </>
       )}
     </div>

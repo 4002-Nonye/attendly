@@ -3,12 +3,12 @@ const mongoose = require('mongoose');
 const Course = mongoose.model('Course');
 const User = mongoose.model('User');
 const School = mongoose.model('School');
+const StudentEnrollment = mongoose.model('StudentEnrollment');
 
 exports.getCourses = async (req, res) => {
   try {
     const { role, schoolId, id: userId } = req.user;
     const { search, department, level } = req.query;
-
 
     // Find the user to access faculty, department, and level information
     const user = await User.findById(userId).lean();
@@ -79,6 +79,31 @@ exports.getCourses = async (req, res) => {
           (l) => l._id.toString() === userId.toString()
         ),
       }));
+      return res.status(200).json({ courses: formattedCourses });
+    }
+
+    // add status for student
+    if (role === 'student') {
+      // get all course IDs from the courses we fetched
+      const courseIds = courses.map((c) => c._id);
+
+      // find enrollments for this student in these courses
+      const enrollments = await StudentEnrollment.find({
+        student: userId,
+        course: { $in: courseIds },
+      }).lean();
+
+      // create a set of course IDs the student is enrolled in for fast lookup
+      const enrolledCourseIds = new Set(
+        enrollments.map((e) => e.course.toString())
+      );
+
+      // loop throgh courses to add status
+      const formattedCourses = courses.map((course) => ({
+        ...course,
+        status: enrolledCourseIds.has(course._id.toString()), // check if the enrolled IDs contains the course ID
+      }));
+
       return res.status(200).json({ courses: formattedCourses });
     }
 

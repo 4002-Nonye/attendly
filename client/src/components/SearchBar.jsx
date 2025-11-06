@@ -8,8 +8,10 @@ function SearchBar({
   placeholder = 'Search...',
   className = '',
   disabled,
-
 }) {
+
+
+
   return (
     <div className={`relative w-full md:w-96  ${className}`}>
       <InputField
@@ -32,7 +34,6 @@ SearchBar.propTypes = {
   onChange: PropTypes.func.isRequired,
   className: PropTypes.string,
   disabled: PropTypes.bool,
-  
 };
 
 export default SearchBar;

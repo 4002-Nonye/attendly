@@ -9,6 +9,7 @@ import DataTable from '../../../components/DataTable';
 import Button from '../../../components/Button';
 import LecturerCourseCardSkeleton from '../../../components/LecturerCourseCardSkeleton';
 import CourseCard from '../../../components/CourseCard';
+import { useFilteredCourses } from '../../../hooks/useFilteredCourses';
 
 function LecturerAssignedCourses() {
   const { disableButton } = useButtonState();
@@ -21,15 +22,10 @@ function LecturerAssignedCourses() {
   );
 
   const isLoading = disableButton ? false : isPending;
-  // course
-  const courses = courseData?.data || [];
 
   //filter courses based on search
-  const filteredCourses = courses?.filter(
-    (course) =>
-      course?.courseCode?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      course?.courseTitle?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+const filteredCourses = useFilteredCourses(courseData?.courses, searchQuery);
+
 
   const handleSearch = (value) => {
     setSearchQuery(value);
@@ -131,6 +127,7 @@ function LecturerAssignedCourses() {
               <div className='grid grid-cols-1 md:grid-cols-2 gap-5 w-full'>
                 {filteredCourses.map((course) => (
                   <CourseCard
+                    key={course._id}
                     course={course}
                     actionType='link'
                     actionText='Start Attendance'

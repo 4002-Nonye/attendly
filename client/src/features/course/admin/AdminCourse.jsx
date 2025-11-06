@@ -25,6 +25,7 @@ import { generateLevel } from '../../../utils/courseHelpers';
 import { MAX_LEVEL } from '../../../config/level';
 
 import FilterBar from '../../../components/FilterBar';
+import { useOpenModalFromActions } from '../../../hooks/useOpenModalFromActions';
 
 function AdminCourse() {
   const { disableButton } = useButtonState();
@@ -72,6 +73,9 @@ function AdminCourse() {
     if (filters.level) params.level = filters.level;
     setSearchParams(params);
   };
+
+  // open modal when quick actions button is clicked in dashboard
+  useOpenModalFromActions('mode', 'add', setShowModal);
 
   const handleFilterChange = (filterType, value) => {
     const newFilters = { ...filters, [filterType]: value };
@@ -215,7 +219,6 @@ function AdminCourse() {
             value={searchQuery}
             onChange={handleSearch}
             disabled={disableButton}
-
           />
           <Button
             variant='primary'

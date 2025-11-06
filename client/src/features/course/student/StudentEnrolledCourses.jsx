@@ -1,46 +1,35 @@
 import { useRegisteredCourses } from './useRegisteredCourses';
 import { useButtonState } from '../../../hooks/useButtonState';
 import { useSearchParams } from 'react-router-dom';
-import { useState } from 'react';
+
 import SearchBar from '../../../components/SearchBar';
 import { BookOpen } from 'lucide-react';
 import EmptyCard from '../../../components/EmptyCard';
-import DataTable from '../../../components/DataTable';
+
 import LecturerCourseCardSkeleton from '../../../components/LecturerCourseCardSkeleton';
 import CourseCard from '../../../components/CourseCard';
 import Button from '../../../components/Button';
+import { useSearchQuery } from '../../../hooks/useSearchQuery';
+import { useFilteredCourses } from '../../../hooks/useFilteredCourses';
 
 function StudentEnrolledCourses() {
   const { disableButton } = useButtonState();
   const { data: registeredcourses, isPending } = useRegisteredCourses();
-  const courses = registeredcourses?.courses || [];
 
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [searchQuery, setSearchQuery] = useState(
-    searchParams.get('search') || ''
-  );
+  const [searchQuery, setSearchQuery] = useSearchQuery();
+  const [_, setSearchParams] = useSearchParams();
 
   const isLoading = disableButton ? false : isPending;
 
   //filter courses based on search
-  const filteredCourses = courses?.filter(
-    (course) =>
-      course?.courseCode?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      course?.courseTitle?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredCourses = useFilteredCourses(
+    registeredcourses?.courses,
+    searchQuery
   );
-
-  const handleSearch = (value) => {
-    setSearchQuery(value);
-    const params = new URLSearchParams(searchParams);
-    if (value.trim()) params.set('search', value);
-    else params.delete('search');
-    setSearchParams(params);
-  };
 
   const handleViewCourses = (tab) => {
     setSearchParams({ tab });
   };
-
 
   return (
     <div className='w-full'>
@@ -49,7 +38,7 @@ function StudentEnrolledCourses() {
         <SearchBar
           placeholder='Search courses...'
           value={searchQuery}
-          onChange={handleSearch}
+          onChange={setSearchQuery}
           disabled={disableButton}
         />
       </div>
@@ -78,13 +67,14 @@ function StudentEnrolledCourses() {
         </EmptyCard>
       ) : (
         <>
-          <div >
+          <div>
             {isLoading ? (
               <LecturerCourseCardSkeleton showSkeletonHead={false} />
             ) : (
               <div className='grid grid-cols-1 md:grid-cols-2  xl:grid-cols-4 gap-5 w-full'>
                 {filteredCourses.map((course) => (
                   <CourseCard
+                    key={course._id}
                     course={course}
                     actionType='link'
                     // actionText='Start Attendance'
