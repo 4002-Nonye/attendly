@@ -45,7 +45,7 @@ export const getStatusBadge = (status) => {
   return statusConfig[status] || statusConfig.default;
 };
 
-// Generate level options dynamically
+// generate level options dynamically
 export const generateLevel = (maxLevel) => {
   const levelOptions = Array.from(
     { length: Math.floor(maxLevel / 100) },
@@ -58,4 +58,17 @@ export const generateLevel = (maxLevel) => {
     }
   );
   return levelOptions;
+};
+
+// For status styling
+export const getStatusStyle = (status) => {
+  const styles = {
+    ongoing:
+      'text-green-700 bg-green-100 border border-green-200 px-2 py-0.5 rounded-full',
+    inactive:
+      'text-gray-700 bg-gray-100 border border-gray-200 px-2 py-0.5 rounded-full',
+  
+  };
+
+  return styles[status?.toLowerCase()] || styles.inactive;
 };

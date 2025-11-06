@@ -164,7 +164,7 @@ function StudentDashboard() {
                 message={`You haven't enrolled in any courses yet. Register for courses to start tracking your attendance.`}
                 iconBg='bg-blue-100'
               >
-                <Link to='/courses/register'>
+                <Link to='/courses?tab=all-courses'>
                   <Button variant='primary'>Browse Courses</Button>
                 </Link>
               </EmptyCard>
@@ -206,7 +206,7 @@ function StudentDashboard() {
                   View My Courses
                 </Button>
               </Link>
-              <Link to='/courses/register'>
+              <Link to='/courses?tab=all-courses'>
                 <Button variant='primary' icon={Plus} size='sm'>
                   Register Course
                 </Button>

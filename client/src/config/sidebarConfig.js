@@ -26,7 +26,7 @@ export const sidebarConfig = {
     { name: 'Dashboard', icon: LayoutDashboard, to: '/dashboard' },
     { name: 'Courses', icon: BookOpen, to: '/courses' },
     { name: 'Sessions', icon: CalendarClock, to: '/sessions' },
-    { name: 'My Attendance', icon: ClipboardList, to: '/attendance' },
+    { name: 'Attendance', icon: ClipboardList, to: '/attendance' },
     { name: 'Profile', icon: UserCircle, to: '/profile' },
   ],
   student: [

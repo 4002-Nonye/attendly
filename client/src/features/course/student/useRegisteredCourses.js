@@ -3,7 +3,7 @@ import { getStudentRegisteredCourses } from '../../../apis/course/apiCourse';
 
 export function useRegisteredCourses() {
   const { data, isPending, error, isError } = useQuery({
-    queryKey: ['registered-courses', 'student'],
+    queryKey: ['courses', 'student'],
     queryFn: getStudentRegisteredCourses,
   });
   return { data, isPending, error, isError };

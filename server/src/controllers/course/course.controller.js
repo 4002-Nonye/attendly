@@ -9,6 +9,7 @@ exports.getCourses = async (req, res) => {
     const { role, schoolId, id: userId } = req.user;
     const { search, department, level } = req.query;
 
+
     // Find the user to access faculty, department, and level information
     const user = await User.findById(userId).lean();
     if (!user) {

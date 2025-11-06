@@ -2,50 +2,47 @@ import { Check, X } from 'lucide-react';
 import { getBadgeColor } from '../utils/courseHelpers';
 import Button from './Button';
 import ClipLoader from 'react-spinners/ClipLoader';
+import PropTypes from 'prop-types';
 
 function CourseAssignmentCard({
   course,
-  onAssign,
-  onUnassign,
+  onPrimaryAction, //  assign/enroll
+  onSecondaryAction, //  unassign/unenroll
   isLoading,
   showCheckbox = false,
   isSelected = false,
   onToggleSelect,
+  primaryActionText = 'Assign',
+  secondaryActionText = 'Unassign',
 }) {
   const badgeColor = getBadgeColor(course.level);
-  const isAssigned = course.status;
+  const isActionCompleted = course.status;
 
   return (
-    <div className="relative">
+    <div className='relative'>
       {/* Checkbox for bulk selection */}
       {showCheckbox && (
-        <div className="absolute left-2 top-4">
+        <div className='absolute left-2 top-4'>
           <input
-            type="checkbox"
+            type='checkbox'
             checked={isSelected}
-            disabled={isAssigned}
+            disabled={isActionCompleted}
             onChange={() => onToggleSelect(course._id)}
-            className={`w-4 h-4 rounded border-gray-300 focus:ring-0 transition-colors ${
-              isAssigned
-                ? 'text-green-600 cursor-not-allowed opacity-60'
-                : 'text-blue-600 cursor-pointer hover:border-blue-400'
-            }`}
+            className={`w-4 h-4 rounded border-gray-300 focus:ring-0`}
           />
         </div>
       )}
 
       {/* Card container */}
       <div
-        className={`group rounded-lg border px-7 py-4 shadow-sm transition-all flex h-full flex-col ${
-          isSelected
-            ? 'border-blue-500 bg-blue-50'
-            : 'border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300'
-        }`}
+        className={`group rounded-lg px-7 py-4 shadow-sm transition-all flex h-full flex-col 
+
+        `}
       >
         {/* Header */}
-        <div className="mb-4">
-          <div className="flex items-start justify-between gap-2 mb-2">
-            <h3 className="font-semibold text-sm text-gray-900 leading-tight">
+        <div className='mb-4'>
+          <div className='flex items-start justify-between gap-2 mb-2'>
+            <h3 className='font-semibold text-sm text-gray-900 leading-tight'>
               {course.courseTitle}
             </h3>
             <span
@@ -54,64 +51,64 @@ function CourseAssignmentCard({
               {course.courseCode}
             </span>
           </div>
-          <p className="text-xs text-gray-500">
+          <p className='text-xs text-gray-500'>
             {course.department?.name || 'No department info'}
           </p>
         </div>
 
         {/* Stats */}
-        <div className="flex flex-wrap items-center gap-2 text-xs mb-4 pb-4 border-b border-gray-100 text-gray-500">
+        <div className='flex flex-wrap items-center gap-2 text-xs mb-4 pb-4 border-b border-gray-100 text-gray-500'>
           <span>
-            <span className="font-semibold text-gray-900">{course.level}</span> Level
+            <span className='font-semibold text-gray-900'>{course.level}</span>{' '}
+            Level
           </span>
           <span>•</span>
           <span>
-            <span className="font-semibold text-gray-900">{course.unit}</span> Unit
+            <span className='font-semibold text-gray-900'>{course.unit}</span>{' '}
+            Unit
           </span>
           <span>•</span>
           <span>
             Status:{' '}
             <span
               className={`font-semibold ${
-                isAssigned ? 'text-green-700' : 'text-gray-600'
+                isActionCompleted ? 'text-green-700' : 'text-gray-600'
               }`}
             >
-              {isAssigned ? 'Assigned' : 'Unassigned'}
+              {isActionCompleted
+                ? `${primaryActionText}ed`
+                : `${secondaryActionText}ed`}
             </span>
           </span>
         </div>
 
         {/* Action Button */}
-        {isAssigned ? (
+        {isActionCompleted ? (
           <Button
-            onClick={() => onUnassign(course._id)}
-            variant="danger"
-            className="gap-1  mt-auto text-sm"
-            size="md"
+            onClick={() => onSecondaryAction(course._id)}
+            variant='danger'
+            className='gap-1  mt-auto text-sm'
+            size='md'
             disabled={isLoading}
           >
             {isLoading ? (
-              <ClipLoader size={20} color="white" />
+              <ClipLoader size={20} color='white' />
             ) : (
-              <>
-                <X size={18} /> Unassign
-              </>
+              secondaryActionText
             )}
           </Button>
         ) : (
           <Button
-            onClick={() => onAssign(course._id)}
-            variant="primary"
-            className="gap-1  mt-auto text-sm"
-            size="md"
+            onClick={() => onPrimaryAction(course._id)}
+            variant='primary'
+            className='gap-1  mt-auto text-sm'
+            size='md'
             disabled={isLoading}
           >
             {isLoading ? (
-              <ClipLoader size={20} color="white" />
+              <ClipLoader size={20} color='white' />
             ) : (
-              <>
-                <Check size={18} /> Assign
-              </>
+              primaryActionText
             )}
           </Button>
         )}
@@ -119,5 +116,31 @@ function CourseAssignmentCard({
     </div>
   );
 }
+
+CourseAssignmentCard.propTypes = {
+  course: PropTypes.shape({
+    _id: PropTypes.string.isRequired,
+    courseCode: PropTypes.string.isRequired,
+    courseTitle: PropTypes.string.isRequired,
+    level: PropTypes.number.isRequired,
+    unit: PropTypes.number.isRequired,
+    department: PropTypes.shape({
+      _id: PropTypes.string,
+      name: PropTypes.string,
+    }),
+    totalStudents: PropTypes.number,
+    totalSessions: PropTypes.number,
+    status: PropTypes.bool,
+  }).isRequired,
+  onPrimaryAction: PropTypes.func.isRequired,
+  onSecondaryAction: PropTypes.func.isRequired,
+  isLoading: PropTypes.bool.isRequired,
+  showCheckbox: PropTypes.bool,
+  isSelected: PropTypes.bool,
+  onToggleSelect: PropTypes.func,
+  primaryActionText: PropTypes.string,
+  secondaryActionText: PropTypes.string,
+  isActionCompleted: PropTypes.bool.isRequired,
+};
 
 export default CourseAssignmentCard;

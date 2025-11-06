@@ -75,10 +75,29 @@ export const assignToCourse = async (data) => {
 
 // lecturer unassign self to course
 export const unassignFromCourse = async (id) => {
-  console.log(id)
+  try {
+    const response = await axios.delete(`/api/lecturer/courses/${id}/unassign`);
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+// student enroll in course
+export const enrollCourse = async (data) => {
+  try {
+    const response = await axios.post(`/api/student/courses/register`, data);
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+// student enroll from course
+export const unenrollCourse = async (id) => {
   try {
     const response = await axios.delete(
-      `/api/lecturer/courses/${id}/unassign`
+      `/api/student/courses/${id}/unregister`
     );
     return response.data;
   } catch (error) {

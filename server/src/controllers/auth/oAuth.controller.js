@@ -21,7 +21,8 @@ exports.authGoogleCallback = (req, res, next) =>
         `${process.env.CLIENT_URL}/link-account/?token=${token}`
       );
     }
-
+ // Set auth cookie
+    setAuthCookie(res, user);
     // profile is incomplete if schoolId or role is missing
     // todo: add faculty and department for student and lecturer
     const profileIncomplete =
@@ -31,13 +32,11 @@ exports.authGoogleCallback = (req, res, next) =>
         (!user.matricNo || !user.faculty || !user.department)) ||
       (user.role === 'lecturer' && (!user.faculty || !user.department));
 
-    // Set auth cookie
-    setAuthCookie(res, user);
-
     if (profileIncomplete) {
       // Redirect user to complete profile page
       return res.redirect(`${process.env.CLIENT_URL}/complete-profile`);
     }
+   
 
     // Otherwise, redirect to {role}/dashboard
     return res.redirect(`${process.env.CLIENT_URL}/dashboard`);

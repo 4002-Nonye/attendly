@@ -1,9 +1,17 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
-import { getBadgeColor } from '../utils/courseHelpers';
+import { ArrowRight, Circle } from 'lucide-react';
+import { getBadgeColor, getStatusStyle } from '../utils/courseHelpers';
 
-function CourseCard({ course, actionText = 'Start Attendance', actionLink }) {
+function CourseCard({
+  course,
+  actionText = 'Start Attendance',
+  actionLink,
+  showStatus = true,
+}) {
   const badgeColor = getBadgeColor(course.level);
+  // Get status from course or default to 'Inactive'
+  const status = course.status || 'Inactive';
+  const statusStyle = getStatusStyle(status);
 
   return (
     <div className='group bg-white rounded-lg border border-gray-200 p-4 hover:bg-gray-50 hover:border-gray-300 transition-all flex flex-col'>
@@ -14,14 +22,11 @@ function CourseCard({ course, actionText = 'Start Attendance', actionLink }) {
             {course.courseTitle}
           </h3>
 
-          <div className='flex flex-col items-end gap-1'>
-            <span
-              className={`text-xs font-medium whitespace-nowrap px-2 py-0.5 rounded border ${badgeColor}`}
-            >
-              {course.courseCode}
-            </span>
-
-          </div>
+          <span
+            className={`text-xs font-medium whitespace-nowrap px-2 py-0.5 rounded border ${badgeColor}`}
+          >
+            {course.courseCode}
+          </span>
         </div>
 
         <p className='text-xs text-gray-500'>{course.department.name}</p>
@@ -30,22 +35,28 @@ function CourseCard({ course, actionText = 'Start Attendance', actionLink }) {
       {/* Stats */}
       <div className='flex flex-wrap items-center gap-2 text-xs mb-4 pb-4 border-b border-gray-100 text-gray-500'>
         <span>
-          <span className='font-semibold text-gray-900'>{course.level}</span> Level
+          <span className='font-semibold text-gray-900'>{course.level}</span>{' '}
+          Level
         </span>
         <span>•</span>
         <span>
-          <span className='font-semibold text-gray-900'>{course.unit}</span> Unit
+          <span className='font-semibold text-gray-900'>{course.unit}</span>{' '}
+          Unit
+          {course.unit > 1 ? 's' : ''}
         </span>
         <span>•</span>
-        <span>
-          <span className='font-semibold text-gray-900'>{course.totalStudents || 0}</span>{' '}
-          {course.totalStudents === 1 ? 'Student' : 'Students'}
-        </span>
-        <span>•</span>
-        <span>
-          <span className='font-semibold text-gray-900'>{course.totalSessions || 0}</span>{' '}
-          {course.totalSessions === 1 ? 'Session' : 'Sessions'}
-        </span>
+        {/* Status  */}
+
+        {showStatus && (
+          <span className='flex items-center gap-1.5'>
+            <span
+              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium capitalize ${statusStyle}`}
+            >
+             
+              {status}
+            </span>
+          </span>
+        )}
       </div>
 
       {/* Action button */}

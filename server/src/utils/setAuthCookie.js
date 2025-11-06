@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 const setAuthCookie = (res, user) => {
+ 
   // create a jwt for a newly created user
   const token = jwt.sign(
     {
@@ -21,7 +22,7 @@ const setAuthCookie = (res, user) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'Lax',
-    maxAge: 24 * 60 * 60 * 1000,
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
 };
 

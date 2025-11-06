@@ -112,7 +112,7 @@ exports.signup = async (req, res) => {
       user: safeToSendUser,
     });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -121,7 +121,8 @@ exports.signup = async (req, res) => {
 exports.completeProfile = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { role, schoolInput, faculty, department, matricNo } = req.body;
+    const { role, schoolInput, faculty, department, matricNo, level } =
+      req.body;
 
     if (!role) {
       return res.status(400).json({ error: 'Role is required' });
@@ -130,14 +131,25 @@ exports.completeProfile = async (req, res) => {
     // Always update role
     let updateData = { role };
     if (role === 'student') {
-      if (!faculty || !department || !matricNo) {
+      if (!faculty || !department || !matricNo || !level) {
         return res.status(400).json({
-          error: 'Student must have faculty, department, and matric number',
+          error:
+            'Student must have faculty, department, level and matric number',
         });
+      }
+
+      const existingMatricNo = await User.findOne({
+        matricNo,
+        schoolId: schoolInput,
+        role: 'student',
+      });
+      if (existingMatricNo) {
+        return res.status(400).json({ error: 'Matric number already in use' });
       }
       updateData = {
         ...updateData,
         faculty,
+        level,
         department,
         matricNo,
         schoolId: schoolInput,
@@ -178,6 +190,9 @@ exports.completeProfile = async (req, res) => {
     const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
       new: true,
     });
+
+    // refresh cookie
+    setAuthCookie(res, updatedUser);
 
     return res.status(200).json({
       message: 'Profile completed successfully',
@@ -373,9 +388,9 @@ exports.getUser = async (req, res) => {
         populate: {
           path: 'currentAcademicYear',
           select: 'year',
-        }
+        },
       });
-      
+
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const hasPassword = !!user.password;
@@ -383,7 +398,7 @@ exports.getUser = async (req, res) => {
 
     return res.status(200).json({ user: { ...safeToSendUser, hasPassword } });
   } catch (err) {
-   console.log(err)
+    console.log(err);
     return res.status(500).json({ message: 'Internal server error' });
   }
 };

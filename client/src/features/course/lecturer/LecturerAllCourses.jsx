@@ -12,7 +12,6 @@ import SelectionInfoBar from '../../../components/SelectionInfoBar';
 import { useAssignCourse } from './useAssignCourse';
 import { useUnassignCourse } from './useUnassignCourse';
 import { ClipLoader } from 'react-spinners';
-import LecturerCourseCard from '../../../components/CourseCard';
 import CourseAssignmentCard from '../../../components/CourseAssignmentCard';
 import LecturerCourseCardSkeleton from '../../../components/LecturerCourseCardSkeleton';
 
@@ -45,7 +44,7 @@ function LecturerAllCourses() {
       course.courseTitle.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  //  count 'unassigned' courses
+  //  check 'unassigned' courses
   const unassignedSelectedCourses = courses.filter(
     (course) => selectedCourses.includes(course._id) && !course.status
   );
@@ -94,14 +93,9 @@ function LecturerAllCourses() {
   // handle bulk assign
   const handleBulkAssign = (courseIds = selectedCourses) => {
     setIsBulkAssigning(true);
-
-    const unassignedIds = filteredCourses
-      .filter((c) => courseIds.includes(c._id) && !c.status)
-      .map((c) => c._id);
-
     assignToCourse(
       {
-        courseIds: unassignedIds,
+        courseIds,
       },
       {
         onSettled: () => setIsBulkAssigning(false),
@@ -112,23 +106,14 @@ function LecturerAllCourses() {
   const renderRow = (course) => {
     const isCourseActionPending = activeCourseId === course._id;
     return (
-      <tr
-        key={course._id}
-        className={`hover:bg-gray-50 transition-colors ${
-          selectedCourses.includes(course._id) ? 'bg-blue-50' : ''
-        }`}
-      >
+      <tr key={course._id} className={`hover:bg-gray-50 transition-colors `}>
         <td className='px-4 py-4'>
           <input
             type='checkbox'
-            checked={!course.status && selectedCourses.includes(course._id)}
+            checked={selectedCourses.includes(course._id)}
             disabled={course.status}
             onChange={() => handleToggleSelect(course._id)}
-            className={`w-4 h-4  rounded border-gray-300 focus:ring-0 transition-colors ${
-              course.status
-                ? 'text-green-600 cursor-not-allowed opacity-60'
-                : 'text-blue-600 cursor-pointer hover:border-blue-400'
-            }`}
+            className={`w-4 h-4  rounded border-gray-300 focus:ring-0 `}
           />
         </td>
 
@@ -148,12 +133,11 @@ function LecturerAllCourses() {
 
         <td className='px-6 py-4'>
           {course.status ? (
-            <span className='inline-flex items-center gap-1 px-2.5 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full'>
-              <Check size={14} />
+            <span className='inline-flex items-center px-2.5 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full'>
               Assigned
             </span>
           ) : (
-            <span className='inline-flex items-center gap-1 px-2.5 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full'>
+            <span className='inline-flex items-center px-2.5 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full'>
               Unassigned
             </span>
           )}
@@ -171,11 +155,7 @@ function LecturerAllCourses() {
               {isCourseActionPending ? (
                 <ClipLoader size={16} color='white' />
               ) : (
-                <>
-                  {' '}
-                  <X size={16} />
-                  Unassign
-                </>
+                <>Unassign</>
               )}
             </Button>
           ) : (
@@ -189,9 +169,7 @@ function LecturerAllCourses() {
               {isCourseActionPending ? (
                 <ClipLoader size={16} color='white' />
               ) : (
-                <>
-                  <Check size={16} /> Assign
-                </>
+                <>Assign</>
               )}
             </Button>
           )}
@@ -237,7 +215,7 @@ function LecturerAllCourses() {
         />
       ) : (
         <>
-        {/* Desktop */}
+          {/* Desktop */}
           <div className='hidden lg:block'>
             <DataTable
               columns={columns}
@@ -258,12 +236,14 @@ function LecturerAllCourses() {
                   <CourseAssignmentCard
                     key={course._id}
                     course={course}
-                    onAssign={handleAssignSingle}
-                    onUnassign={handleUnassign}
+                    onPrimaryAction={handleAssignSingle}
+                    onSecondaryAction={handleUnassign}
                     isLoading={activeCourseId === course._id}
                     showCheckbox
                     isSelected={selectedCourses.includes(course._id)}
                     onToggleSelect={handleToggleSelect}
+                    primaryActionText='Assign'
+                    secondaryActionText='Unassign'
                   />
                 ))}
               </div>
@@ -279,9 +259,7 @@ function LecturerAllCourses() {
           actionLabel='Assign Selected'
           icon={Check}
           isPending={isBulkAssigning}
-          onAction={() =>
-            handleBulkAssign(unassignedSelectedCourses.map((c) => c._id))
-          }
+          onAction={() => handleBulkAssign()}
         />
       )}
     </div>

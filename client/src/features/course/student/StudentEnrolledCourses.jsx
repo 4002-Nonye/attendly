@@ -1,28 +1,26 @@
-import { useState } from 'react';
-import SearchBar from '../../../components/SearchBar';
+import { useRegisteredCourses } from './useRegisteredCourses';
 import { useButtonState } from '../../../hooks/useButtonState';
 import { useSearchParams } from 'react-router-dom';
-import { useAssignedCourses } from './useAssignedCourses';
-import { BookOpen, Check } from 'lucide-react';
+import { useState } from 'react';
+import SearchBar from '../../../components/SearchBar';
+import { BookOpen } from 'lucide-react';
 import EmptyCard from '../../../components/EmptyCard';
 import DataTable from '../../../components/DataTable';
-import Button from '../../../components/Button';
 import LecturerCourseCardSkeleton from '../../../components/LecturerCourseCardSkeleton';
 import CourseCard from '../../../components/CourseCard';
+import Button from '../../../components/Button';
 
-function LecturerAssignedCourses() {
+function StudentEnrolledCourses() {
   const { disableButton } = useButtonState();
-  const { data: courseData, isPending } = useAssignedCourses({
-    enabled: !disableButton,
-  });
+  const { data: registeredcourses, isPending } = useRegisteredCourses();
+  const courses = registeredcourses?.courses || [];
+
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(
     searchParams.get('search') || ''
   );
 
   const isLoading = disableButton ? false : isPending;
-  // course
-  const courses = courseData?.data || [];
 
   //filter courses based on search
   const filteredCourses = courses?.filter(
@@ -43,40 +41,6 @@ function LecturerAssignedCourses() {
     setSearchParams({ tab });
   };
 
-  const renderRow = (course) => {
-    return (
-      <tr key={course._id} className={`hover:bg-gray-50 transition-colors `}>
-        <td className='px-6 py-4'>
-          <div>
-            <div className='text-sm font-semibold text-gray-900 uppercase'>
-              {course.courseCode}
-            </div>
-            <div className='text-sm text-gray-600 capitalize'>
-              {course.courseTitle}
-            </div>
-          </div>
-        </td>
-
-        <td className='px-6 py-4 text-sm text-gray-700'>{course.level}L</td>
-        <td className='px-6 py-4 text-sm text-gray-700'>{course.unit}</td>
-
-
-        <td className='px-6 py-4 text-sm'>
-          <span className='inline-flex items-center px-2.5 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full'>
-            Ongoing
-          </span>
-        </td>
-
-        <td className='px-6 py-4'>
-          <Button variant='primary' className='capitalize text-sm ' size='md'>
-            start session
-          </Button>
-        </td>
-      </tr>
-    );
-  };
-
-  const columns = ['Course', 'Level', 'Unit', 'Status', 'Actions'];
 
   return (
     <div className='w-full'>
@@ -114,27 +78,17 @@ function LecturerAssignedCourses() {
         </EmptyCard>
       ) : (
         <>
-          <div className='hidden lg:block'>
-            <DataTable
-              columns={columns}
-              renderRow={renderRow}
-              data={filteredCourses}
-              isPending={isLoading}
-              showSkeletonHead={false}
-            />
-          </div>
-
-          <div className=' lg:hidden '>
+          <div >
             {isLoading ? (
               <LecturerCourseCardSkeleton showSkeletonHead={false} />
             ) : (
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-5 w-full'>
+              <div className='grid grid-cols-1 md:grid-cols-2  xl:grid-cols-4 gap-5 w-full'>
                 {filteredCourses.map((course) => (
                   <CourseCard
                     course={course}
                     actionType='link'
-                    actionText='Start Attendance'
-                    actionLink={`/courses/${course._id}/start-attendance`}
+                    // actionText='Start Attendance'
+                    // actionLink={`/courses/${course._id}/start-attendance`}
                   />
                 ))}
               </div>
@@ -146,4 +100,4 @@ function LecturerAssignedCourses() {
   );
 }
 
-export default LecturerAssignedCourses;
+export default StudentEnrolledCourses;
