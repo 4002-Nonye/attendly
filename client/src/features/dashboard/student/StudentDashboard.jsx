@@ -43,6 +43,7 @@ function StudentDashboard() {
     attReport?.report?.slice(0, DASHBOARD_COURSE_LIMIT) || [];
 
   const statsData = getStudentStats(stats);
+  console.log(stats)
 
   const columns = ['Course', 'Date & Time', 'Status'];
 

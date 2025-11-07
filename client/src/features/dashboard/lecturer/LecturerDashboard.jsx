@@ -1,19 +1,11 @@
-import {
-  BookOpen,
-  Users,
-  Calendar,
-  Plus,
-  Eye,
-  AlertCircle,
-  CalendarClock,
-} from 'lucide-react';
+import { BookOpen, Plus, Eye, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Button from '../../../components/Button';
 
 import LecturerDashboardSkeleton from '../../../components/LecturerDashboardSkeleton';
 import PageHeader from '../../../components/PageHeader';
 import Card from '../../../components/Card';
-import { useAssignedCourses } from './useAssignedCourses';
+
 
 import { DASHBOARD_COURSE_LIMIT } from '../../../config/dashboard';
 import { useSchoolInfo } from '../../../hooks/useSchoolInfo';
@@ -26,6 +18,9 @@ import RecentSessions from '../../../components/RecentSessions';
 import CourseCard from '../../../components/CourseCard';
 import { getLecturerStats } from '../../../utils/dashboardStats';
 import QuickActions from '../../../components/QuickActions';
+import { useCourseSessionStatus } from '../../course/lecturer/useCourseSessionStatus';
+import { useHandleCreateSession } from '../../session/lecturer/useHandleCreateSession';
+import { useAssignedCourses } from '../../course/lecturer/useAssignedCourses';
 
 function LecturerDashboard() {
   const { data: courses, isPending: isAssignedCoursesPending } =
@@ -40,12 +35,20 @@ function LecturerDashboard() {
   const displayedCourses =
     courses?.courses?.slice(0, DASHBOARD_COURSE_LIMIT) || [];
 
+// add session status to course
+  const { coursesWithSessionStatus, isActiveSessionPending } =
+    useCourseSessionStatus(displayedCourses);
+
+
+  // start session
+  const { handleCreateSession, activeCourseId } = useHandleCreateSession();
+
   const actions = [
     { to: '/courses', label: 'View My Courses', icon: Eye },
     { to: '/courses?tab=all-courses', label: 'Register Course', icon: Plus },
   ];
 
-  if (isAssignedCoursesPending || isStatPending) {
+  if (isAssignedCoursesPending || isStatPending ||isActiveSessionPending) {
     return <LecturerDashboardSkeleton />;
   }
 
@@ -83,14 +86,14 @@ function LecturerDashboard() {
               length={totalCourses}
               className='mb-4 lg:mb-5'
             />
-            {displayedCourses.length > 0 ? (
+            {coursesWithSessionStatus.length > 0 ? (
               <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 lg:gap-4'>
-                {displayedCourses.map((course) => (
+                {coursesWithSessionStatus.map((course) => (
                   <CourseCard
                     key={course._id}
                     course={course}
-                    actionText='Start Attendance'
-                    actionLink={`/courses/${course._id}/start-attendance`}
+                    isCreatingSession={activeCourseId === course._id}
+                    onAction={() => handleCreateSession(course._id)}
                   />
                 ))}
               </div>

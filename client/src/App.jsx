@@ -15,6 +15,9 @@ import PublicRoute from './components/PublicRoute';
 import CoursePage from './pages/course/CoursePage';
 import FacultyPage from './pages/faculty/FacultyPage';
 import DepartmentPage from './pages/department/DepartmentPage';
+import SessionPage from './pages/session/SessionPage';
+import SessionDetailsPage from './pages/session/SessionDetailsPage';
+import ActiveSessions from './features/session/lecturer/ActiveSessions';
 
 function App() {
   return (
@@ -83,7 +86,10 @@ function App() {
           <Route path='students' element='students' />
           <Route path='attendance' element='attendance' />
           <Route path='profile' element='profile' />
-          <Route path='sessions' element='sessions' />
+          <Route path='sessions' element={<SessionPage />}>
+            <Route index element={<ActiveSessions />} />
+            <Route path=':id' element={<SessionDetailsPage />} />
+          </Route>
         </Route>
 
         <Route path='/scan-code' element={<ScanQrCode />} />

@@ -14,13 +14,15 @@ function Chart() {
   const facultyAttendanceTrend = facultyTrend?.trend;
   const schoolAttendanceTrend = schoolTrend?.trend;
 
-  // Extract faculty names
+
+  
+  // extract faculty names
   const faculties =
     facultyTrend?.trend?.length > 0
       ? Object.keys(facultyTrend.trend[0]).filter((key) => key !== 'day')
       : [];
 
-  // Calculate average attendance rate
+  // calculate average attendance rate
   const averageRate = Number(
     schoolAttendanceTrend?.length > 0
       ? Math.round(
@@ -30,11 +32,10 @@ function Chart() {
       : 0
   );
 
-  // Empty state check (any item = 0)
-  const hasFacultyTrendData = facultyAttendanceTrend?.some((day) =>
-    Object.values(day).some((val) => typeof val === 'number' && val > 0)
-  );
-  const hasSchoolTrendData = schoolAttendanceTrend?.some((s) => s.rate !== 0);
+  // empty state check
+const hasFacultyTrendData = facultyAttendanceTrend?.length > 0;
+const hasSchoolTrendData = schoolAttendanceTrend?.length > 0;
+
 
   return (
     <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8'>

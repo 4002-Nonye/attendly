@@ -100,7 +100,7 @@ export const getStudentStats = (stat = {}) => [
   },
   {
     label: 'Missed Classes',
-   alue: Math.max(stat.totalSessions - stat.attendedSessions, 0),
+   value: stat.missedSessions??0,
     icon: XCircle,
     color: 'bg-red-100 text-red-600',
   },

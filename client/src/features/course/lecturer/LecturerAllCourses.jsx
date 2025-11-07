@@ -120,35 +120,25 @@ function LecturerAllCourses() {
         </td>
 
         <td className='px-6 py-4'>
-          {course.status ? (
-            <Button
-              onClick={() => handleUnassign(course._id)}
-              variant='danger'
-              className='gap-1 w-30'
-              size='sm'
-              disabled={isCourseActionPending}
-            >
-              {isCourseActionPending ? (
-                <ClipLoader size={16} color='white' />
-              ) : (
-                <>Unassign</>
-              )}
-            </Button>
-          ) : (
-            <Button
-              onClick={() => handleAssignSingle(course._id)}
-              variant='primary'
-              className='gap-1 w-30'
-              size='sm'
-              disabled={isCourseActionPending}
-            >
-              {isCourseActionPending ? (
-                <ClipLoader size={16} color='white' />
-              ) : (
-                <>Assign</>
-              )}
-            </Button>
-          )}
+          <Button
+            onClick={() =>
+              course.status
+                ? handleUnassign(course._id)
+                : handleAssignSingle(course._id)
+            }
+            variant={course.status ? 'danger' : 'primary'}
+            className='gap-1 w-30'
+            size='sm'
+            disabled={isCourseActionPending || isBulkAssigning}
+          >
+            {isCourseActionPending ? (
+              <ClipLoader size={16} color='white' />
+            ) : course.status ? (
+              'Unassign'
+            ) : (
+              'Assign'
+            )}
+          </Button>
         </td>
       </tr>
     );

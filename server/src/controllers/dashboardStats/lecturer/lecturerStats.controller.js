@@ -8,7 +8,7 @@ exports.getLecturerDashboardStats = async (req, res) => {
   try {
     const { id: lecturerId, schoolId } = req.user;
 
-    // Get school info
+    // get school info
     const school = await School.findById(schoolId)
       .select('currentAcademicYear currentSemester')
       .lean();
@@ -17,7 +17,7 @@ exports.getLecturerDashboardStats = async (req, res) => {
       return res.status(400).json({ error: 'No active academic year found' });
     }
 
-    // Get courses assigned to a  lecturer
+    // get courses assigned to a  lecturer
     const courses = await Course.find({
       schoolId,
       lecturers: lecturerId,
@@ -29,14 +29,14 @@ exports.getLecturerDashboardStats = async (req, res) => {
 
     const courseIds = courses.map((c) => c._id);
 
-    //  Get all stats
+    //  get all stats
     const [totalStudents, totalSessions, activeSessions] = await Promise.all([
-      // Total students enrolled in lecturer's courses
+      // total students enrolled in lecturer's courses
       StudentEnrollment.distinct('student', {
         course: { $in: courseIds },
       }),
 
-      // Total sessions
+      // total sessions
       Session.countDocuments({
         schoolId,
         course: { $in: courseIds },
@@ -44,10 +44,11 @@ exports.getLecturerDashboardStats = async (req, res) => {
         semester: school.currentSemester,
       }),
 
-      // Active sessions by this lecturer
+      // active sessions by this lecturer where still assigned
       Session.countDocuments({
         schoolId,
-        startedBy: lecturerId, // Active sessions by the lecturer
+        startedBy: lecturerId,
+        course: { $in: courseIds },
         academicYear: school.currentAcademicYear,
         semester: school.currentSemester,
         status: 'active',

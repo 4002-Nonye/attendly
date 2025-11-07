@@ -83,55 +83,32 @@ function CourseAssignmentCard({
         </div>
 
         {/* Action Button */}
-        {isActionCompleted ? (
-          <Button
-            onClick={() => onSecondaryAction(course._id)}
-            variant='danger'
-            className='gap-1  mt-auto text-sm'
-            size='md'
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <ClipLoader size={20} color='white' />
-            ) : (
-              secondaryActionText
-            )}
-          </Button>
-        ) : (
-          <Button
-            onClick={() => onPrimaryAction(course._id)}
-            variant='primary'
-            className='gap-1  mt-auto text-sm'
-            size='md'
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <ClipLoader size={20} color='white' />
-            ) : (
-              primaryActionText
-            )}
-          </Button>
-        )}
+        <Button
+          onClick={() =>
+            isActionCompleted
+              ? onSecondaryAction(course._id)
+              : onPrimaryAction(course._id)
+          }
+          variant={isActionCompleted ? 'danger' : 'primary'}
+          className='gap-1 mt-auto text-sm'
+          size='md'
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <ClipLoader size={20} color='white' />
+          ) : isActionCompleted ? (
+            secondaryActionText
+          ) : (
+            primaryActionText
+          )}
+        </Button>
       </div>
     </div>
   );
 }
 
 CourseAssignmentCard.propTypes = {
-  course: PropTypes.shape({
-    _id: PropTypes.string.isRequired,
-    courseCode: PropTypes.string.isRequired,
-    courseTitle: PropTypes.string.isRequired,
-    level: PropTypes.number.isRequired,
-    unit: PropTypes.number.isRequired,
-    department: PropTypes.shape({
-      _id: PropTypes.string,
-      name: PropTypes.string,
-    }),
-    totalStudents: PropTypes.number,
-    totalSessions: PropTypes.number,
-    status: PropTypes.bool,
-  }).isRequired,
+  course: PropTypes.object,
   onPrimaryAction: PropTypes.func.isRequired,
   onSecondaryAction: PropTypes.func.isRequired,
   isLoading: PropTypes.bool.isRequired,

@@ -65,27 +65,27 @@ function AdminCourse() {
     ? false
     : isCoursesPending || isSearchPending || isOptPending;
 
-  const handleSearch = (value) => {
-    setSearchQuery(value);
+  // open modal when quick actions button is clicked in dashboard
+  useOpenModalFromActions('mode', 'add', setShowModal);
+
+  
+  const updateParams = (query, filters) => {
     const params = {};
-    if (value.trim()) params.search = value;
+    if (query.trim()) params.search = query;
     if (filters.department) params.department = filters.department;
     if (filters.level) params.level = filters.level;
     setSearchParams(params);
   };
 
-  // open modal when quick actions button is clicked in dashboard
-  useOpenModalFromActions('mode', 'add', setShowModal);
+  const handleSearch = (value) => {
+    setSearchQuery(value);
+    updateParams(value, filters);
+  };
 
   const handleFilterChange = (filterType, value) => {
     const newFilters = { ...filters, [filterType]: value };
     setFilters(newFilters);
-
-    const params = {};
-    if (searchQuery.trim()) params.search = searchQuery;
-    if (newFilters.department) params.department = newFilters.department;
-    if (newFilters.level) params.level = newFilters.level;
-    setSearchParams(params);
+    updateParams(searchQuery, newFilters);
   };
 
   const clearFilters = () => {

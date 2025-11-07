@@ -1,17 +1,16 @@
-import { Link } from 'react-router-dom';
-import { ArrowRight, Circle } from 'lucide-react';
+import PropTypes from 'prop-types';
 import { getBadgeColor, getStatusStyle } from '../utils/courseHelpers';
+import Button from './Button';
+import { ClipLoader } from 'react-spinners';
 
 function CourseCard({
   course,
-  actionText = 'Start Attendance',
-  actionLink,
   showStatus = true,
+  onAction,
+  isCreatingSession,
 }) {
   const badgeColor = getBadgeColor(course.level);
-  // Get status from course or default to 'Inactive'
-  const status = course.status || 'Inactive';
-  const statusStyle = getStatusStyle(status);
+  const statusStyle = getStatusStyle(course.sessionStatus);
 
   return (
     <div className='group bg-white rounded-lg border border-gray-200 p-4 hover:bg-gray-50 hover:border-gray-300 transition-all flex flex-col'>
@@ -29,7 +28,7 @@ function CourseCard({
           </span>
         </div>
 
-        <p className='text-xs text-gray-500'>{course.department.name}</p>
+        <p className='text-xs text-gray-500'>{course.department?.name}</p>
       </div>
 
       {/* Stats */}
@@ -45,30 +44,43 @@ function CourseCard({
           {course.unit > 1 ? 's' : ''}
         </span>
         <span>•</span>
-        {/* Status  */}
 
         {showStatus && (
           <span className='flex items-center gap-1.5'>
             <span
               className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium capitalize ${statusStyle}`}
             >
-             
-              {status}
+              {course.sessionStatus}
             </span>
           </span>
         )}
       </div>
 
       {/* Action button */}
-      <Link
-        to={actionLink}
-        className='flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-lg font-medium text-sm bg-blue-900 text-white hover:bg-blue-800 focus:ring-2 focus:ring-blue-300 transition-all mt-auto'
+      <Button
+        variant={course.isOngoing ? 'secondary' : 'primary'}
+        size='sm'
+        className='capitalize text-sm'
+        disabled={isCreatingSession || course.isOngoing}
+        onClick={onAction}
       >
-        <span>{actionText}</span>
-        <ArrowRight className='w-4 h-4 group-hover:translate-x-1 transition-transform' />
-      </Link>
+        {isCreatingSession ? (
+          <ClipLoader size={18} color='white' />
+        ) : course.isOngoing ? (
+          'Session Active'
+        ) : (
+          'Start Session'
+        )}
+      </Button>
     </div>
   );
 }
+
+CourseCard.propTypes = {
+  course: PropTypes.object,
+  actionText: PropTypes.string,
+  onAction: PropTypes.func,
+  showStatus: PropTypes.bool,
+};
 
 export default CourseCard;

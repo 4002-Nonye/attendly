@@ -12,23 +12,25 @@ exports.createSession = async (req, res) => {
     const { courseId } = req.params;
     const { id: lecturerId, schoolId } = req.user;
 
-    if (!courseId)
+    if (!courseId) {
       return res
         .status(404)
         .json({ error: 'A course ID is required to start a session' });
+    }
 
-    // check if the lecturer is assigned to a course before he can start a session
-    const isAssigned = await Course.findOne({
+    // check if the lecturer is assigned to the course
+    const course = await Course.findOne({
       _id: courseId,
       lecturers: lecturerId,
-    });
+    }).populate('lecturers', 'name');
 
-    if (!isAssigned)
+    if (!course) {
       return res
         .status(403)
         .json({ error: 'Lecturer not assigned to this course' });
+    }
 
-    // Prevent duplicate active session for same course
+    // prevent duplicate active session for same course
     const existingSession = await Session.findOne({
       course: courseId,
       status: 'active',
@@ -40,7 +42,7 @@ exports.createSession = async (req, res) => {
       });
     }
 
-    // Generate random token for a session
+    // generate random token for a session
     const sessionToken = crypto.randomBytes(8).toString('hex');
 
     const session = await new Session({
@@ -49,23 +51,35 @@ exports.createSession = async (req, res) => {
       date: new Date(),
       status: 'active',
       token: sessionToken,
-      academicYear: isAssigned.academicYear,
-      semester: isAssigned.semester,
+      academicYear: course.academicYear,
+      semester: course.semester,
       schoolId,
     }).save();
 
-    // Build QR data for frontend
+    // build QR data for frontend
     const qrData = `${process.env.CLIENT_URL}/attendance?sessionId=${session._id}&token=${sessionToken}`;
-
-    // Generate QR code as base64 string  <img src="" />
     const qrCode = await QRCode.toDataURL(qrData);
 
-    res.status(201).json({ message: 'Session started', session, qrCode });
+    // populate session with course info and lecturer name
+    const populatedSession = await Session.findById(session._id)
+      .populate({
+        path: 'course',
+        select: 'courseCode courseTitle level',
+      })
+      .populate('startedBy', 'fullName')
+      .lean();
+
+    res.status(201).json({
+      message: 'Session started',
+      session: populatedSession,
+      qrCode,
+    });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
+
 exports.endSession = async (req, res) => {
   try {
     const { sessionId } = req.params;
@@ -184,7 +198,9 @@ exports.getActiveSessionsForStudent = async (req, res) => {
       .populate('course', 'courseTitle courseCode')
       .populate('startedBy', 'fullName');
 
-    return res.status(200).json({ session: activeSessions,total:activeSessions.length });
+    return res
+      .status(200)
+      .json({ session: activeSessions, total: activeSessions.length });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Internal server error' });
@@ -219,12 +235,8 @@ exports.getActiveSessionsForLecturer = async (req, res) => {
       .populate('course', 'courseCode courseTitle')
       .populate('startedBy', 'fullName');
 
-    return res.status(200).json({ session: sessions,total:sessions.length });
+    return res.status(200).json({ session: sessions, total: sessions.length });
   } catch (error) {
-    
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
-
-
-

@@ -18,7 +18,7 @@ function SchoolAttendanceChart({ hasData, data, averageRate }) {
       <div className='flex items-start justify-between'>
         <SectionIntro
           title='Attendance Trend'
-          subTitle='Weekly attendance rates across the school'
+          subTitle='Daily attendance rates across the school this week'
           className='mb-4 lg:mb-5'
         />
         {hasData && (

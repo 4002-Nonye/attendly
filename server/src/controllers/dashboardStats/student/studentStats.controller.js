@@ -71,35 +71,46 @@ exports.getStudentDashboardStats = async (req, res) => {
       });
     }
 
-    // Run stats in parallel
-    const [totalSessions, attendedSessions, activeSessions] = await Promise.all([
-      Session.countDocuments({
-        school: schoolId,
-        course: { $in: validCourseIds },
-        academicYear: school.currentAcademicYear,
-        semester: school.currentSemester,
-      }),
-      Attendance.countDocuments({
-        student: studentId,
-        course: { $in: validCourseIds },
-        academicYear: school.currentAcademicYear,
-        semester: school.currentSemester,
-        status: 'Present',
-      }),
-      Session.countDocuments({
-        school: schoolId,
-        course: { $in: validCourseIds },
-        academicYear: school.currentAcademicYear,
-        semester: school.currentSemester,
-        status: 'active',
-      }),
-    ]);
-
+    // Run stats in at a go
+    const [totalSessions, attendedSessions, missedSessions] = await Promise.all(
+      [
+        Session.countDocuments({
+          schoolId,
+          course: { $in: validCourseIds },
+          academicYear: school.currentAcademicYear,
+          semester: school.currentSemester,
+        }),
+        Attendance.countDocuments({
+          student: studentId,
+          course: { $in: validCourseIds },
+          academicYear: school.currentAcademicYear,
+          semester: school.currentSemester,
+          status: 'Present',
+        }),
+        Session.countDocuments({
+          schoolId,
+          course: { $in: validCourseIds },
+          academicYear: school.currentAcademicYear,
+          semester: school.currentSemester,
+          status: 'ended', // count only ended sessions
+          _id: {
+            // exclude records where the student was present
+            $nin: await Attendance.find({
+              student: studentId,
+              course: { $in: validCourseIds },
+              academicYear: school.currentAcademicYear,
+              semester: school.currentSemester,
+              status: 'Present',
+            }).distinct('session'),
+          },
+        }),
+      ]
+    );
     return res.status(200).json({
       totalCourses: validCourseIds.length,
       totalSessions,
       attendedSessions,
-      activeSessions,
+      missedSessions,
       academicYear: school.currentAcademicYear,
       semester: school.currentSemester,
     });
@@ -108,8 +119,6 @@ exports.getStudentDashboardStats = async (req, res) => {
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
-
-
 
 // recent sessions
 exports.getStudentRecentSessions = async (req, res) => {
