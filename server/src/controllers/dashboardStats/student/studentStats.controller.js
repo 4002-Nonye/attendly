@@ -11,7 +11,7 @@ exports.getStudentDashboardStats = async (req, res) => {
   try {
     const { id: studentId, schoolId } = req.user;
 
-    // get school’s current academic period
+    // get school current academic period
     const school = await School.findById(schoolId)
       .select('currentAcademicYear currentSemester')
       .lean();
@@ -123,7 +123,15 @@ exports.getStudentDashboardStats = async (req, res) => {
 // recent sessions
 exports.getStudentRecentSessions = async (req, res) => {
   try {
-    const { id: studentId, schoolId } = req.user;
+    const { id: studentId } = req.user;
+
+    // get student school and level
+    const user = await User.findById(studentId).select('schoolId level');
+    if (!user) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+
+    const { schoolId, level } = user;
 
     // get current academic year and semester
     const school = await School.findById(schoolId)
@@ -131,29 +139,37 @@ exports.getStudentRecentSessions = async (req, res) => {
       .lean();
 
     if (!school || !school.currentAcademicYear) {
-      return res
-        .status(404)
-        .json({ error: 'No current academic period found for this school' });
+      return res.status(404).json({
+        error: 'No current academic period found for this school',
+      });
     }
 
-    // get all courses the student is enrolled in
+    // get all enrollments for the student current academic period
     const enrollments = await StudentEnrollment.find({
       student: studentId,
       academicYear: school.currentAcademicYear,
       semester: school.currentSemester,
     })
       .select('course')
+      .populate('course', 'level')
       .lean();
 
     if (!enrollments.length) {
       return res.status(200).json({ recentSessions: [] });
     }
 
-    const courseIds = enrollments.map((e) => e.course);
+    // filter only courses that match student current level
+    const filteredCourseIds = enrollments
+      .filter((e) => e.course && e.course.level === level)
+      .map((e) => e.course._id);
 
-    // get recent sessions across all enrolled courses
+    if (!filteredCourseIds.length) {
+      return res.status(200).json({ recentSessions: [] });
+    }
+
+    // get recent sessions across filtered courses
     const sessions = await Session.find({
-      course: { $in: courseIds },
+      course: { $in: filteredCourseIds },
       academicYear: school.currentAcademicYear,
       semester: school.currentSemester,
     })
@@ -169,10 +185,8 @@ exports.getStudentRecentSessions = async (req, res) => {
       return res.status(200).json({ recentSessions: [] });
     }
 
-    // get session IDs for attendance lookup
-    const sessionIds = sessions.map((s) => s._id);
-
     // get attendance records for these sessions
+    const sessionIds = sessions.map((s) => s._id);
     const attendanceRecords = await Attendance.find({
       student: studentId,
       session: { $in: sessionIds },
@@ -180,13 +194,12 @@ exports.getStudentRecentSessions = async (req, res) => {
       .select('session status')
       .lean();
 
-    //  return {"some-session-id" : "Present"} for easy lookup
     const attendanceMap = attendanceRecords.reduce((acc, record) => {
       acc[record.session.toString()] = record.status;
       return acc;
     }, {});
 
-    // build session details
+    // build session 
     const recentSessions = sessions.map((session) => {
       const attendanceStatus = attendanceMap[session._id.toString()];
 
@@ -194,9 +207,9 @@ exports.getStudentRecentSessions = async (req, res) => {
       if (attendanceStatus) {
         studentStatus = attendanceStatus; // "Present" or "Absent"
       } else if (session.status === 'ended') {
-        studentStatus = 'Absent'; // session ended but no attendance record
+        studentStatus = 'Absent';
       } else if (session.status === 'active') {
-        studentStatus = 'Not yet taken'; // Session ongoing
+        studentStatus = 'Not yet taken';
       } else {
         studentStatus = 'Unknown';
       }
@@ -206,20 +219,21 @@ exports.getStudentRecentSessions = async (req, res) => {
         courseCode: session.course.courseCode,
         courseTitle: session.course.courseTitle,
         date: session.createdAt.toISOString().split('T')[0],
-        time: new Date(session.createdAt).toLocaleTimeString('en-US', {
+        time: new Date(session.createdAt).toLocaleTimeString([], {
           hour: '2-digit',
           minute: '2-digit',
           hour12: false,
         }),
-        lecturer: session.startedBy?.fullName || 'Unknown',
+        lecturer: session.startedBy.fullName,
         sessionStatus: session.status,
-        studentStatus: studentStatus,
+        studentStatus,
       };
     });
 
     return res.status(200).json({ recentSessions });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
+

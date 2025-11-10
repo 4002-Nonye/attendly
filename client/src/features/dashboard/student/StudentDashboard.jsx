@@ -1,8 +1,6 @@
 import {
   BookOpen,
-  CheckCircle,
-  XCircle,
-  CalendarClock,
+
   Calendar,
   Clock,
   AlertCircle,
@@ -23,11 +21,12 @@ import EmptyCard from '../../../components/EmptyCard';
 import { useSchoolInfo } from '../../../hooks/useSchoolInfo';
 import Button from '../../../components/Button';
 import SectionIntro from '../../../components/SectionIntro';
-import StudentCourseCard from '../../../components/StudentCourseCard';
+
 import DataTable from '../../../components/DataTable';
 import EmptyChart from '../../../components/EmptyChart';
 import { getStudentStats } from '../../../utils/dashboardStats';
 import QuickActions from '../../../components/QuickActions';
+import StudentAttendanceCard from '../../../components/StudentAttendanceCard';
 
 function StudentDashboard() {
   const { data: stats, isPending: isStatPending } = useStudentDashboardStats();
@@ -43,7 +42,7 @@ function StudentDashboard() {
     attReport?.report?.slice(0, DASHBOARD_COURSE_LIMIT) || [];
 
   const statsData = getStudentStats(stats);
-  console.log(stats)
+
 
   const columns = ['Course', 'Date & Time', 'Status'];
 
@@ -129,7 +128,7 @@ function StudentDashboard() {
             {courseAttendance.length > 0 ? (
               <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3 lg:gap-4'>
                 {courseAttendance.map((course) => (
-                  <StudentCourseCard key={course.courseId} course={course} />
+                  <StudentAttendanceCard key={course.courseId} course={course} />
                 ))}
               </div>
             ) : (

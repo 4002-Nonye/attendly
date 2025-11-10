@@ -6,7 +6,6 @@ import LecturerDashboardSkeleton from '../../../components/LecturerDashboardSkel
 import PageHeader from '../../../components/PageHeader';
 import Card from '../../../components/Card';
 
-
 import { DASHBOARD_COURSE_LIMIT } from '../../../config/dashboard';
 import { useSchoolInfo } from '../../../hooks/useSchoolInfo';
 
@@ -18,9 +17,12 @@ import RecentSessions from '../../../components/RecentSessions';
 import CourseCard from '../../../components/CourseCard';
 import { getLecturerStats } from '../../../utils/dashboardStats';
 import QuickActions from '../../../components/QuickActions';
-import { useCourseSessionStatus } from '../../course/lecturer/useCourseSessionStatus';
+
 import { useHandleCreateSession } from '../../session/lecturer/useHandleCreateSession';
 import { useAssignedCourses } from '../../course/lecturer/useAssignedCourses';
+import { useCourseSessionStatus } from '../../course/general/useCourseSessionStatus';
+import { useActiveSessionLecturer } from '../../session/lecturer/useActiveSessionLecturer';
+import { ClipLoader } from 'react-spinners';
 
 function LecturerDashboard() {
   const { data: courses, isPending: isAssignedCoursesPending } =
@@ -28,17 +30,19 @@ function LecturerDashboard() {
 
   const { academicYear, semester } = useSchoolInfo();
   const { data: stat, isStatPending } = useLecturerDashboardStats();
-
+  const { data: activeSession, isPending: isActiveSessionPending } =
+    useActiveSessionLecturer();
   const { totalCourses = 0 } = stat || {};
   const stats = getLecturerStats(stat);
 
   const displayedCourses =
     courses?.courses?.slice(0, DASHBOARD_COURSE_LIMIT) || [];
 
-// add session status to course
-  const { coursesWithSessionStatus, isActiveSessionPending } =
-    useCourseSessionStatus(displayedCourses);
-
+  // add session status to course
+  const { coursesWithSessionStatus } = useCourseSessionStatus(
+    displayedCourses,
+    activeSession
+  );
 
   // start session
   const { handleCreateSession, activeCourseId } = useHandleCreateSession();
@@ -48,7 +52,7 @@ function LecturerDashboard() {
     { to: '/courses?tab=all-courses', label: 'Register Course', icon: Plus },
   ];
 
-  if (isAssignedCoursesPending || isStatPending ||isActiveSessionPending) {
+  if (isAssignedCoursesPending || isStatPending || isActiveSessionPending) {
     return <LecturerDashboardSkeleton />;
   }
 
@@ -88,14 +92,29 @@ function LecturerDashboard() {
             />
             {coursesWithSessionStatus.length > 0 ? (
               <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 lg:gap-4'>
-                {coursesWithSessionStatus.map((course) => (
-                  <CourseCard
-                    key={course._id}
-                    course={course}
-                    isCreatingSession={activeCourseId === course._id}
-                    onAction={() => handleCreateSession(course._id)}
-                  />
-                ))}
+                {coursesWithSessionStatus.map((course) => {
+                  const isCreatingSession = activeCourseId === course._id;
+                  const isActive = course.isOngoing;
+                  return (
+                    <CourseCard key={course._id} course={course}>
+                      <Button
+                        variant={!isActive ? 'primary' : 'secondary'}
+                        size='sm'
+                        className='capitalize text-sm mt-auto'
+                        disabled={isCreatingSession || isActive}
+                        onClick={() => handleCreateSession(course._id)}
+                      >
+                        {isCreatingSession ? (
+                          <ClipLoader size={22} color='white' />
+                        ) : course.isOngoing ? (
+                          'Session active'   
+                        ) : (
+                          'Start Session'
+                        )}
+                      </Button>
+                    </CourseCard>
+                  );
+                })}
               </div>
             ) : (
               <EmptyCard

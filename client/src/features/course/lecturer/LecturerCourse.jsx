@@ -55,4 +55,3 @@ function LecturerCourse() {
 }
 
 export default LecturerCourse;
-

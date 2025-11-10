@@ -16,7 +16,7 @@ import DataTable from '../../../components/DataTable';
 
 import ConfirmDeleteDialog from '../../../components/ConfirmDeleteDialog';
 import { useDeleteCourse } from './useDeleteCourse';
-import { useSearchParams } from 'react-router-dom';
+
 import { useDebounce } from 'use-debounce';
 import CourseForm from './CourseForm';
 import { useAllCourses } from '../general/useAllCourses';
@@ -26,18 +26,19 @@ import { MAX_LEVEL } from '../../../config/level';
 
 import FilterBar from '../../../components/FilterBar';
 import { useOpenModalFromActions } from '../../../hooks/useOpenModalFromActions';
+import { useCourseFilters } from '../../../hooks/useCourseFilters';
 
 function AdminCourse() {
   const { disableButton } = useButtonState();
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [searchQuery, setSearchQuery] = useState(
-    searchParams.get('search') || ''
-  );
-  const [filters, setFilters] = useState({
-    department: searchParams.get('department') || '',
-    level: searchParams.get('level') || '',
-  });
+  const {
+    searchQuery,
+    filters,
+    handleSearch,
+    handleFilterChange,
+    clearFilters,
+  } = useCourseFilters();
+
   const [debouncedQuery] = useDebounce(searchQuery, 500);
 
   const { data: courses, isPending: isCoursesPending } = useAllCourses(
@@ -68,31 +69,7 @@ function AdminCourse() {
   // open modal when quick actions button is clicked in dashboard
   useOpenModalFromActions('mode', 'add', setShowModal);
 
-  
-  const updateParams = (query, filters) => {
-    const params = {};
-    if (query.trim()) params.search = query;
-    if (filters.department) params.department = filters.department;
-    if (filters.level) params.level = filters.level;
-    setSearchParams(params);
-  };
 
-  const handleSearch = (value) => {
-    setSearchQuery(value);
-    updateParams(value, filters);
-  };
-
-  const handleFilterChange = (filterType, value) => {
-    const newFilters = { ...filters, [filterType]: value };
-    setFilters(newFilters);
-    updateParams(searchQuery, newFilters);
-  };
-
-  const clearFilters = () => {
-    setFilters({ department: '', level: '' });
-    setSearchQuery('');
-    setSearchParams({});
-  };
 
   const handleViewAttendance = (course) => {
     // TODO
@@ -132,7 +109,7 @@ function AdminCourse() {
   const columns = ['Course', 'Department', 'Level', 'Unit', 'Actions'];
 
   const renderRow = (course) => (
-    <tr key={course._id} className='hover:bg-gray-50 transition-colors'>
+    <tr key={course._id} className='hover:bg-gray-50 transition-colors '>
       <td className='px-6 py-4'>
         <div>
           <div className='text-sm font-semibold text-gray-900 uppercase'>

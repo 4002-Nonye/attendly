@@ -45,7 +45,7 @@ exports.createCourse = async (req, res) => {
         .json({ error: 'Faculty not found in this school' });
     }
 
-    // Check if either courseTitle or courseCode already exists in the same department + school
+    // check if either courseTitle or courseCode already exists in the same department + school
     const existingCourse = await Course.findOne({
       department,
       schoolId,
@@ -53,13 +53,13 @@ exports.createCourse = async (req, res) => {
     });
 
     if (existingCourse) {
-      // If the title matches, send a title specific error
-      if (existingCourse.courseTitle === courseTitle) {
+      // If the title matches, send a title error
+      if (existingCourse.courseTitle === courseTitle.toLowerCase()) {
         return res
           .status(409)
           .json({ error: 'Course title already exists in this department' });
       }
-      // If the code matches, send a code specific error
+      // If the code matches, send a code error
       if (existingCourse.courseCode === courseCode) {
         return res
           .status(409)
@@ -79,8 +79,11 @@ exports.createCourse = async (req, res) => {
       academicYear: school.currentAcademicYear._id,
     }).save();
 
-    return res.status(201).json({ message: 'Course created successfully', newCourse });
+    return res
+      .status(201)
+      .json({ message: 'Course created successfully', newCourse });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -107,18 +110,18 @@ exports.editCourse = async (req, res) => {
           .status(409)
           .json({ error: 'Course code already exists in this department' });
       }
-      if (existingCourse.courseTitle === req.body.courseTitle) {
+      if (existingCourse.courseTitle === req.body.courseTitle.toLowerCase()) {
         return res
           .status(409)
           .json({ error: 'Course title already exists in this department' });
       }
     }
 
-    // update the course in one step
+    // update the course
     const updatedCourse = await Course.findOneAndUpdate(
-      { _id: courseId, schoolId }, // Ensure the course belongs to the user's school and department
+      { _id: courseId, schoolId },
       { $set: req.body },
-      { new: true, runValidators: true } // Return updated doc & validate
+      { new: true, runValidators: true }
     );
 
     if (!updatedCourse) {
@@ -140,13 +143,27 @@ exports.deleteCourse = async (req, res) => {
     const { schoolId } = req.user;
     const { courseId } = req.params;
 
-    const course = await Course.findOneAndDelete({ courseId, schoolId });
+    // find the course
+    const course = await Course.findOne({ _id: courseId, schoolId });
     if (!course) {
       return res.status(404).json({ error: 'Course not found' });
     }
-    return res.status(200).json({ message: 'Course deleted successfully' });
+
+    // delete tied data
+    await Promise.all([
+      Enrollment.deleteMany({ courseId: course._id }),
+      Session.deleteMany({ courseId: course._id }),
+      Attendance.deleteMany({ courseId: course._id }),
+    ]);
+
+    // delete the course itself
+    await course.remove();
+
+    return res
+      .status(200)
+      .json({ message: 'Course and all related data deleted successfully' });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };

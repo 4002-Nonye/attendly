@@ -82,7 +82,7 @@ function CourseForm({ isOpen, onClose, initialData }) {
         faculty: faculty?._id,
         department: department?._id,
       });
-    } 
+    }
   }, [
     isOpen,
     isEditSession,
@@ -278,7 +278,7 @@ function CourseForm({ isOpen, onClose, initialData }) {
               variant='secondary'
               onClick={handleCancel}
               disabled={isSubmitting}
-                            className='w-30'
+              className='w-30'
             >
               Cancel
             </Button>

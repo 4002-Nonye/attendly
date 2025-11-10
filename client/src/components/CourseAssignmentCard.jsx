@@ -19,7 +19,7 @@ function CourseAssignmentCard({
   const isActionCompleted = course.status;
 
   return (
-    <div className='relative'>
+    <div className='relative capitalize'>
       {/* Checkbox for bulk selection */}
       {showCheckbox && (
         <div className='absolute left-2 top-4'>

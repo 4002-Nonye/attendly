@@ -60,11 +60,15 @@ exports.createSession = async (req, res) => {
     const qrData = `${process.env.CLIENT_URL}/attendance?sessionId=${session._id}&token=${sessionToken}`;
     const qrCode = await QRCode.toDataURL(qrData);
 
-    // populate session with course info and lecturer name
+    // populate session with essential info
     const populatedSession = await Session.findById(session._id)
       .populate({
         path: 'course',
-        select: 'courseCode courseTitle level',
+        select: 'courseCode courseTitle level faculty department',
+        populate: [
+          { path: 'faculty', select: 'name' },
+          { path: 'department', select: 'name' },
+        ],
       })
       .populate('startedBy', 'fullName')
       .lean();

@@ -5,6 +5,7 @@ import DataTable from './DataTable';
 import SectionIntro from './SectionIntro';
 import EmptyChart from './EmptyChart';
 import EmptyCard from './EmptyCard';
+import { getStatusStyle } from '../utils/courseHelpers';
 
 function RecentSessions() {
   const { data, isPending } = useRecentSession();
@@ -19,69 +20,80 @@ function RecentSessions() {
     'Status',
   ];
 
-  const renderRow = (session) => (
-    <tr key={session.id} className='hover:bg-gray-50 transition-colors'>
-      <td className='px-6 py-4 whitespace-nowrap'>
-        <div>
-          <div className='text-sm font-medium text-gray-900'>
-            {session.course}
+  const renderRow = (session) => {
+    const statusStyle = getStatusStyle(session.status || 'inactive');
+
+    return (
+      <tr key={session.id} className='hover:bg-gray-50 transition-colors'>
+        <td className='px-6 py-4 whitespace-nowrap'>
+          <div>
+            <div className='text-sm font-medium text-gray-900'>
+              {session.course}
+            </div>
+            <div className='text-sm text-gray-500'>{session.courseCode}</div>
           </div>
-          <div className='text-sm text-gray-500'>{session.courseCode}</div>
-        </div>
-      </td>
+        </td>
 
-      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900'>
-        {session.startedBy}
-      </td>
+        <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900'>
+          {session.startedBy}
+        </td>
 
-      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900'>
-        {session.status === 'active' ? 'In progress' : session.endedBy}
-      </td>
+        <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900'>
+          {session.status === 'active'
+            ? 'In progress'
+            : session.endedBy || 'Not known'}
+        </td>
 
-      <td className='px-6 py-4 whitespace-nowrap'>
-        <div className='flex items-center gap-2 text-sm text-gray-900'>
-          <Calendar className='w-4 h-4 text-gray-400' />
-          <span>
-            {new Date(session.date).toLocaleDateString('en-GB', {
-              month: 'short',
-              day: 'numeric',
-              year: 'numeric',
-            })}
-          </span>
-        </div>
-        <div className='flex items-center gap-2 text-sm text-gray-500 mt-1'>
-          <Clock className='w-4 h-4 text-gray-400' />
-          <span>{session.time}</span>
-        </div>
-      </td>
+        <td className='px-6 py-4 whitespace-nowrap'>
+          <div className='flex items-center gap-2 text-sm text-gray-900'>
+            <Calendar className='w-4 h-4 text-gray-400' />
+            <span>
+              {/* TODO: EXTRACT DATE WITH HELPER */}
+              {new Date(session.date).toLocaleDateString('en-GB', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              })}
+            </span>
+          </div>
+          <div className='flex items-center gap-2 text-sm text-gray-500 mt-1'>
+            <Clock className='w-4 h-4 text-gray-400' />
+            <span>{session.time}</span>
+          </div>
+        </td>
 
-      <td className='px-6 py-4 whitespace-nowrap'>
-        <div className='text-sm text-gray-900 font-medium'>
-          {session.attended}/{session.enrolled}
-        </div>
-        <div className='text-xs text-gray-500'>
-          {session.enrolled
-            ? Math.round((session.attended / session.enrolled) * 100)
-            : 0}
-          % present
-        </div>
-      </td>
+        <td className='px-6 py-4 whitespace-nowrap'>
+          <div className='text-sm text-gray-900 font-medium'>
+            {session.attended}/{session.enrolled}
+          </div>
+          <div className='text-xs text-gray-500'>
+            {session.enrolled
+              ? Math.round((session.attended / session.enrolled) * 100)
+              : 0}
+            % present
+          </div>
+        </td>
 
-      <td className='px-6 py-4 whitespace-nowrap'>
-        {session.status === 'active' ? (
-          <span className='inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800'>
-            <div className='w-1.5 h-1.5 rounded-full bg-green-600 animate-pulse'></div>
-            Active
-          </span>
-        ) : (
-          <span className='inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800'>
-            <CheckCircle2 className='w-3 h-3' />
-            Ended
-          </span>
-        )}
-      </td>
-    </tr>
-  );
+        <td className='px-6 py-4 whitespace-nowrap text-xs'>
+          {session.status === 'active' ? (
+            <span
+              className={`${statusStyle} inline-flex items-center gap-1 `}
+            >
+              <div className='w-1.5 h-1.5 rounded-full bg-green-600 animate-pulse' />
+              Active
+            </span>
+          ) : (
+            <span
+              className={`${statusStyle} inline-flex items-center gap-1 `}
+            >
+              <CheckCircle2 className='w-3 h-3 text-gray-500' />
+              Ended
+            </span>
+          )}
+        </td>
+      </tr>
+    );
+  };
 
   if (isPending) return <TableSkeleton />;
 

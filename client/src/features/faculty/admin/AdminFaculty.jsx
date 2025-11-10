@@ -114,7 +114,7 @@ function AdminFaculty() {
 
   const filteredFaculties =
     faculties?.facultyStats?.filter((faculty) => {
-      const fullName = `faculty of ${faculty.name}`.toLowerCase(); // 'append faculty of'
+      const fullName = `faculty of ${faculty.name}`.toLowerCase(); // 'add faculty of'
       const query = searchQuery.toLowerCase();
       return (
         faculty.name.toLowerCase().includes(query) ||

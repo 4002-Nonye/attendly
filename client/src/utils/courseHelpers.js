@@ -62,12 +62,14 @@ export const generateLevel = (maxLevel) => {
 
 // For status styling
 export const getStatusStyle = (status) => {
+  const baseActiveStyle =
+    'text-green-700 bg-green-100 border border-green-200 px-3 py-0.5 rounded-full font-medium capitalize inline-flex items-center text-xs';
+  const baseInactiveStyle =
+    'text-gray-700 bg-gray-100 border border-gray-200 px-3 py-0.5 rounded-full font-medium capitalize inline-flex items-center text-xs';
   const styles = {
-    ongoing:
-      'text-green-700 bg-green-100 border border-green-200 px-2 py-0.5 rounded-full',
-    inactive:
-      'text-gray-700 bg-gray-100 border border-gray-200 px-2 py-0.5 rounded-full',
-  
+    ongoing: baseActiveStyle,
+    active: baseActiveStyle,
+    inactive: baseInactiveStyle,
   };
 
   return styles[status?.toLowerCase()] || styles.inactive;

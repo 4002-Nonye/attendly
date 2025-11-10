@@ -1,25 +1,29 @@
 import { useRegisteredCourses } from './useRegisteredCourses';
 import { useButtonState } from '../../../hooks/useButtonState';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import SearchBar from '../../../components/SearchBar';
 import { BookOpen } from 'lucide-react';
 import EmptyCard from '../../../components/EmptyCard';
-
 import LecturerCourseCardSkeleton from '../../../components/LecturerCourseCardSkeleton';
 import CourseCard from '../../../components/CourseCard';
 import Button from '../../../components/Button';
 import { useSearchQuery } from '../../../hooks/useSearchQuery';
 import { useFilteredCourses } from '../../../hooks/useFilteredCourses';
+import { useCourseSessionStatus } from '../general/useCourseSessionStatus';
+import { useActiveSessionStudent } from '../../session/student/useActiveSessionStudent';
+import DataTable from '../../../components/DataTable';
+import { getStatusStyle } from '../../../utils/courseHelpers';
 
 function StudentEnrolledCourses() {
   const { disableButton } = useButtonState();
+  const navigate = useNavigate();
   const { data: registeredcourses, isPending } = useRegisteredCourses();
 
   const [searchQuery, setSearchQuery] = useSearchQuery();
   const [_, setSearchParams] = useSearchParams();
-
-  const isLoading = disableButton ? false : isPending;
+  const { data: activeSession, isPending: isActiveSessionPending } =
+    useActiveSessionStudent();
 
   //filter courses based on search
   const filteredCourses = useFilteredCourses(
@@ -27,9 +31,58 @@ function StudentEnrolledCourses() {
     searchQuery
   );
 
+  // add session status to course
+  const { coursesWithSessionStatus } = useCourseSessionStatus(
+    filteredCourses,
+    activeSession
+  );
+
   const handleViewCourses = (tab) => {
     setSearchParams({ tab });
   };
+
+  const handleViewSessions = () => {
+    navigate('/sessions');
+  };
+
+  const isLoading = disableButton ? false : isPending || isActiveSessionPending;
+
+  const renderRow = (course) => {
+    const statusStyle = getStatusStyle(course.sessionStatus);
+  
+    return (
+      <tr
+        key={course._id}
+        className='hover:bg-gray-50 transition-colors capitalize'
+      >
+        <td className='px-6 py-4'>
+          <div>
+            <div className='text-sm font-semibold text-gray-900 uppercase'>
+              {course.courseCode}
+            </div>
+            <div className='text-sm text-gray-600 capitalize'>
+              {course.courseTitle}
+            </div>
+          </div>
+        </td>
+
+        <td className='px-6 py-4 text-sm text-gray-700'>{course.level}L</td>
+
+        <td className='px-6 py-4 text-sm text-gray-700'>{course.unit}</td>
+
+        <td className='px-6 py-4 text-sm'>
+          <span
+            className={`inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full ${statusStyle}`}
+          >
+            {course.sessionStatus}
+          </span>
+        </td>
+
+      </tr>
+    );
+  };
+
+  const columns = ['Course', 'Level', 'Units', 'Status'];
 
   return (
     <div className='w-full'>
@@ -43,14 +96,14 @@ function StudentEnrolledCourses() {
         />
       </div>
 
-      {!filteredCourses.length && !isLoading ? (
+      {!coursesWithSessionStatus.length && !isLoading ? (
         <EmptyCard
           icon={BookOpen}
           title={searchQuery ? 'No courses found' : 'No courses available'}
           message={
             searchQuery
               ? 'Try adjusting your search query'
-              : `You haven't assigned yourself to any course yet`
+              : `You haven't enrolled in any courses yet`
           }
           iconColor='text-gray-400'
           iconBg='bg-gray-100'
@@ -67,20 +120,39 @@ function StudentEnrolledCourses() {
         </EmptyCard>
       ) : (
         <>
-          <div>
+          {/* Desktop Table */}
+          <div className='hidden lg:block'>
+            <DataTable
+              columns={columns}
+              renderRow={renderRow}
+              data={coursesWithSessionStatus}
+              isPending={isLoading}
+              showSkeletonHead={false}
+            />
+          </div>
+
+          {/* Mobile Cards */}
+          <div className='lg:hidden'>
             {isLoading ? (
               <LecturerCourseCardSkeleton showSkeletonHead={false} />
             ) : (
-              <div className='grid grid-cols-1 md:grid-cols-2  xl:grid-cols-4 gap-5 w-full'>
-                {filteredCourses.map((course) => (
-                  <CourseCard
-                    key={course._id}
-                    course={course}
-                    actionType='link'
-                    // actionText='Start Attendance'
-                    // actionLink={`/courses/${course._id}/start-attendance`}
-                  />
-                ))}
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-5 w-full'>
+                {coursesWithSessionStatus.map((course) => {
+                  const isActive = course.isOngoing;
+                  return (
+                    <CourseCard key={course._id} course={course}>
+                      <Button
+                        variant={isActive ? 'primary' : 'secondary'}
+                        size='sm'
+                        className='capitalize w-35'
+                        disabled={!isActive}
+                        onClick={handleViewSessions}
+                      >
+                        {isActive ? 'View Sessions' : 'Session Inactive'}
+                      </Button>
+                    </CourseCard>
+                  );
+                })}
               </div>
             )}
           </div>

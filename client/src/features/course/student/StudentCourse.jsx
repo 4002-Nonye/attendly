@@ -5,14 +5,14 @@ import StudentEnrolledCourses from './StudentEnrolledCourses';
 import StudentAllCourses from './StudentAllCourses';
 
 function StudentCourse() {
-const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  //get active tab from URL, default to 'my-courses' if none
+  // Get active tab from URL, default to 'my-courses' if none
   const activeTab = searchParams.get('tab') || 'my-courses';
 
-  //  update URL when tab changes
+  // update URL when tab 
   const handleTabChange = (tab) => {
-    setSearchParams({ tab });
+    setSearchParams({ tab }); 
   };
 
   return (
@@ -46,7 +46,7 @@ const [searchParams, setSearchParams] = useSearchParams();
       </div>
 
       {/* Content */}
-      {/*  render based on activeTab */}
+      {/* Render based on activeTab */}
       {activeTab === 'my-courses' ? (
         <StudentEnrolledCourses />
       ) : (

@@ -17,7 +17,7 @@ import FacultyPage from './pages/faculty/FacultyPage';
 import DepartmentPage from './pages/department/DepartmentPage';
 import SessionPage from './pages/session/SessionPage';
 import SessionDetailsPage from './pages/session/SessionDetailsPage';
-import ActiveSessions from './features/session/lecturer/ActiveSessions';
+import ActiveSessions from './pages/session/ActiveSessions';
 
 function App() {
   return (
@@ -87,8 +87,23 @@ function App() {
           <Route path='attendance' element='attendance' />
           <Route path='profile' element='profile' />
           <Route path='sessions' element={<SessionPage />}>
-            <Route index element={<ActiveSessions />} />
-            <Route path=':id' element={<SessionDetailsPage />} />
+            <Route
+              index
+              element={
+                <ProtectedRoute allowedRoles={['lecturer','student']}>
+                  <ActiveSessions />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path=':id'
+              element={
+                <ProtectedRoute allowedRoles={['lecturer']}>
+                  <SessionDetailsPage />
+                </ProtectedRoute>
+              }
+            />
           </Route>
         </Route>
 

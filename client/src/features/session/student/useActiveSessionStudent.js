@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import { getActiveSessionsLecturer } from '../../../apis/session/apiSession';
+import {  getActiveSessionsStudent } from '../../../apis/session/apiSession';
 
-export function useActiveSessionLecturer() {
+export function useActiveSessionStudent() {
   const { data, isError, isPending, error } = useQuery({
     queryKey: ['sessions','active'],
-    queryFn: getActiveSessionsLecturer,
+    queryFn: getActiveSessionsStudent,
   });
 
   return { data, isError, isPending, error };

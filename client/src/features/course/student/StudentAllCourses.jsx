@@ -6,13 +6,17 @@ import { useState } from 'react';
 import SearchBar from '../../../components/SearchBar';
 import CourseAssignmentCard from '../../../components/CourseAssignmentCard';
 import LecturerCourseCardSkeleton from '../../../components/LecturerCourseCardSkeleton';
-import { BookOpen, Check, X } from 'lucide-react';
+import { BookOpen, Check } from 'lucide-react';
 import EmptyCard from '../../../components/EmptyCard';
 import BulkActionBar from '../../../components/BulkActionBar';
 import SelectionInfoBar from '../../../components/SelectionInfoBar';
 import { useSearchQuery } from '../../../hooks/useSearchQuery';
 import { useFilteredCourses } from '../../../hooks/useFilteredCourses';
 import { useSelection } from '../../../hooks/useSelection';
+import DataTable from '../../../components/DataTable';
+import Button from '../../../components/Button';
+import { ClipLoader } from 'react-spinners';
+import { getStatusStyle } from '../../../utils/courseHelpers';
 
 function StudentAllCourses() {
   const { disableButton } = useButtonState();
@@ -23,7 +27,6 @@ function StudentAllCourses() {
   const { enrollCourse } = useEnrollCourse();
   const { unenrollCourse } = useUnenrollCourse();
   const [searchQuery, setSearchQuery] = useSearchQuery();
-
 
   const isLoading = disableButton ? false : isPending;
 
@@ -38,7 +41,7 @@ function StudentAllCourses() {
   const [isBulkEnrolling, setIsBulkEnrolling] = useState(false);
 
   const handleSingleEnroll = (courseId) => {
-    setActiveCourseId(courseId); // track which course is enrolling
+    setActiveCourseId(courseId);
     enrollCourse(
       {
         courseIds: [courseId],
@@ -50,9 +53,9 @@ function StudentAllCourses() {
   };
 
   const handleUnenroll = (courseId) => {
-    setActiveCourseId(courseId); // track which course is enrolling
+    setActiveCourseId(courseId);
 
-    if (isSelected(courseId)) toggle(courseId); // remove from selection if selected
+    if (isSelected(courseId)) toggle(courseId);
     unenrollCourse(courseId, {
       onSettled: () => setActiveCourseId(null),
     });
@@ -67,12 +70,79 @@ function StudentAllCourses() {
       },
       {
         onSettled: () => {
-          setIsBulkEnrolling(null);
+          setIsBulkEnrolling(false);
           clear();
         },
       }
     );
   };
+
+  const renderRow = (course) => {
+    const isCourseActionPending = activeCourseId === course._id;
+
+    const statusText = course.status ? 'active' : 'inactive';
+    const statusStyle = getStatusStyle(statusText);
+
+    return (
+      <tr key={course._id} className='hover:bg-gray-50 transition-colors'>
+        <td className='px-4 py-4'>
+          <input
+            type='checkbox'
+            checked={isSelected(course._id) || course.status}
+            disabled={course.status}
+            onChange={() => toggle(course._id)}
+            className='w-4 h-4 rounded border-gray-300 focus:ring-0 transition-colors'
+          />
+        </td>
+
+        <td className='px-6 py-4'>
+          <div>
+            <div className='text-sm font-semibold text-gray-900 uppercase'>
+              {course.courseCode}
+            </div>
+            <div className='text-sm text-gray-600 capitalize'>
+              {course.courseTitle}
+            </div>
+          </div>
+        </td>
+
+        <td className='px-6 py-4 text-sm text-gray-700'>{course.level}L</td>
+        <td className='px-6 py-4 text-sm text-gray-700'>{course.unit}</td>
+
+        <td className='px-6 py-4'>
+          {course.status ? (
+            <span className={`${statusStyle}`}>Enrolled</span>
+          ) : (
+            <span className={`${statusStyle}`}>Not Enrolled</span>
+          )}
+        </td>
+
+        <td className='px-6 py-4'>
+          <Button
+            onClick={() =>
+              course.status
+                ? handleUnenroll(course._id)
+                : handleSingleEnroll(course._id)
+            }
+            variant={course.status ? 'danger' : 'primary'}
+            className='gap-1 w-30'
+            size='sm'
+            disabled={isCourseActionPending}
+          >
+            {isCourseActionPending ? (
+              <ClipLoader size={16} color='white' />
+            ) : course.status ? (
+              'Unenroll'
+            ) : (
+              'Enroll'
+            )}
+          </Button>
+        </td>
+      </tr>
+    );
+  };
+
+  const columns = ['', 'Course', 'Level', 'Unit', 'Status', 'Actions'];
 
   return (
     <div className='w-full'>
@@ -91,7 +161,7 @@ function StudentAllCourses() {
         <SelectionInfoBar count={selected.length} onClear={clear} />
       )}
 
-      {/* Table */}
+      {/* Empty State */}
       {!filteredCourses.length && !isLoading ? (
         <EmptyCard
           icon={BookOpen}
@@ -106,12 +176,23 @@ function StudentAllCourses() {
         />
       ) : (
         <>
-          {/* Mobile */}
-          <div className=' '>
+          {/* Desktop Table */}
+          <div className='hidden lg:block'>
+            <DataTable
+              columns={columns}
+              renderRow={renderRow}
+              data={filteredCourses}
+              isPending={isLoading}
+              showSkeletonHead={false}
+            />
+          </div>
+
+          {/* Mobile Cards */}
+          <div className='lg:hidden'>
             {isLoading ? (
               <LecturerCourseCardSkeleton showSkeletonHead={false} />
             ) : (
-              <div className='grid grid-cols-1 md:grid-cols-2  xl:grid-cols-4 gap-5 w-full'>
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-5 w-full'>
                 {filteredCourses.map((course) => (
                   <CourseAssignmentCard
                     key={course._id}
@@ -131,6 +212,7 @@ function StudentAllCourses() {
           </div>
         </>
       )}
+
       {/* Bulk Actions Footer */}
       {selected.length > 0 && (
         <BulkActionBar

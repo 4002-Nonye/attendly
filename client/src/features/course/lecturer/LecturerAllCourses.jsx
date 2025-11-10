@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BookOpen, Check, X } from 'lucide-react';
+import { BookOpen, Check } from 'lucide-react';
 import Button from '../../../components/Button';
 import EmptyCard from '../../../components/EmptyCard';
 import DataTable from '../../../components/DataTable';
@@ -16,6 +16,7 @@ import LecturerCourseCardSkeleton from '../../../components/LecturerCourseCardSk
 import { useSearchQuery } from '../../../hooks/useSearchQuery';
 import { useFilteredCourses } from '../../../hooks/useFilteredCourses';
 import { useSelection } from '../../../hooks/useSelection';
+import { getStatusStyle } from '../../../utils/courseHelpers';
 
 function LecturerAllCourses() {
   const { disableButton } = useButtonState();
@@ -81,6 +82,9 @@ function LecturerAllCourses() {
 
   const renderRow = (course) => {
     const isCourseActionPending = activeCourseId === course._id;
+    const statusText = course.status ? 'active' : 'inactive';
+    const statusStyle = getStatusStyle(statusText);
+
     return (
       <tr key={course._id} className={`hover:bg-gray-50 transition-colors `}>
         <td className='px-4 py-4'>
@@ -109,13 +113,9 @@ function LecturerAllCourses() {
 
         <td className='px-6 py-4'>
           {course.status ? (
-            <span className='inline-flex items-center px-2.5 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full'>
-              Assigned
-            </span>
+            <span className={`${statusStyle}`}>Assigned</span>
           ) : (
-            <span className='inline-flex items-center px-2.5 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full'>
-              Unassigned
-            </span>
+            <span className={`${statusStyle}`}>Unassigned</span>
           )}
         </td>
 

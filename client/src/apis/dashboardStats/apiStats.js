@@ -40,6 +40,7 @@ export const getRecentSessions = async () => {
     const response = await axios.get('/api/dashboard/recent-sessions');
     return response.data;
   } catch (error) {
+
     throw error.response.data;
   }
 };
