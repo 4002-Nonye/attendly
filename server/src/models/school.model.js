@@ -12,7 +12,7 @@ const schoolSchema = new Schema(
       type: String,
       required: true,
       trim: true,
-      unique: true,
+      
     },
     currentAcademicYear: {
       type: mongoose.Schema.Types.ObjectId,

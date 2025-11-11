@@ -10,38 +10,27 @@ import { useSearchQuery } from '../../../hooks/useSearchQuery';
 import DataTable from '../../../components/DataTable';
 import SessionsCard from '../../../components/SessionsCard';
 import { useActiveSessionLecturer } from './useActiveSessionLecturer';
-import TableSkeleton from '../../../components/TableSkeleton';
 import { formatTime } from '../../../utils/dateHelper';
-
+import { useFilteredSessions } from '../../../hooks/useFilteredSessions';
+import SessionsCardSkeleton from '../../../components/SessionCardSkeleton';
 
 function ActiveSessionsLecturer() {
   const { disableButton } = useButtonState();
 
-  const { data: sessions,isPending } = useActiveSessionLecturer();
+  const { data: sessions, isPending } = useActiveSessionLecturer();
 
   const navigate = useNavigate();
 
   const [searchQuery, setSearchQuery] = useSearchQuery();
 
   // Filter sessions
-  const filteredSessions = sessions?.session.filter(
-    (session) =>
-      session.course.courseCode
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      session.course.courseTitle
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      session.startedBy.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-
+  const filteredSessions = useFilteredSessions(sessions?.session, searchQuery);
 
   const handleViewDetails = (id) => navigate(`/sessions/${id}`);
   const handleEndSession = (id) => console.log('End session:', id);
 
   const columns = [
-    '',
+    'Session ID',
     'Course',
     'Status',
     'Started By',
@@ -55,9 +44,10 @@ function ActiveSessionsLecturer() {
       <td className='px-6 py-4'>
         <Link
           to={`/sessions/${session._id}`}
-          className='text-sm font-medium text-blue-600 underline'
+          className='underline text-blue-600 hover:text-blue-800 text-sm font-semibold transition-colors'
+          title='View session details & QR code'
         >
-          TD{session._id.slice(2,5)}
+          #{session._id.slice(-6).toUpperCase()}
         </Link>
       </td>
 
@@ -114,7 +104,7 @@ function ActiveSessionsLecturer() {
       </td>
     </tr>
   );
-  
+
   return (
     <div className='w-full'>
       <PageHeader
@@ -126,7 +116,7 @@ function ActiveSessionsLecturer() {
       {/* Search */}
       <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6'>
         <SearchBar
-          placeholder='Search courses...'
+          placeholder='Search...'
           value={searchQuery}
           onChange={setSearchQuery}
           disabled={disableButton}
@@ -134,7 +124,7 @@ function ActiveSessionsLecturer() {
       </div>
 
       {/* Empty state or table/cards */}
-      {filteredSessions?.length === 0 ? (
+      {filteredSessions?.length === 0 && !isPending ? (
         <EmptyCard
           icon={Activity}
           title={searchQuery ? 'No sessions found' : 'No active sessions'}
@@ -161,34 +151,38 @@ function ActiveSessionsLecturer() {
 
           {/* Mobile Cards */}
           <div className='lg:hidden grid grid-cols-1 md:grid-cols-2 gap-4'>
-            {filteredSessions?.map((session) => (
-              <SessionsCard key={session._id} session={session}>
-                {/* Action Buttons */}
-                <div className='pt-6 border-t border-gray-100'>
-                  <div className='flex items-center gap-2'>
-                    <Button
-                      onClick={() => handleViewDetails(session._id)}
-                      variant='secondary'
-                      size='sm'
-                      className='flex-1 justify-center'
-                    >
-                      <Eye size={18} className='mr-1.5' />
-                      <span className='font-medium'>View Details</span>
-                    </Button>
+            {isPending ? (
+              <SessionsCardSkeleton />
+            ) : (
+              filteredSessions?.map((session) => (
+                <SessionsCard key={session._id} session={session}>
+                  {/* Action Buttons */}
+                  <div className='pt-6 border-t border-gray-100'>
+                    <div className='flex items-center gap-2'>
+                      <Button
+                        onClick={() => handleViewDetails(session._id)}
+                        variant='secondary'
+                        size='sm'
+                        className='flex-1 justify-center'
+                      >
+                        <Eye size={18} className='mr-1.5' />
+                        <span className='font-medium'>View Details</span>
+                      </Button>
 
-                    <Button
-                      onClick={() => handleEndSession(session._id)}
-                      variant='danger'
-                      size='sm'
-                      className='flex-1 justify-center'
-                    >
-                      <XCircle size={18} className='mr-1.5' />
-                      <span className='font-medium'>End Session</span>
-                    </Button>
+                      <Button
+                        onClick={() => handleEndSession(session._id)}
+                        variant='danger'
+                        size='sm'
+                        className='flex-1 justify-center'
+                      >
+                        <XCircle size={18} className='mr-1.5' />
+                        <span className='font-medium'>End Session</span>
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </SessionsCard>
-            ))}
+                </SessionsCard>
+              ))
+            )}
           </div>
         </>
       )}

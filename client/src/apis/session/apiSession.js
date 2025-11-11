@@ -30,6 +30,15 @@ export const createSession = async (id) => {
   }
 };
 
+// get session details for lecturer
+export const getSessionDetails = async (sessionId) => {
+  try {
+    const response = await axios.get(`/api/lecturer/sessions/${sessionId}`);
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
 
 
 export const getActiveSessionsStudent = async () => {

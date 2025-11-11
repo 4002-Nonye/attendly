@@ -10,10 +10,14 @@ export function useCreateSession() {
   const mutation = useMutation({
     mutationFn: createSessionApi,
     onSuccess: (data) => {
-      console.log(data);
       toast.success(data.message || 'Session created successfully');
       queryClient.invalidateQueries(['sessions']);
-      navigate(`/sessions/${data.session._id}`);
+      navigate(`/sessions/${data.session._id}`, {
+        state: {
+          sessionData: data.session,
+        },
+        replace: true,
+      });
     },
     onError: (err) => toast.error(err.error || 'Failed to create session'),
   });

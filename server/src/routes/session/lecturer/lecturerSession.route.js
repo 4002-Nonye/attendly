@@ -1,7 +1,12 @@
 const express = require('express');
 const { requireLecturerAccess } = require('../../../middlewares/roleAccess');
-const { getActiveSessionsForLecturer, endSession } = require('../../../controllers/session/session.controller');
+
 const requireLogin = require('../../../middlewares/requireLogin');
+const {
+  getActiveSessionsForLecturer,
+  endSession,
+  getSessionDetails,
+} = require('../../../controllers/session/lecturer/lecturerSession.controller');
 
 const lecturerSessionRoute = express.Router();
 
@@ -12,6 +17,13 @@ lecturerSessionRoute.get(
   requireLecturerAccess,
   getActiveSessionsForLecturer
 );
+// get session detail
+lecturerSessionRoute.get(
+  '/:sessionId',
+  requireLogin,
+  requireLecturerAccess,
+  getSessionDetails
+);
 
 // end attendance session
 lecturerSessionRoute.patch(
@@ -21,4 +33,4 @@ lecturerSessionRoute.patch(
   endSession
 );
 
-module.exports=lecturerSessionRoute
+module.exports = lecturerSessionRoute;

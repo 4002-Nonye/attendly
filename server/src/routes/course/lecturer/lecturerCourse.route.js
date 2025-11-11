@@ -1,17 +1,38 @@
 const express = require('express');
 const requireLogin = require('../../../middlewares/requireLogin');
 const { requireLecturerAccess } = require('../../../middlewares/roleAccess');
-const { assignLecturer, unassignLecturer, getAssignedCoursesForLecturer } = require('../../../controllers/course/lecturer/lecturerCourse.controller');
-const { createSession } = require('../../../controllers/session/session.controller');
-const { getLecturerAttendanceOverview, getLecturerSessionDetails, getLecturerSessionStudentDetails, getLecturerAttendanceReport } = require('../../../controllers/attendance/lecturer/lecturerAttendance.controller');
+const {
+  assignLecturer,
+  unassignLecturer,
+  getAssignedCoursesForLecturer,
+} = require('../../../controllers/course/lecturer/lecturerCourse.controller');
+const {
+  getLecturerAttendanceOverview,
+  getLecturerSessionDetails,
+  getLecturerSessionStudentDetails,
+  getLecturerAttendanceReport,
+} = require('../../../controllers/attendance/lecturer/lecturerAttendance.controller');
+const {
+  createSession,
+} = require('../../../controllers/session/lecturer/lecturerSession.controller');
 
 const lecturerCourseRoute = express.Router();
 
 /* ----------------------------- LECTURER ROUTES ----------------------------- */
 // Assign lecturer to course
-lecturerCourseRoute.post('/assign', requireLogin, requireLecturerAccess, assignLecturer);
+lecturerCourseRoute.post(
+  '/assign',
+  requireLogin,
+  requireLecturerAccess,
+  assignLecturer
+);
 // Unassign lecturer from course
-lecturerCourseRoute.delete('/:courseId/unassign', requireLogin, requireLecturerAccess, unassignLecturer);
+lecturerCourseRoute.delete(
+  '/:courseId/unassign',
+  requireLogin,
+  requireLecturerAccess,
+  unassignLecturer
+);
 // Get courses assigned to lecturer
 lecturerCourseRoute.get(
   '/',
@@ -21,7 +42,12 @@ lecturerCourseRoute.get(
 );
 
 // Start a session
-lecturerCourseRoute.post('/:courseId/session/start', requireLogin, requireLecturerAccess, createSession);
+lecturerCourseRoute.post(
+  '/:courseId/session/start',
+  requireLogin,
+  requireLecturerAccess,
+  createSession
+);
 
 // Get lecturer attendance overview
 lecturerCourseRoute.get(
@@ -32,7 +58,12 @@ lecturerCourseRoute.get(
 );
 
 // Get all sessions for a course
-lecturerCourseRoute.get('/:courseId/sessions', requireLogin, requireLecturerAccess, getLecturerSessionDetails);
+lecturerCourseRoute.get(
+  '/:courseId/sessions',
+  requireLogin,
+  requireLecturerAccess,
+  getLecturerSessionDetails
+);
 
 // Get all students for a session
 lecturerCourseRoute.get(
@@ -43,6 +74,11 @@ lecturerCourseRoute.get(
 );
 
 // Get lecturer course attendance report
-lecturerCourseRoute.get('/:courseId/report', requireLogin, requireLecturerAccess, getLecturerAttendanceReport);
+lecturerCourseRoute.get(
+  '/:courseId/report',
+  requireLogin,
+  requireLecturerAccess,
+  getLecturerAttendanceReport
+);
 
-module.exports = lecturerCourseRoute
+module.exports = lecturerCourseRoute;

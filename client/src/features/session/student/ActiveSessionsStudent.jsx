@@ -1,4 +1,3 @@
-
 import { Activity, Clock } from 'lucide-react';
 import { useButtonState } from '../../../hooks/useButtonState';
 import PageHeader from '../../../components/PageHeader';
@@ -10,21 +9,17 @@ import DataTable from '../../../components/DataTable';
 import SessionsCard from '../../../components/SessionsCard';
 import { useActiveSessionStudent } from './useActiveSessionStudent';
 import { formatTime } from '../../../utils/dateHelper';
-
+import { useFilteredSessions } from '../../../hooks/useFilteredSessions';
+import SessionsCardSkeleton from '../../../components/SessionCardSkeleton';
 
 function ActiveSessionsStudent() {
   const { disableButton } = useButtonState();
 
   const [searchQuery, setSearchQuery] = useSearchQuery();
-  const { data:sessions, isPending } = useActiveSessionStudent();
+  const { data: sessions, isPending } = useActiveSessionStudent();
 
-
-  const filteredSessions = sessions?.session.filter(
-    (s) =>
-      s.course.courseCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.course.courseTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.startedBy.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter sessions
+  const filteredSessions = useFilteredSessions(sessions?.session, searchQuery);
 
   const handleMarkAttendance = (id) => console.log('Mark attendance for:', id);
 
@@ -78,7 +73,7 @@ function ActiveSessionsStudent() {
           size='sm'
           className='capitalize whitespace-nowrap flex items-center gap-1'
         >
-          Mark session
+          Mark attendance
         </Button>
       </td>
     </tr>
@@ -94,14 +89,14 @@ function ActiveSessionsStudent() {
 
       <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6'>
         <SearchBar
-          placeholder='Search courses...'
+          placeholder='Search...'
           value={searchQuery}
           onChange={setSearchQuery}
           disabled={disableButton}
         />
       </div>
 
-      {filteredSessions?.length === 0 ? (
+      {filteredSessions?.length === 0 && !isPending ? (
         <EmptyCard
           icon={Activity}
           title={searchQuery ? 'No sessions found' : 'No active sessions'}
@@ -116,6 +111,7 @@ function ActiveSessionsStudent() {
       ) : (
         <>
           {/* Desktop Table */}
+
           <div className='hidden lg:block'>
             <DataTable
               columns={columns}
@@ -128,20 +124,24 @@ function ActiveSessionsStudent() {
 
           {/* Mobile Cards */}
           <div className='lg:hidden grid grid-cols-1 md:grid-cols-2  gap-4'>
-            {filteredSessions?.map((session) => (
-              <SessionsCard key={session._id} session={session}>
-                <div className='pt-6 border-t border-gray-100'>
-                  <Button
-                    onClick={() => handleMarkAttendance(session._id)}
-                    variant='primary'
-                    size='sm'
-                    fullWidth
-                  >
-                    <span className='font-medium'>Mark session</span>
-                  </Button>
-                </div>
-              </SessionsCard>
-            ))}
+            {isPending ? (
+              <SessionsCardSkeleton />
+            ) : (
+              filteredSessions?.map((session) => (
+                <SessionsCard key={session._id} session={session}>
+                  <div className='pt-6 border-t border-gray-100'>
+                    <Button
+                      onClick={() => handleMarkAttendance(session._id)}
+                      variant='primary'
+                      size='md'
+                      className='flex-1'
+                    >
+                      Mark Attendance
+                    </Button>
+                  </div>
+                </SessionsCard>
+              ))
+            )}
           </div>
         </>
       )}
