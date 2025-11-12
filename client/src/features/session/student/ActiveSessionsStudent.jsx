@@ -11,6 +11,9 @@ import { useActiveSessionStudent } from './useActiveSessionStudent';
 import { formatTime } from '../../../utils/dateHelper';
 import { useFilteredSessions } from '../../../hooks/useFilteredSessions';
 import SessionsCardSkeleton from '../../../components/SessionCardSkeleton';
+import { useMarkAttendance } from './useMarkAttendance';
+import { useState } from 'react';
+import { ClipLoader } from 'react-spinners';
 
 function ActiveSessionsStudent() {
   const { disableButton } = useButtonState();
@@ -18,66 +21,87 @@ function ActiveSessionsStudent() {
   const [searchQuery, setSearchQuery] = useSearchQuery();
   const { data: sessions, isPending } = useActiveSessionStudent();
 
+  const { markAttendance } = useMarkAttendance();
+  const [activeSessionId, setActiveSessionId] = useState(null);
+
   // Filter sessions
   const filteredSessions = useFilteredSessions(sessions?.session, searchQuery);
 
-  const handleMarkAttendance = (id) => console.log('Mark attendance for:', id);
+  const handleMarkAttendance = (sessionId) => {
+    setActiveSessionId(sessionId);
+
+    markAttendance(sessionId, {
+      onSettled: () => setActiveSessionId(null),
+    });
+  };
 
   const columns = ['Course', 'Status', 'Started By', 'Started At', 'Actions'];
 
-  const renderRow = (session) => (
-    <tr key={session._id} className='hover:bg-gray-50'>
-      {/* Course */}
-      <td className='px-6 py-4'>
-        <div>
-          <div className='text-sm font-semibold text-gray-900 uppercase'>
-            {session.course.courseCode}
+  const renderRow = (session) => {
+    const isMarkingSession = session._id === activeSessionId;
+    const marked = session.attendanceMarked;
+
+    return (
+      <tr key={session._id} className='hover:bg-gray-50'>
+        {/* Course */}
+        <td className='px-6 py-4'>
+          <div>
+            <div className='text-sm font-semibold text-gray-900 uppercase'>
+              {session.course.courseCode}
+            </div>
+            <div className='text-sm text-gray-600 capitalize'>
+              {session.course.courseTitle}
+            </div>
           </div>
-          <div className='text-sm text-gray-600 capitalize'>
-            {session.course.courseTitle}
+        </td>
+
+        {/* Status */}
+        <td className='px-6 py-4'>
+          <div className='flex items-center gap-2'>
+            <span className='relative flex h-2 w-2'>
+              <span className='animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75'></span>
+              <span className='relative inline-flex rounded-full h-2 w-2 bg-green-500'></span>
+            </span>
+            <span className='text-sm font-medium text-green-700 capitalize'>
+              {session.status}
+            </span>
           </div>
-        </div>
-      </td>
+        </td>
 
-      {/* Status */}
-      <td className='px-6 py-4'>
-        <div className='flex items-center gap-2'>
-          <span className='relative flex h-2 w-2'>
-            <span className='animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75'></span>
-            <span className='relative inline-flex rounded-full h-2 w-2 bg-green-500'></span>
-          </span>
-          <span className='text-sm font-medium text-green-700 capitalize'>
-            {session.status}
-          </span>
-        </div>
-      </td>
+        {/* Started By */}
+        <td className='px-6 py-4'>
+          <div className='text-sm font-medium text-gray-900 whitespace-nowrap'>
+            {session.startedBy.fullName}
+          </div>
+        </td>
 
-      {/* Started By */}
-      <td className='px-6 py-4'>
-        <div className='text-sm font-medium text-gray-900 whitespace-nowrap'>
-          {session.startedBy.fullName}
-        </div>
-      </td>
-
-      {/* Started At */}
-      <td className='px-6 py-4'>
-        <div className='flex items-center gap-1.5 text-sm text-gray-700 whitespace-nowrap'>
-          <Clock size={16} className='text-gray-400' />
-          {formatTime(session.createdAt)}
-        </div>
-      </td>
-      <td className='px-6 py-4'>
-        <Button
-          onClick={() => handleMarkAttendance(session._id)}
-          variant='primary'
-          size='sm'
-          className='capitalize whitespace-nowrap flex items-center gap-1'
-        >
-          Mark attendance
-        </Button>
-      </td>
-    </tr>
-  );
+        {/* Started At */}
+        <td className='px-6 py-4'>
+          <div className='flex items-center gap-1.5 text-sm text-gray-700 whitespace-nowrap'>
+            <Clock size={16} className='text-gray-400' />
+            {formatTime(session.createdAt)}
+          </div>
+        </td>
+        <td className='px-6 py-4'>
+          <Button
+            onClick={() => handleMarkAttendance(session._id)}
+            variant={marked ? 'secondary' : 'primary'}
+            disabled={isMarkingSession || marked}
+            size='sm'
+            className='capitalize whitespace-nowrap w-38'
+          >
+            {isMarkingSession ? (
+              <ClipLoader size={22} color='#fff' />
+            ) : marked ? (
+              'Marked'
+            ) : (
+              'Mark attendance'
+            )}
+          </Button>
+        </td>
+      </tr>
+    );
+  };
 
   return (
     <div className='w-full'>
@@ -112,7 +136,7 @@ function ActiveSessionsStudent() {
         <>
           {/* Desktop Table */}
 
-          <div className='hidden lg:block'>
+          <div className='hidden xl:block'>
             <DataTable
               columns={columns}
               renderRow={renderRow}
@@ -123,24 +147,37 @@ function ActiveSessionsStudent() {
           </div>
 
           {/* Mobile Cards */}
-          <div className='lg:hidden grid grid-cols-1 md:grid-cols-2  gap-4'>
+          <div className='xl:hidden grid grid-cols-1 md:grid-cols-2  gap-4'>
             {isPending ? (
               <SessionsCardSkeleton />
             ) : (
-              filteredSessions?.map((session) => (
-                <SessionsCard key={session._id} session={session}>
-                  <div className='pt-6 border-t border-gray-100'>
-                    <Button
-                      onClick={() => handleMarkAttendance(session._id)}
-                      variant='primary'
-                      size='md'
-                      className='flex-1'
-                    >
-                      Mark Attendance
-                    </Button>
-                  </div>
-                </SessionsCard>
-              ))
+              filteredSessions?.map((session) => {
+                const isMarkingSession = session._id === activeSessionId;
+                const marked = session.attendanceMarked;
+
+                return (
+                  <SessionsCard key={session._id} session={session}>
+                    <div className='pt-6 border-t border-gray-100'>
+                      <Button
+                        onClick={() => handleMarkAttendance(session._id)}
+                        variant={marked ? 'secondary' : 'primary'}
+                        disabled={isMarkingSession || marked}
+                        size='sm'
+                        fullWidth
+                        className='capitalize whitespace-nowrap'
+                      >
+                        {isMarkingSession ? (
+                          <ClipLoader size={22} color='#fff' />
+                        ) : marked ? (
+                          'Marked'
+                        ) : (
+                          'Mark attendance'
+                        )}
+                      </Button>
+                    </div>
+                  </SessionsCard>
+                );
+              })
             )}
           </div>
         </>

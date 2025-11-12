@@ -55,6 +55,7 @@ export const editCourse = async (data) => {
 
 // delete course (admin)
 export const deleteCourse = async (id) => {
+  
   try {
     const response = await axios.delete(`/api/admin/courses/${id}`);
     return response.data;

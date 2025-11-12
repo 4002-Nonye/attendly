@@ -27,7 +27,7 @@ function RecentSessions() {
       <tr key={session.id} className='hover:bg-gray-50 transition-colors'>
         <td className='px-6 py-4 whitespace-nowrap'>
           <div>
-            <div className='text-sm font-medium text-gray-900'>
+            <div className='text-sm font-medium text-gray-900 capitalize'>
               {session.course}
             </div>
             <div className='text-sm text-gray-500'>{session.courseCode}</div>

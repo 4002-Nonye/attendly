@@ -18,13 +18,18 @@ export default function SessionInfo({ session }) {
           label='Date'
           value={formatYear(session.createdAt)}
         />
-        <InfoBox icon={Clock} label='Time' value={formatTime(session.createdAt)} />
-        <InfoBox icon={PlayCircle} label='Status' value={session.status} />
+        <InfoBox
+          icon={Clock}
+          label='Time'
+          value={formatTime(session.createdAt)}
+        />
+
         <InfoBox
           icon={User}
           label='Created By'
           value={session.startedBy.fullName}
         />
+        <InfoBox icon={PlayCircle} label='Status' value={session.status} />
       </div>
     </div>
   );

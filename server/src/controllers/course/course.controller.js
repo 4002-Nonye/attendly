@@ -91,6 +91,7 @@ exports.getCourses = async (req, res) => {
       const enrollments = await StudentEnrollment.find({
         student: userId,
         course: { $in: courseIds },
+        enrollmentStatus:'active'
       }).lean();
 
       // create a set of course IDs the student is enrolled in for fast lookup

@@ -7,71 +7,57 @@ const User = mongoose.model('User');
 
 exports.markAttendance = async (req, res) => {
   // SUPPORTS BOTH QR CODE SCANNING AND BUTTON MARKING
-
   try {
-    const { courseId, sessionId } = req.params;
+    const { sessionId } = req.params;
     const { id: userId } = req.user;
-    // Access token sent to frontend when session was created
-    const { token } = req.body || {}; // For just QR flow
+    const { token } = req.body || {};
 
-    // 1. check if class exists
-    const activeSession = await Session.findById(sessionId);
-    if (!activeSession) {
-      return res.status(404).json({ error: 'Session does not exist' });
-    }
+    // 1. get the session and populate course
+    const session = await Session.findById(sessionId).populate('course', '_id');
+    if (!session) return res.status(404).json({ error: 'Session not found' });
 
-    // 2. check if session matches course
-    if (activeSession.course.toString() !== courseId) {
-      return res
-        .status(400)
-        .json({ error: 'Course does not match this session' });
-    }
-    // 3. check if class is still ongoing
-    if (activeSession.status !== 'active')
+    // 2. check if class is ongoing
+    if (session.status !== 'active')
       return res.status(400).json({ error: 'Class already ended' });
 
-    // 4. check if token is valid for qr scan
-    if (token && activeSession.token !== token) {
+    // 3. validate QR token
+    if (token && session.token !== token)
       return res.status(401).json({ error: 'Invalid token' });
-    }
 
-    // 5. only enrolled students can mark attendance
-    const isEnrolled = await StudentEnrollment.findOne({
+    // 4. check enrollment
+    const enrolled = await StudentEnrollment.findOne({
       student: userId,
-      course: courseId,
+      course: session.course._id,
     });
+    if (!enrolled)
+      return res.status(403).json({ error: 'Not enrolled in this course' });
 
-    if (!isEnrolled) {
-      return res
-        .status(403)
-        .json({ error: 'Student is not enrolled in this course' });
-    }
-
-    // 6. prevent duplicate attendance
-    const existingAttendance = await Attendance.findOne({
-      course: courseId,
+    // 5. pevent duplicate attendance
+    const existing = await Attendance.findOne({
       session: sessionId,
+      course: session.course._id,
       student: userId,
     });
-    if (existingAttendance) {
+    if (existing)
       return res.status(400).json({ error: 'Attendance already marked' });
-    }
 
-    // 7. mark attendance
-    const markedAttendance = await new Attendance({
-      course: courseId,
+    // 6. mark attendance
+    const attendance = await Attendance.create({
       session: sessionId,
+      course: session.course,
       student: userId,
       status: 'Present',
-      academicYear: activeSession.academicYear,
-      semester: activeSession.semester,
+      academicYear: session.academicYear,
+      semester: session.semester,
     });
-    await markedAttendance.save();
+
+
+
     return res
       .status(201)
-      .json({ message: 'Attendance taken', markedAttendance });
-  } catch (error) {
-    console.log(error);
+      .json({ message: 'Attendance marked successfully', attendance });
+  } catch (err) {
+    console.error(err);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -97,14 +83,14 @@ exports.getStudentAttendanceReport = async (req, res) => {
 
     //  Get the student's level (so we only report courses for that level)
     const student = await User.findById(id).select('level');
-    if (!student)
-      return res.status(404).json({ error: 'Student not found' });
+    if (!student) return res.status(404).json({ error: 'Student not found' });
 
     const report = await StudentEnrollment.aggregate([
       // 1. Get all enrollments for this student
       {
         $match: {
           student: mongoose.Types.ObjectId.createFromHexString(id),
+          enrollmentStatus:'active',
           academicYear: mongoose.Types.ObjectId.createFromHexString(
             currentAcademicYear.toString()
           ),
@@ -240,7 +226,6 @@ exports.getStudentAttendanceReport = async (req, res) => {
   }
 };
 
-
 exports.getStudentSessionDetails = async (req, res) => {
   // returns session date -> lecturer (startedBy) -> Time -> status (present/absent)
   try {
@@ -332,4 +317,3 @@ exports.getStudentSessionDetails = async (req, res) => {
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
-

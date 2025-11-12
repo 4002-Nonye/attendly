@@ -33,7 +33,8 @@ exports.getActiveSessionsForLecturer = async (req, res) => {
       status: 'active',
     })
       .populate('course', 'courseCode courseTitle')
-      .populate('startedBy', 'fullName').sort({createdAt:-1});
+      .populate('startedBy', 'fullName')
+      .sort({ createdAt: -1 });
 
     return res.status(200).json({ session: sessions, total: sessions.length });
   } catch (error) {
@@ -185,6 +186,7 @@ exports.endSession = async (req, res) => {
           course: courseId,
           status: 'Absent',
           academicYear: session.academicYear,
+          semester: session.semester,
         }))
       );
     }
@@ -216,7 +218,7 @@ exports.getSessionDetails = async (req, res) => {
       })
       .populate('startedBy', 'fullName')
       .lean();
-   
+
     if (!session) {
       return res.status(404).json({ error: 'Session not found' });
     }

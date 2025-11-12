@@ -279,7 +279,7 @@ exports.deleteDepartment = async (req, res) => {
     const { id: departmentId } = req.params;
     const { schoolId } = req.user;
 
-    // Check if department exists
+    // check if department exists
     const department = await Department.findOne({
       _id: departmentId,
       schoolId,
@@ -288,7 +288,7 @@ exports.deleteDepartment = async (req, res) => {
       return res.status(404).json({ error: 'Department not found' });
     }
 
-    //  Check if any users are associated with this department
+    //  check if any users are associated with this department
     const usersCount = await User.countDocuments({ department: departmentId });
     if (usersCount > 0) {
       return res.status(400).json({
@@ -296,12 +296,12 @@ exports.deleteDepartment = async (req, res) => {
       });
     }
 
-    //  Delete all courses linked to this department
-    const coursesDeleted = await Course.deleteMany({
+    //  delete all courses linked to this department
+      await Course.deleteMany({
       department: departmentId,
     });
 
-    // Delete department
+    // delete department
     await Department.findByIdAndDelete(departmentId);
 
     return res.status(200).json({

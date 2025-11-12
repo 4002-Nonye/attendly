@@ -35,6 +35,7 @@ exports.getStudentDashboardStats = async (req, res) => {
     // get all current enrollments
     const enrollments = await StudentEnrollment.find({
       student: studentId,
+      enrollmentStatus:'active',
       academicYear: school.currentAcademicYear,
       semester: school.currentSemester,
     })
@@ -147,6 +148,7 @@ exports.getStudentRecentSessions = async (req, res) => {
     // get all enrollments for the student current academic period
     const enrollments = await StudentEnrollment.find({
       student: studentId,
+      enrollmentStatus:'active',
       academicYear: school.currentAcademicYear,
       semester: school.currentSemester,
     })

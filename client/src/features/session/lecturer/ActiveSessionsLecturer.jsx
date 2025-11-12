@@ -13,11 +13,16 @@ import { useActiveSessionLecturer } from './useActiveSessionLecturer';
 import { formatTime } from '../../../utils/dateHelper';
 import { useFilteredSessions } from '../../../hooks/useFilteredSessions';
 import SessionsCardSkeleton from '../../../components/SessionCardSkeleton';
+import { useEndSession } from './useEndSession';
+import { useState } from 'react';
+import { ClipLoader } from 'react-spinners';
 
 function ActiveSessionsLecturer() {
   const { disableButton } = useButtonState();
 
   const { data: sessions, isPending } = useActiveSessionLecturer();
+  const { endSession } = useEndSession();
+  const [activeSessionId, setActiveSessionId] = useState(null);
 
   const navigate = useNavigate();
 
@@ -27,7 +32,14 @@ function ActiveSessionsLecturer() {
   const filteredSessions = useFilteredSessions(sessions?.session, searchQuery);
 
   const handleViewDetails = (id) => navigate(`/sessions/${id}`);
-  const handleEndSession = (id) => console.log('End session:', id);
+
+  const handleEndSession = (sessionId) => {
+    setActiveSessionId(sessionId);
+
+    endSession(sessionId, {
+      onSettled: () => setActiveSessionId(null),
+    });
+  };
 
   const columns = [
     'Session ID',
@@ -38,72 +50,81 @@ function ActiveSessionsLecturer() {
     'Actions',
   ];
 
-  const renderRow = (session) => (
-    <tr key={session._id} className='hover:bg-gray-50'>
-      {/* ID */}
-      <td className='px-6 py-4'>
-        <Link
-          to={`/sessions/${session._id}`}
-          className='underline text-blue-600 hover:text-blue-800 text-sm font-semibold transition-colors'
-          title='View session details & QR code'
-        >
-          #{session._id.slice(-6).toUpperCase()}
-        </Link>
-      </td>
+  const renderRow = (session) => {
+    const isSessionEnding = session._id === activeSessionId;
 
-      {/* Course */}
-      <td className='px-6 py-4'>
-        <div>
-          <div className='text-sm font-semibold text-gray-900 uppercase'>
-            {session.course.courseCode}
+    return (
+      <tr key={session._id} className='hover:bg-gray-50'>
+        {/* ID */}
+        <td className='px-6 py-4'>
+          <Link
+            to={`/sessions/${session._id}`}
+            className='underline text-blue-600 hover:text-blue-800 text-sm font-semibold transition-colors'
+            title='View session details & QR code'
+          >
+            #{session._id.slice(-6).toUpperCase()}
+          </Link>
+        </td>
+
+        {/* Course */}
+        <td className='px-6 py-4'>
+          <div>
+            <div className='text-sm font-semibold text-gray-900 uppercase'>
+              {session.course.courseCode}
+            </div>
+            <div className='text-sm text-gray-600 capitalize'>
+              {session.course.courseTitle}
+            </div>
           </div>
-          <div className='text-sm text-gray-600 capitalize'>
-            {session.course.courseTitle}
+        </td>
+
+        {/* Status */}
+        <td className='px-6 py-4'>
+          <div className='flex items-center gap-2'>
+            <span className='relative flex h-2 w-2'>
+              <span className='animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75'></span>
+              <span className='relative inline-flex rounded-full h-2 w-2 bg-green-500'></span>
+            </span>
+            <span className='text-sm font-medium text-green-700 capitalize'>
+              {session.status}
+            </span>
           </div>
-        </div>
-      </td>
+        </td>
 
-      {/* Status */}
-      <td className='px-6 py-4'>
-        <div className='flex items-center gap-2'>
-          <span className='relative flex h-2 w-2'>
-            <span className='animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75'></span>
-            <span className='relative inline-flex rounded-full h-2 w-2 bg-green-500'></span>
-          </span>
-          <span className='text-sm font-medium text-green-700 capitalize'>
-            {session.status}
-          </span>
-        </div>
-      </td>
+        {/* Started By */}
+        <td className='px-6 py-4'>
+          <div className='text-sm font-medium text-gray-900'>
+            {session.startedBy.fullName}
+          </div>
+        </td>
 
-      {/* Started By */}
-      <td className='px-6 py-4'>
-        <div className='text-sm font-medium text-gray-900'>
-          {session.startedBy.fullName}
-        </div>
-      </td>
+        {/* Started At */}
+        <td className='px-6 py-4'>
+          <div className='flex items-center gap-1.5 text-sm text-gray-700'>
+            <Clock size={16} className='text-gray-400' />
+            {formatTime(session.createdAt)}
+          </div>
+        </td>
 
-      {/* Started At */}
-      <td className='px-6 py-4'>
-        <div className='flex items-center gap-1.5 text-sm text-gray-700'>
-          <Clock size={16} className='text-gray-400' />
-          {formatTime(session.createdAt)}
-        </div>
-      </td>
-
-      {/* Actions */}
-      <td className='px-6 py-4'>
-        <Button
-          variant='danger'
-          size='sm'
-          className='capitalize whitespace-nowrap'
-          onClick={() => handleEndSession(session._id)}
-        >
-          End session
-        </Button>
-      </td>
-    </tr>
-  );
+        {/* Actions */}
+        <td className='px-6 py-4'>
+          <Button
+            variant='danger'
+            size='sm'
+            disabled={isSessionEnding}
+            className='capitalize whitespace-nowrap w-30'
+            onClick={() => handleEndSession(session._id)}
+          >
+            {isSessionEnding ? (
+              <ClipLoader size={22} color='#fff' />
+            ) : (
+              'End session'
+            )}
+          </Button>
+        </td>
+      </tr>
+    );
+  };
 
   return (
     <div className='w-full'>
@@ -139,7 +160,7 @@ function ActiveSessionsLecturer() {
       ) : (
         <>
           {/* Desktop Table */}
-          <div className='hidden lg:block'>
+          <div className='hidden xl:block'>
             <DataTable
               columns={columns}
               renderRow={renderRow}
@@ -150,38 +171,48 @@ function ActiveSessionsLecturer() {
           </div>
 
           {/* Mobile Cards */}
-          <div className='lg:hidden grid grid-cols-1 md:grid-cols-2 gap-4'>
+          <div className='xl:hidden grid grid-cols-1 md:grid-cols-2 gap-4'>
             {isPending ? (
               <SessionsCardSkeleton />
             ) : (
-              filteredSessions?.map((session) => (
-                <SessionsCard key={session._id} session={session}>
-                  {/* Action Buttons */}
-                  <div className='pt-6 border-t border-gray-100'>
-                    <div className='flex items-center gap-2'>
-                      <Button
-                        onClick={() => handleViewDetails(session._id)}
-                        variant='secondary'
-                        size='sm'
-                        className='flex-1 justify-center'
-                      >
-                        <Eye size={18} className='mr-1.5' />
-                        <span className='font-medium'>View Details</span>
-                      </Button>
+              filteredSessions?.map((session) => {
+                const isSessionEnding = session._id === activeSessionId;
 
-                      <Button
-                        onClick={() => handleEndSession(session._id)}
-                        variant='danger'
-                        size='sm'
-                        className='flex-1 justify-center'
-                      >
-                        <XCircle size={18} className='mr-1.5' />
-                        <span className='font-medium'>End Session</span>
-                      </Button>
+                return (
+                  <SessionsCard key={session._id} session={session}>
+                    {/* Action Buttons */}
+                    <div className='pt-6 border-t border-gray-100'>
+                      <div className='flex items-center gap-2'>
+                        <Button
+                          onClick={() => handleViewDetails(session._id)}
+                          variant='secondary'
+                          size='sm'
+                          className='flex-1 justify-center'
+                        >
+                          <Eye size={18} className='mr-1.5' />
+                          <span className='font-medium'>View Details</span>
+                        </Button>
+
+                        <Button
+                          onClick={() => handleEndSession(session._id)}
+                          variant='danger'
+                          size='sm'
+                          className='flex-1 justify-center'
+                        >
+                          {isSessionEnding ? (
+                            <ClipLoader size={22} color='#fff' />
+                          ) : (
+                            <>
+                              <XCircle size={18} className='mr-1.5' />
+                              <span className='font-medium'>End Session</span>
+                            </>
+                          )}
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                </SessionsCard>
-              ))
+                  </SessionsCard>
+                );
+              })
             )}
           </div>
         </>

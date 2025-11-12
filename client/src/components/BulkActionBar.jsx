@@ -1,5 +1,4 @@
 import PropTypes from 'prop-types';
-import { Check } from 'lucide-react';
 import Button from './Button';
 import { ClipLoader } from 'react-spinners';
 

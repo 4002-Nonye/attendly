@@ -19,11 +19,12 @@ export const getActiveSessionsLecturer = async () => {
   }
 };
 
-
 // lecturer create session
 export const createSession = async (id) => {
   try {
-    const response = await axios.post(`/api/lecturer/courses/${id}/session/start`);
+    const response = await axios.post(
+      `/api/lecturer/courses/${id}/session/start`
+    );
     return response.data;
   } catch (error) {
     throw error.response.data;
@@ -40,10 +41,34 @@ export const getSessionDetails = async (sessionId) => {
   }
 };
 
+// end session lecture
+export const endSession = async (sessionId) => {
+  try {
+    const response = await axios.patch(
+      `/api/lecturer/sessions/${sessionId}/end`
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
 
+// STUDENT
 export const getActiveSessionsStudent = async () => {
   try {
     const response = await axios.get('/api/student/sessions/active');
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+// student mark attendance session
+export const markAttendance = async (sessionId) => {
+  try {
+    const response = await axios.post(
+      `/api/student/sessions/${sessionId}/attendance/mark`
+    );
     return response.data;
   } catch (error) {
     throw error.response.data;

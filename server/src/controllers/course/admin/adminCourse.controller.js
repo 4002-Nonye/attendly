@@ -3,6 +3,9 @@ const Course = mongoose.model('Course');
 const School = mongoose.model('School');
 const Department = mongoose.model('Department');
 const Faculty = mongoose.model('Faculty');
+const StudentEnrollment = mongoose.model('StudentEnrollment');
+const Session = mongoose.model('Session');
+const Attendance = mongoose.model('Attendance');
 
 exports.createCourse = async (req, res) => {
   try {
@@ -141,7 +144,7 @@ exports.editCourse = async (req, res) => {
 exports.deleteCourse = async (req, res) => {
   try {
     const { schoolId } = req.user;
-    const { courseId } = req.params;
+    const { id: courseId } = req.params;
 
     // find the course
     const course = await Course.findOne({ _id: courseId, schoolId });
@@ -151,17 +154,17 @@ exports.deleteCourse = async (req, res) => {
 
     // delete tied data
     await Promise.all([
-      Enrollment.deleteMany({ courseId: course._id }),
-      Session.deleteMany({ courseId: course._id }),
-      Attendance.deleteMany({ courseId: course._id }),
+      StudentEnrollment.deleteMany({ course: course._id }),
+      Session.deleteMany({ course: course._id }),
+      Attendance.deleteMany({ course: course._id }),
     ]);
 
     // delete the course itself
-    await course.remove();
+    await Course.deleteOne({ _id: courseId, schoolId });
 
     return res
       .status(200)
-      .json({ message: 'Course and all related data deleted successfully' });
+      .json({ message: 'Course deleted successfully' });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Internal server error' });

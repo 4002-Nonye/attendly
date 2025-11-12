@@ -12,6 +12,7 @@ export function useCreateSession() {
     onSuccess: (data) => {
       toast.success(data.message || 'Session created successfully');
       queryClient.invalidateQueries(['sessions']);
+
       navigate(`/sessions/${data.session._id}`, {
         state: {
           sessionData: data.session,

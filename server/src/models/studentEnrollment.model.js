@@ -15,12 +15,20 @@ const studentEnrollment = new Schema(
       type: String,
       enum: ['First', 'Second'],
     },
-    school:{ type: Schema.Types.ObjectId, ref: 'School', required: true },
+    enrollmentStatus: {
+      type: String,
+      enum: ['active', 'dropped'],
+      default: 'active',
+    },
+ 
+    school: { type: Schema.Types.ObjectId, ref: 'School', required: true },
   },
   { timestamps: true }
 );
 
-studentEnrollment.index({ student: 1, course: 1 ,academicYear: 1, semester: 1}, { unique: true });
-
+studentEnrollment.index(
+  { student: 1, course: 1, academicYear: 1, semester: 1 },
+  { unique: true }
+);
 
 mongoose.model('StudentEnrollment', studentEnrollment); // two arguments means we are trying to create a collection

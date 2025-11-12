@@ -25,11 +25,12 @@ exports.getRecentSessions = async (req, res) => {
 
     //  if user is a lecturer, find only their assigned courses
     if (role === 'lecturer') {
-      const lecturerCourses = await Course.find({ lecturers: userId }).select('_id');
+      const lecturerCourses = await Course.find({ lecturers: userId }).select(
+        '_id'
+      );
       const courseIds = lecturerCourses.map((c) => c._id);
       courseFilter = { course: { $in: courseIds } };
     }
-    console.log(courseFilter)
 
     //  get sessions
     const sessions = await Session.find({

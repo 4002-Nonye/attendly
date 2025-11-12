@@ -38,9 +38,10 @@ exports.getSchoolAttendanceTrend = async (req, res) => {
     }));
 
     // compute attendance with status or present
-    const data = records.forEach((record) => {
+    records.forEach((record) => {
       // get the day each attendance record was taken
       const dayIndex = dayjs(record.createdAt).day();
+
       // increase the total of that day
       weekData[dayIndex].total += 1;
 
@@ -51,7 +52,7 @@ exports.getSchoolAttendanceTrend = async (req, res) => {
     // Calculate rate for each day
     weekData.forEach((day) => {
       if (day.total > 0) {
-        day.rate = Number((day.present / day.total) * 100);
+        day.rate = Number((day.present / day.total) * 100).toFixed(1);
       }
     });
     // starts from Monday instead of Sunday
@@ -131,7 +132,6 @@ exports.getFacultyAttendanceTrend = async (req, res) => {
 
       return dayObject;
     });
-
 
     return res.status(200).json({ trend: chartData });
   } catch (error) {

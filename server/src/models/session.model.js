@@ -10,6 +10,7 @@ const sessionSchema = new Schema(
       required: true,
     },
 
+  
     startedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
@@ -39,8 +40,12 @@ const sessionSchema = new Schema(
   { timestamps: true }
 );
 
-
-
-sessionSchema.index({ schoolId: 1, course: 1, academicYear: 1, semester: 1, status: 1 });
+sessionSchema.index({
+  schoolId: 1,
+  course: 1,
+  academicYear: 1,
+  semester: 1,
+  status: 1,
+});
 
 mongoose.model('Session', sessionSchema);

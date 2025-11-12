@@ -15,6 +15,7 @@ function Chart() {
   const schoolAttendanceTrend = schoolTrend?.trend;
 
 
+
   
   // extract faculty names
   const faculties =

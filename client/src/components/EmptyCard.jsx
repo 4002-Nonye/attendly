@@ -8,6 +8,7 @@ function EmptyCard({
   iconColor,
   iconBg,
   wrapperClassName,
+  iconClass,
 }) {
   return (
     <div
@@ -17,9 +18,11 @@ function EmptyCard({
         <div
           className={`w-14 h-14 ${iconBg} rounded-full flex items-center justify-center mx-auto mb-4`}
         >
-          {Icon && <Icon className={`w-7 h-7 ${iconColor}`} />}
+          {Icon && <Icon className={`w-7 h-7 ${iconColor} ${iconClass}`} />}
         </div>
-        <h3 className=' lg:text-xl font-semibold text-gray-900 mb-1.5'>{title}</h3>
+        <h3 className=' lg:text-xl font-semibold text-gray-900 mb-1.5'>
+          {title}
+        </h3>
         <p className='text-sm text-gray-600 mb-6'>{message}</p>
         {children}
       </div>
@@ -35,6 +38,7 @@ EmptyCard.propTypes = {
   iconColor: PropTypes.string,
   iconBg: PropTypes.string,
   wrapperClassName: PropTypes.string,
+  iconClass: PropTypes.string,
 };
 
 export default EmptyCard;

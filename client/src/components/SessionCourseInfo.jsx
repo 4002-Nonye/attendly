@@ -7,12 +7,12 @@ export default function SessionCourseInfo({ course }) {
     <div className='bg-white rounded-xl shadow-sm border border-gray-200 p-6'>
       <div className='flex items-center gap-2 mb-4'>
         <BookOpen className='text-blue-600' size={24} />
-        <h2 className='text-xl font-bold text-gray-900'>Course Information</h2>
+        <h2 className='text-lg font-bold text-gray-900'>Course Information</h2>
       </div>
 
       <div className='space-y-4'>
         <div>
-          <div className='text-xl font-bold text-gray-900 uppercase mb-1'>
+          <div className='text-lg font-bold text-gray-900 uppercase mb-1'>
             {course.courseCode}
           </div>
           <div className='text-base text-gray-700 capitalize'>
