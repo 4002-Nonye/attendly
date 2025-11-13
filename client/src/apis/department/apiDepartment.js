@@ -11,6 +11,17 @@ export const getDepartmentsOptions = async (facultyId) => {
   }
 };
 
+
+// for dropdown (filtering in-app )
+export const getAllDepartments = async () => {
+  try {
+    const response = await axios.get(`/api/departments/all`);
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
 export const getDepartmentStats = async ({ queryKey }) => {
   const [_key, query] = queryKey;
  

@@ -34,7 +34,7 @@ exports.getFacultiesBySchool = async (req, res) => {
 // FOR ADMIN DROPDOWNS - All faculties
 exports.getAllFacultiesBySchool = async (req, res) => {
   try {
-    const { schoolId } = req.params;
+    const { schoolId } = req.user;
 
     if (!schoolId) {
       return res.status(400).json({ error: 'School ID is required' });

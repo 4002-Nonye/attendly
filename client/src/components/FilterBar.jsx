@@ -21,6 +21,7 @@ function FilterBar({
           placeHolder={filter.placeHolder}
           data={filter.data || []}
           disabled={disableButton}
+          label={filter.label}
           onChange={(e) => onFilterChange(filter.name, e.target.value)}
           {...filter.props}
         />
@@ -29,7 +30,7 @@ function FilterBar({
       {hasActiveFilters && (
         <button
           onClick={clearFilters}
-          className='px-4 py-2 text-sm text-gray-600 hover:text-gray-900 underline'
+          className='text-left pl-2 mt-2 text-sm text-gray-600 hover:text-gray-900 underline'
         >
           Clear filters
         </button>
@@ -39,18 +40,7 @@ function FilterBar({
 }
 
 FilterBar.propTypes = {
-  filters: PropTypes.arrayOf(
-    PropTypes.shape({
-      name: PropTypes.string.isRequired,
-      htmlFor: PropTypes.string.isRequired,
-      placeHolder: PropTypes.string,
-      labelKey: PropTypes.string,
-      valueKey: PropTypes.string,
-      data: PropTypes.array,
-      props: PropTypes.object,
-    })
-  ).isRequired,
-
+  filters: PropTypes.arrayOf(PropTypes.object).isRequired,
   hasActiveFilters: PropTypes.bool,
   clearFilters: PropTypes.func,
   onFilterChange: PropTypes.func.isRequired,

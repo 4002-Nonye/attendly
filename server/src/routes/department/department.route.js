@@ -6,15 +6,19 @@ const {
   deleteDepartment,
   getDepartmentStats,
   getDepartmentsByFaculty,
-  
+  getAllDepartments,
 } = require('../../controllers/department/department.controller');
 const { requireAdminAccess } = require('../../middlewares/roleAccess');
-
-
 
 const departmentRoute = express.Router();
 
 departmentRoute.get('/', requireLogin, requireAdminAccess, getDepartmentStats);
+departmentRoute.get(
+  '/all',
+  requireLogin,
+  requireAdminAccess,
+  getAllDepartments
+);
 departmentRoute.get('/:facultyId', getDepartmentsByFaculty);
 departmentRoute.post('/', requireLogin, requireAdminAccess, addDepartment);
 departmentRoute.put('/:id', requireLogin, requireAdminAccess, editDepartment);

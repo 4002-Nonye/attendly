@@ -26,7 +26,8 @@ import { MAX_LEVEL } from '../../../config/level';
 
 import FilterBar from '../../../components/FilterBar';
 import { useOpenModalFromActions } from '../../../hooks/useOpenModalFromActions';
-import { useCourseFilters } from '../../../hooks/useCourseFilters';
+import { useFilters } from '../../../hooks/useFilters';
+
 
 function AdminCourse() {
   const { disableButton } = useButtonState();
@@ -37,7 +38,8 @@ function AdminCourse() {
     handleSearch,
     handleFilterChange,
     clearFilters,
-  } = useCourseFilters();
+    hasActiveFilters
+  } = useFilters();
 
   const [debouncedQuery] = useDebounce(searchQuery, 500);
 
@@ -175,8 +177,7 @@ function AdminCourse() {
   );
 
   const levels = generateLevel(MAX_LEVEL);
-  const hasActiveFilters = filters.department || filters.level || searchQuery;
-
+ 
   return (
     <div className='w-full'>
       <PageHeader

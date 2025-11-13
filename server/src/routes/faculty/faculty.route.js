@@ -13,7 +13,7 @@ const {
 
 const facultyRoute = express.Router();
 facultyRoute.get(
-  '/:schoolId/all',
+  '/all',
   requireLogin,
   requireAdminAccess,
   getAllFacultiesBySchool

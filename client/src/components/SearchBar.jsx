@@ -13,7 +13,7 @@ function SearchBar({
 
 
   return (
-    <div className={`relative w-full md:w-96  ${className}`}>
+    <div className={`relative w-full md:w-2/4  ${className}`}>
       <InputField
         icon={Search}
         id='input'

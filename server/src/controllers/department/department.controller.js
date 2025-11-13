@@ -54,9 +54,9 @@ exports.getDepartmentStats = async (req, res) => {
   try {
     const { schoolId } = req.user;
     const { name = '', page = 1, limit = 10, facultyId } = req.query;
-  
+
     // Find the user's school and ensure it has an active academic year
-    const school = await School.findById(schoolId)
+    const school = await School.findById(schoolId);
     if (!school || !school.currentAcademicYear) {
       return res.status(400).json({ error: 'No active academic year found' });
     }
@@ -297,7 +297,7 @@ exports.deleteDepartment = async (req, res) => {
     }
 
     //  delete all courses linked to this department
-      await Course.deleteMany({
+    await Course.deleteMany({
       department: departmentId,
     });
 
@@ -311,6 +311,8 @@ exports.deleteDepartment = async (req, res) => {
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+// for auth dropdowns
 exports.getDepartmentsByFaculty = async (req, res) => {
   try {
     const { facultyId } = req.params;
@@ -327,6 +329,28 @@ exports.getDepartmentsByFaculty = async (req, res) => {
       return res
         .status(404)
         .json({ error: 'No departments found for this faculty' });
+    }
+
+    return res.status(200).json({ departments });
+  } catch (error) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// for in-app filtering (GET ALL DEPARTMENTS)
+exports.getAllDepartments = async (req, res) => {
+  try {
+    const { schoolId } = req.params; // or from req.user.school
+
+    const departments = await Department.find({ school: schoolId })
+      .select('name maxLevel faculty')
+      .populate('faculty', 'name')
+      .lean();
+
+    if (!departments.length) {
+      return res.status(404).json({
+        error: 'No departments found for this school',
+      });
     }
 
     return res.status(200).json({ departments });

@@ -9,7 +9,7 @@ const {
   forgotPassword,
   resetPassword,
    getUser,
-   getUserProfile,
+  
 } = require('../../controllers/auth/localAuth.controller');
 
 const localAuthRoute = express.Router();
@@ -21,7 +21,7 @@ localAuthRoute.put('/complete-profile',requireLogin,completeProfile)
 localAuthRoute.post('/link-account', linkAccount);
 localAuthRoute.post('/forgot-password', forgotPassword);
 localAuthRoute.post('/reset-password', resetPassword); 
-localAuthRoute.get('/user',requireLogin, getUser);
-localAuthRoute.get('/me',requireLogin,getUserProfile)
+localAuthRoute.get('/user',requireLogin, getUser); // authenticated user (lightweight data)
+
 
 module.exports = localAuthRoute;

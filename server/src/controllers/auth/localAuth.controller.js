@@ -393,33 +393,11 @@ exports.getUser = async (req, res) => {
 
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    const hasPassword = !!user.password;
     const safeToSendUser = sanitizeUser(user._doc);
 
-    return res.status(200).json({ user: { ...safeToSendUser, hasPassword } });
+    return res.status(200).json({ user: { ...safeToSendUser } });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ message: 'Internal server error' });
-  }
-};
-
-exports.getUserProfile = async (req, res) => {
-  try {
-    const { id } = req.user;
-
-    const user = await User.findById(id)
-      .select('email role fullName faculty department schoolId level')
-      .populate('faculty', 'name')
-      .populate('department', 'name')
-      .populate('schoolId', 'schoolName');
-
-    if (!user) return res.status(404).json({ error: 'User not found' });
-    const hasPassword = !!user.password;
-    const safeToSendUser = sanitizeUser(user._doc);
-    return res.status(200).json({
-      user: { ...safeToSendUser, hasPassword },
-    });
-  } catch (err) {
-    return res.status(500).json({ error: 'Internal server error' });
   }
 };

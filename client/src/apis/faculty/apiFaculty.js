@@ -12,11 +12,10 @@ export const getFacultyOptions = async (schoolId) => {
   }
 };
 
-// for dropdown (creating a department)
-export const getAllFaculties = async (schoolId) => {
+// for dropdown (creating a department in-app || filtering )
+export const getAllFaculties = async () => {
   try {
-    if (!schoolId) return;
-    const response = await axios.get(`/api/faculties/${schoolId}/all`);
+    const response = await axios.get(`/api/faculties/all`);
     return response.data;
   } catch (error) {
     throw error.response.data;
@@ -25,7 +24,6 @@ export const getAllFaculties = async (schoolId) => {
 
 // admin
 export const getFacultyStats = async () => {
- 
   try {
     const response = await axios.get(`/api/faculties`);
     return response.data;

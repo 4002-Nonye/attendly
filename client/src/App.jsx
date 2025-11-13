@@ -1,5 +1,5 @@
 import { Routes, Route, BrowserRouter, Navigate } from 'react-router-dom';
-import ScanQrCode from './tests/ScanQrCode';
+
 import LoginPage from './pages/auth/LoginPage';
 import SignupPage from './pages/auth/SignupPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
@@ -18,6 +18,8 @@ import DepartmentPage from './pages/department/DepartmentPage';
 import SessionPage from './pages/session/SessionPage';
 import SessionDetailsPage from './pages/session/SessionDetailsPage';
 import ActiveSessions from './pages/session/ActiveSessions';
+import LecturerPage from './pages/users/LecturerPage';
+import StudentPage from './pages/users/StudentPage';
 
 function App() {
   return (
@@ -82,15 +84,29 @@ function App() {
             }
           />
           <Route path='courses' element={<CoursePage />} />
-          <Route path='lecturers' element='lecturers' />
-          <Route path='students' element='students' />
+          <Route
+            path='lecturers'
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <LecturerPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='students'
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <StudentPage />
+              </ProtectedRoute>
+            }
+          />
           <Route path='attendance' element='attendance' />
           <Route path='profile' element='profile' />
           <Route path='sessions' element={<SessionPage />}>
             <Route
               index
               element={
-                <ProtectedRoute allowedRoles={['lecturer','student']}>
+                <ProtectedRoute allowedRoles={['lecturer', 'student']}>
                   <ActiveSessions />
                 </ProtectedRoute>
               }
@@ -106,8 +122,6 @@ function App() {
             />
           </Route>
         </Route>
-
-        <Route path='/scan-code' element={<ScanQrCode />} />
         <Route path='*' element={<Navigate to='/' />} />
       </Routes>
     </BrowserRouter>
