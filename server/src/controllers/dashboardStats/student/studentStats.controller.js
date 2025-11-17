@@ -35,11 +35,11 @@ exports.getStudentDashboardStats = async (req, res) => {
     // get all current enrollments
     const enrollments = await StudentEnrollment.find({
       student: studentId,
-      enrollmentStatus:'active',
+      enrollmentStatus: 'active',
       academicYear: school.currentAcademicYear,
       semester: school.currentSemester,
     })
-      .select('course')
+      .select('course createdAt')
       .lean();
 
     if (!enrollments.length) {
@@ -63,6 +63,7 @@ exports.getStudentDashboardStats = async (req, res) => {
       .lean();
 
     const validCourseIds = validCourses.map((c) => c._id);
+
     if (!validCourseIds.length) {
       return res.status(200).json({
         totalCourses: 0,
@@ -72,6 +73,17 @@ exports.getStudentDashboardStats = async (req, res) => {
       });
     }
 
+    const enrollmentDates = {};
+    enrollments.forEach((e) => {
+      enrollmentDates[e.course.toString()] = e.createdAt;
+    });
+
+    //  conditions: for each course, only count sessions after student enrolled (prevents past records)
+    const sessionConditions = validCourseIds.map((courseId) => ({
+      course: courseId,
+      createdAt: { $gte: enrollmentDates[courseId.toString()] },
+    }));
+
     // Run stats in at a go
     const [totalSessions, attendedSessions, missedSessions] = await Promise.all(
       [
@@ -80,6 +92,7 @@ exports.getStudentDashboardStats = async (req, res) => {
           course: { $in: validCourseIds },
           academicYear: school.currentAcademicYear,
           semester: school.currentSemester,
+          $or: sessionConditions,
         }),
         Attendance.countDocuments({
           student: studentId,
@@ -94,6 +107,7 @@ exports.getStudentDashboardStats = async (req, res) => {
           academicYear: school.currentAcademicYear,
           semester: school.currentSemester,
           status: 'ended', // count only ended sessions
+          $or: sessionConditions,
           _id: {
             // exclude records where the student was present
             $nin: await Attendance.find({
@@ -148,11 +162,11 @@ exports.getStudentRecentSessions = async (req, res) => {
     // get all enrollments for the student current academic period
     const enrollments = await StudentEnrollment.find({
       student: studentId,
-      enrollmentStatus:'active',
+      enrollmentStatus: 'active',
       academicYear: school.currentAcademicYear,
       semester: school.currentSemester,
     })
-      .select('course')
+      .select('course createdAt')
       .populate('course', 'level')
       .lean();
 
@@ -161,17 +175,32 @@ exports.getStudentRecentSessions = async (req, res) => {
     }
 
     // filter only courses that match student current level
-    const filteredCourseIds = enrollments
-      .filter((e) => e.course && e.course.level === level)
-      .map((e) => e.course._id);
+    const filteredEnrollments = enrollments.filter(
+      (e) => e.course && e.course.level === level
+    );
 
-    if (!filteredCourseIds.length) {
+    if (!filteredEnrollments.length) {
       return res.status(200).json({ recentSessions: [] });
     }
 
+    const filteredCourseIds = filteredEnrollments.map((e) => e.course._id);
+   
+
+    // create map of courseId -> enrollment date
+    const enrollmentDates = {};
+    filteredEnrollments.forEach((e) => {
+      enrollmentDates[e.course._id.toString()] = e.createdAt;
+    });
+
+    // build conditions: for each course, only get sessions AFTER enrollment
+    const sessionConditions = filteredCourseIds.map((courseId) => ({
+      course: courseId,
+      createdAt: { $gte: enrollmentDates[courseId.toString()] },
+    }));
+
     // get recent sessions across filtered courses
     const sessions = await Session.find({
-      course: { $in: filteredCourseIds },
+      $or: sessionConditions,
       academicYear: school.currentAcademicYear,
       semester: school.currentSemester,
     })
@@ -201,7 +230,7 @@ exports.getStudentRecentSessions = async (req, res) => {
       return acc;
     }, {});
 
-    // build session 
+    // build session
     const recentSessions = sessions.map((session) => {
       const attendanceStatus = attendanceMap[session._id.toString()];
 
@@ -220,12 +249,7 @@ exports.getStudentRecentSessions = async (req, res) => {
         sessionId: session._id,
         courseCode: session.course.courseCode,
         courseTitle: session.course.courseTitle,
-        date: session.createdAt.toISOString().split('T')[0],
-        time: new Date(session.createdAt).toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-        }),
+        createdAt: session.createdAt,
         lecturer: session.startedBy.fullName,
         sessionStatus: session.status,
         studentStatus,
@@ -238,4 +262,3 @@ exports.getStudentRecentSessions = async (req, res) => {
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
-

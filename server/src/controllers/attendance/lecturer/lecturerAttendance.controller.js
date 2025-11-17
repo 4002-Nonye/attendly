@@ -10,7 +10,7 @@ exports.getLecturerAttendanceOverview = async (req, res) => {
   try {
     const { id, schoolId } = req.user;
 
-    // Fetch current academic year and semester from lecturer’s school
+    // Fetch current academic year and semester from lecturer's school
     const school = await School.findById(schoolId).select(
       'currentAcademicYear currentSemester'
     );
@@ -54,17 +54,24 @@ exports.getLecturerAttendanceOverview = async (req, res) => {
         },
       },
 
-      // 3. Go into student enrollments collection and get students who registered for a course : save as 'studentenrollments
+      // 3. Go into student enrollments collection and get ACTIVE students who registered for a course : save as 'studentenrollments
       {
         $lookup: {
           from: 'studentenrollments',
           localField: '_id',
           foreignField: 'course',
           as: 'studentenrollments',
+          pipeline: [
+            {
+              $match: {
+                enrollmentStatus: 'active', // ← ONLY ACTIVE STUDENTS
+              },
+            },
+          ],
         },
       },
 
-      // 4.  Go into attendance collection to get all attendances for a course of an academic period : save as 'attendances'
+      // 4. Go into attendance collection to get all attendances for a course of an academic period : save as 'attendances'
       {
         $lookup: {
           from: 'attendances',
@@ -85,11 +92,11 @@ exports.getLecturerAttendanceOverview = async (req, res) => {
         },
       },
 
-      // 5. Compute total students who enrolled in a course
+      // 5. Compute total students who enrolled in a course (ACTIVE ONLY)
       {
         $addFields: {
           totalStudents: {
-            $size: '$studentenrollments',
+            $size: '$studentenrollments', // Now only counts active students
           },
         },
       },
@@ -104,32 +111,25 @@ exports.getLecturerAttendanceOverview = async (req, res) => {
       },
 
       // 7. Calculate average attendance
-      //  averageAttendance (%) = (Number of "Present" attendance records / Total possible attendances) ×100
-
       {
         $addFields: {
-          // - add a field of "averageAttendance" to store computed average attendance
           averageAttendance: {
-            // - to calculate avg attendance, there must be at least a session
             $cond: [
               {
                 $gt: [
                   {
-                    $size: '$sessions', // - how many sessions exist
+                    $size: '$sessions',
                   },
-                  0, // existing session count must be greater than 0
+                  0,
                 ],
               },
               {
                 $round: [
-                  // round off result to whole number
                   {
-                    // - if the condiion is met, proceed to calculate avg attendance
                     $multiply: [
                       {
                         $divide: [
                           {
-                            // -  go into the attendance record and count how many 'Present' exist (this is the numerator)
                             $size: {
                               $filter: {
                                 input: '$attendances',
@@ -141,26 +141,23 @@ exports.getLecturerAttendanceOverview = async (req, res) => {
                             },
                           },
                           {
-                            // - compute total possible attendance - this is the denominator
                             $multiply: [
                               {
-                                $size: '$sessions', // total sessions held
+                                $size: '$sessions',
                               },
                               {
-                                $size: '$studentenrollments', // total students enrolled in a course
+                                $size: '$studentenrollments', // Now only active students
                               },
                             ],
                           },
                         ],
                       },
-                      100, // convert to percentage
+                      100,
                     ],
                   },
                   0,
                 ],
               },
-
-              // else - if no sessions held, set avg attendance to be 0
               0,
             ],
           },
@@ -191,15 +188,13 @@ exports.getLecturerSessionDetails = async (req, res) => {
   // returns session date -> total students -> total present -> total absent -> average attendance (% present) -> view details
   try {
     const { courseId } = req.params;
-    const { id ,schoolId} = req.user;
+    const { id, schoolId } = req.user;
 
     if (!mongoose.Types.ObjectId.isValid(courseId)) {
       return res.status(400).json({ error: 'Invalid course ID' });
     }
 
-
-
-     // Fetch current academic year and semester from lecturer’s school
+    // Fetch current academic year and semester from lecturer’s school
     const school = await School.findById(schoolId).select(
       'currentAcademicYear currentSemester'
     );
@@ -230,12 +225,19 @@ exports.getLecturerSessionDetails = async (req, res) => {
       },
 
       {
-        // 2. Go into student enrollments and find all enrolled students for that course
+        // 2. Go into student enrollments and find all active enrolled students for that course
         $lookup: {
           from: 'studentenrollments',
           localField: '_id',
           foreignField: 'course',
           as: 'studentenrollments',
+          pipeline: [
+            {
+              $match: {
+                enrollmentStatus: 'active',
+              },
+            },
+          ],
         },
       },
 
@@ -261,24 +263,6 @@ exports.getLecturerSessionDetails = async (req, res) => {
         // 4. Unpack the sessions found (array) so each session becomes a separate doc (makes it easier to perform actions)
         $unwind: {
           path: '$sessions',
-        },
-      },
-
-      {
-        // 5. Store date and time of each session
-        $addFields: {
-          'sessions.date': {
-            $dateToString: {
-              format: '%Y-%m-%d',
-              date: '$sessions.createdAt',
-            },
-          },
-          'sessions.time': {
-            $dateToString: {
-              format: '%H:%M',
-              date: '$sessions.createdAt',
-            },
-          },
         },
       },
 
@@ -362,11 +346,10 @@ exports.getLecturerSessionDetails = async (req, res) => {
       },
 
       {
-        // 11. Final result
+        // 11. result
         $project: {
           _id: '$sessions._id',
-          date: '$sessions.date',
-          time: '$sessions.time',
+          createdAt: '$sessions.createdAt',
           totalStudents: 1,
           totalPresent: 1,
           totalAbsent: 1,
@@ -435,11 +418,12 @@ exports.getLecturerSessionStudentDetails = async (req, res) => {
         .json({ error: 'Session not found in current period' });
     }
 
-    // 4. Get enrolled students (for that course)
+    // 4. Get active enrolled students (for that course)
     const enrollments = await StudentEnrollment.find({
       course: courseId,
       academicYear: currentYearId,
       semester: currentSemester,
+      enrollmentStatus: 'active',
     }).populate('student', 'matricNo fullName');
 
     // 5. Get attendance records for this session
@@ -486,7 +470,7 @@ exports.getLecturerAttendanceReport = async (req, res) => {
   // returns total students -> student matricNo -> name -> sessions total -> attended total -> absent total -> % attended -> eligible
   try {
     const { courseId } = req.params;
-    const { id ,schoolId} = req.user;
+    const { id, schoolId } = req.user;
 
     if (!mongoose.Types.ObjectId.isValid(courseId)) {
       return res.status(400).json({ error: 'Invalid course ID' });
@@ -501,7 +485,7 @@ exports.getLecturerAttendanceReport = async (req, res) => {
       return res.status(403).json({ error: 'Course not found' });
     }
 
-      // Fetch current academic year and semester from lecturer’s school
+    // Fetch current academic year and semester from lecturer’s school
     const school = await School.findById(schoolId).select(
       'currentAcademicYear currentSemester'
     );
@@ -540,13 +524,20 @@ exports.getLecturerAttendanceReport = async (req, res) => {
       },
       { $addFields: { totalSessions: { $size: '$sessions' } } },
 
-      // 3. Fetch enrolled students
+      // 3. Fetch active enrolled students
       {
         $lookup: {
           from: 'studentenrollments',
           localField: '_id',
           foreignField: 'course',
           as: 'studentEnrollments',
+          pipeline: [
+            {
+              $match: {
+                enrollmentStatus: 'active',
+              },
+            },
+          ],
         },
       },
       { $addFields: { totalStudents: { $size: '$studentEnrollments' } } },
@@ -590,7 +581,11 @@ exports.getLecturerAttendanceReport = async (req, res) => {
 
       // 6. Compute totals and percentages
       { $addFields: { totalAttended: { $size: '$studentAttendances' } } },
-      { $addFields: { totalAbsent: { $subtract: ['$totalSessions', '$totalAttended'] } } },
+      {
+        $addFields: {
+          totalAbsent: { $subtract: ['$totalSessions', '$totalAttended'] },
+        },
+      },
       {
         $addFields: {
           attendancePercentage: {
@@ -636,7 +631,6 @@ exports.getLecturerAttendanceReport = async (req, res) => {
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
-
 
 exports.downloadLecturerAttendanceReport = async (req, res) => {
   // returns downloadable PDF for a course

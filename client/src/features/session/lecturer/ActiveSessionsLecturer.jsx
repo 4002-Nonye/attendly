@@ -11,7 +11,7 @@ import DataTable from '../../../components/DataTable';
 import SessionsCard from '../../../components/SessionsCard';
 import { useActiveSessionLecturer } from './useActiveSessionLecturer';
 import { formatTime } from '../../../utils/dateHelper';
-import { useFilteredSessions } from '../../../hooks/useFilteredSessions';
+import { useFilteredSessions } from '../../../hooks/filters/useFilteredSessions';
 import SessionsCardSkeleton from '../../../components/SessionCardSkeleton';
 import { useEndSession } from './useEndSession';
 import { useState } from 'react';
@@ -59,7 +59,7 @@ function ActiveSessionsLecturer() {
         <td className='px-6 py-4'>
           <Link
             to={`/sessions/${session._id}`}
-            className='underline text-blue-600 hover:text-blue-800 text-sm font-semibold transition-colors'
+            className='text-sm  font-medium text-blue-600 hover:underline'
             title='View session details & QR code'
           >
             #{session._id.slice(-6).toUpperCase()}

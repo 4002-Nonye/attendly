@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
 
-
 function Button({
   children,
   type = 'button',
@@ -14,22 +13,20 @@ function Button({
   className = '',
   iconPosition = 'beforeText',
   active = false,
- 
 }) {
   const baseStyles =
     'flex items-center justify-center font-medium rounded-lg transition-all duration-500 focus:outline-none  disabled:opacity-50 disabled:cursor-not-allowed ';
 
-const variantStyles = {
-  primary: 'bg-blue-900 text-white hover:bg-blue-800',
-  secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300',
-  danger: 'bg-red-600 text-white hover:bg-red-700',
-  secondaryDanger: 'bg-red-100 text-red-700 hover:bg-red-200',
-  outline: 'border-2 border-gray-300 hover:bg-gray-100',
-  pill: active
-    ? 'bg-white text-blue-700 shadow-sm'
-    : 'bg-transparent text-gray-600 hover:text-gray-900',
-};
-
+  const variantStyles = {
+    primary: 'bg-blue-900 text-white hover:bg-blue-800',
+    secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300',
+    danger: 'bg-red-600 text-white hover:bg-red-700',
+    secondaryDanger: 'bg-red-100 text-red-700 hover:bg-red-200',
+    outline: 'border-2 border-gray-300 hover:bg-gray-100',
+    pill: active
+      ? 'bg-white text-blue-700 shadow-sm'
+      : 'bg-transparent text-gray-600 hover:text-gray-900',
+  };
 
   const sizeStyles = {
     sm: 'px-3 py-2 text-sm',
@@ -53,11 +50,11 @@ const variantStyles = {
       className={buttonClass}
     >
       {iconPosition === 'beforeText' && Icon && (
-        <Icon className='mr-2' size={20} />
+        <Icon className=' mr-0 sm:mr-2 ' size={20} />
       )}
       {children}
       {iconPosition === 'afterText' && Icon && (
-        <Icon className='ml-2' size={20} />
+        <Icon className='mr-0 sm:mr-2' size={20} />
       )}
     </button>
   );
@@ -81,7 +78,6 @@ Button.propTypes = {
   className: PropTypes.string,
   iconPosition: PropTypes.oneOf(['beforeText', 'afterText']),
   active: PropTypes.bool,
-
 };
 
 export default Button;

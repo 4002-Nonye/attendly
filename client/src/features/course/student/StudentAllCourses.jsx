@@ -11,7 +11,7 @@ import EmptyCard from '../../../components/EmptyCard';
 import BulkActionBar from '../../../components/BulkActionBar';
 import SelectionInfoBar from '../../../components/SelectionInfoBar';
 import { useSearchQuery } from '../../../hooks/useSearchQuery';
-import { useFilteredCourses } from '../../../hooks/useFilteredCourses';
+import { useFilteredCourses } from '../../../hooks/filters/useFilteredCourses';
 import { useSelection } from '../../../hooks/useSelection';
 import DataTable from '../../../components/DataTable';
 import Button from '../../../components/Button';

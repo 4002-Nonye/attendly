@@ -4,7 +4,7 @@ import TableSkeleton from './TableSkeleton';
 import DataTable from './DataTable';
 import SectionIntro from './SectionIntro';
 import EmptyChart from './EmptyChart';
-import EmptyCard from './EmptyCard';
+import {formatYear,formatTime} from '../utils/dateHelper'
 import { getStatusStyle } from '../utils/courseHelpers';
 
 function RecentSessions() {
@@ -16,7 +16,6 @@ function RecentSessions() {
     'Started By',
     'Ended By',
     'Date & Time',
-    'Attendance',
     'Status',
   ];
 
@@ -48,31 +47,20 @@ function RecentSessions() {
           <div className='flex items-center gap-2 text-sm text-gray-900'>
             <Calendar className='w-4 h-4 text-gray-400' />
             <span>
-              {/* TODO: EXTRACT DATE WITH HELPER */}
-              {new Date(session.date).toLocaleDateString('en-GB', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-              })}
+              {formatYear(session.createdAt,'short')}
+
             </span>
           </div>
           <div className='flex items-center gap-2 text-sm text-gray-500 mt-1'>
             <Clock className='w-4 h-4 text-gray-400' />
-            <span>{session.time}</span>
+            <span>
+                {formatTime(session.createdAt)}
+
+            </span>
           </div>
         </td>
 
-        <td className='px-6 py-4 whitespace-nowrap'>
-          <div className='text-sm text-gray-900 font-medium'>
-            {session.attended}/{session.enrolled}
-          </div>
-          <div className='text-xs text-gray-500'>
-            {session.enrolled
-              ? Math.round((session.attended / session.enrolled) * 100)
-              : 0}
-            % present
-          </div>
-        </td>
+    
 
         <td className='px-6 py-4 whitespace-nowrap text-xs'>
           {session.status === 'active' ? (

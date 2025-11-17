@@ -20,12 +20,9 @@ export const getStudentRegisteredCourses = async () => {
   }
 };
 
-export const getAllCourses = async ({ queryKey }) => {
-  const [_key, query] = queryKey;
-  const params = new URLSearchParams(query).toString();
-
+export const getAllCourses = async () => {
   try {
-    const response = await axios.get(`/api/courses?${params}`);
+    const response = await axios.get(`/api/courses`);
     return response.data;
   } catch (error) {
     throw error.response.data;
@@ -55,7 +52,6 @@ export const editCourse = async (data) => {
 
 // delete course (admin)
 export const deleteCourse = async (id) => {
-  
   try {
     const response = await axios.delete(`/api/admin/courses/${id}`);
     return response.data;

@@ -14,7 +14,7 @@ import { ClipLoader } from 'react-spinners';
 import CourseAssignmentCard from '../../../components/CourseAssignmentCard';
 import LecturerCourseCardSkeleton from '../../../components/LecturerCourseCardSkeleton';
 import { useSearchQuery } from '../../../hooks/useSearchQuery';
-import { useFilteredCourses } from '../../../hooks/useFilteredCourses';
+import { useFilteredCourses } from '../../../hooks/filters/useFilteredCourses';
 import { useSelection } from '../../../hooks/useSelection';
 import { getStatusStyle } from '../../../utils/courseHelpers';
 

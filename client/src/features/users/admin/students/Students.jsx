@@ -7,13 +7,13 @@ import Button from '../../../../components/Button';
 import DataTable from '../../../../components/DataTable';
 import EmptyCard from '../../../../components/EmptyCard';
 import FilterBar from '../../../../components/FilterBar';
-import { useFilters } from '../../../../hooks/useFilters';
+import { useFilters } from '../../../../hooks/filters/useFilters';
 import { useStudents } from './useStudents';
 import { useAllFaculties } from '../../../faculty/admin/useAllFaculties';
 import { useAllDepartments } from '../../../department/admin/useAllDepartments';
 import { generateLevel } from '../../../../utils/courseHelpers';
 import { MAX_LEVEL } from '../../../../config/level';
-import { useFilteredUsers } from '../../../../hooks/useFilteredUsers';
+import { useFilteredUsers } from '../../../../hooks/filters/useFilteredUsers';
 
 function Students() {
   const { disableButton } = useButtonState();
@@ -102,11 +102,10 @@ function Students() {
             <Button
               variant='outline'
               size='md'
-              className='gap-2'
+              icon={Filter}
               onClick={() => setShowFilters(!showFilters)}
               disabled={disableButton}
             >
-              <Filter className='w-4 h-4' />
               <span className='hidden sm:inline font-medium text-base'>
                 Filters
               </span>
@@ -120,10 +119,11 @@ function Students() {
 
           {/* Filter Panel */}
           {showFilters && (
-            <div className='border-t border-gray-100 pt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 md:w-3/4'>
+            <div className='border-t border-gray-100 pt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 text-sm'>
               <FilterBar
                 filters={[
                   {
+                    label: 'faculty',
                     name: 'faculty',
                     htmlFor: 'faculty-filter',
                     placeHolder: 'All Faculties',
@@ -132,6 +132,7 @@ function Students() {
                     value: filters.faculty,
                   },
                   {
+                    label: 'department',
                     name: 'department',
                     htmlFor: 'department-filter',
                     placeHolder: 'All Departments',
@@ -140,6 +141,7 @@ function Students() {
                     value: filters.department,
                   },
                   {
+                    label: 'level',
                     name: 'level',
                     htmlFor: 'level-filter',
                     placeHolder: 'All Levels',

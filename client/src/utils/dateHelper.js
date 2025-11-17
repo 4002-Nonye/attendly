@@ -7,12 +7,13 @@ export const formatTime = (dateStr) => {
   });
 };
 
-export const formatYear = (dateStr) => {
+export const formatYear = (dateStr,monthOpt='long') => {
   const date = new Date(dateStr);
   return date.toLocaleDateString('en-US', {
 
     year: 'numeric',
-    month: 'long',
+    month:monthOpt,
     day: 'numeric',
+   
   });
 };

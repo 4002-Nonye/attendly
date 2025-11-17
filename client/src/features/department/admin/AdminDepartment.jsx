@@ -1,42 +1,53 @@
-import { Edit, Layers, Plus, Search, Trash2 } from 'lucide-react';
+import { Edit, Filter, Layers, Plus, Search, Trash2 } from 'lucide-react';
 import Button from '../../../components/Button';
 import PageHeader from '../../../components/PageHeader';
 import DepartmentForm from './DepartmentForm';
 import SearchBar from '../../../components/SearchBar';
 import ConfirmDeleteDialog from '../../../components/ConfirmDeleteDialog';
-import { useDebounce } from 'use-debounce';
 
 import EmptyCard from '../../../components/EmptyCard';
 import DataTable from '../../../components/DataTable';
 import { useDepartmentStats } from './useDepartmentStats';
 import { useDeleteDepartment } from './useDeleteDepartment';
 import { useButtonState } from '../../../hooks/useButtonState';
-import { useSearchQuery } from '../../../hooks/useSearchQuery';
 import { useOpenModalFromActions } from '../../../hooks/useOpenModalFromActions';
 import { useState } from 'react';
-
+import { useFilters } from '../../../hooks/filters/useFilters';
+import FilterBar from '../../../components/FilterBar';
+import { useAllFaculties } from '../../faculty/admin/useAllFaculties';
+import { useFilteredDepartments } from '../../../hooks/filters/useFilteredDepartments';
 
 function AdminDepartment() {
   const { disableButton } = useButtonState();
-  const [searchQuery, setSearchQuery] = useSearchQuery('name');
-  const [debouncedQuery] = useDebounce(searchQuery, 500);
+  const [showFilters, setShowFilters] = useState(false);
 
-  const { data, isPending } = useDepartmentStats(
-    { name: debouncedQuery },
-    { enabled: !disableButton }
-  );
+  const { data, isPending } = useDepartmentStats({ enabled: !disableButton });
 
   const { deleteDepartment, isPending: isDeleting } = useDeleteDepartment();
 
   const [showModal, setShowModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState(null);
+  const { data: facultiesData } = useAllFaculties();
 
-  // Check if search is still pending (debouncing)
-  const isSearchPending = searchQuery !== debouncedQuery;
-  const isLoading = disableButton ? false : isPending || isSearchPending;
+  const isLoading = !disableButton && isPending;
 
-  const filteredDepartments = data?.departmentStats || [];
+  const {
+    searchQuery,
+    filters,
+    handleSearch,
+    handleFilterChange,
+    clearFilters,
+    hasActiveFilters,
+    activeFiltersCount,
+  } = useFilters({ faculty: '' });
+
+  const filteredDepartments = useFilteredDepartments(
+    data?.departmentStats,
+    searchQuery,
+    filters
+  );
+  
 
   // open modal when quick actions button is clicked in dashboard
   useOpenModalFromActions('mode', 'add', setShowModal);
@@ -134,41 +145,87 @@ function AdminDepartment() {
         subtitle='Manage all departments in your institution'
       />
 
-      {/* Search & CTA */}
+      {/* Search & Filters */}
       <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6'>
-        <div className='flex justify-between gap-3 items-center'>
-          <SearchBar
-            placeholder='Search courses...'
-            value={searchQuery}
-            onChange={setSearchQuery}
-            disabled={disableButton}
-          />
-          <Button
-            variant='primary'
-            size='md'
-            onClick={() => setShowModal(true)}
-            disabled={disableButton}
-          >
-            <Plus className='w-5 h-5' />
-            <span className='hidden sm:inline font-medium'>Add Department</span>
-          </Button>
+        <div className='flex flex-col gap-4'>
+          <div className='flex justify-between gap-3 items-center'>
+            <SearchBar
+              placeholder='Search departments...'
+              value={searchQuery}
+              onChange={handleSearch}
+              disabled={disableButton}
+            />
+
+            <div className='flex gap-3'>
+              <Button
+                variant='outline'
+                icon={Filter}
+                size='md'
+                onClick={() => setShowFilters(!showFilters)}
+                disabled={disableButton}
+              >
+                <span className='hidden sm:inline font-medium text-base'>
+                  Filters
+                </span>
+                {activeFiltersCount > 0 && (
+                  <span className='font-medium text-sm'>
+                    ({activeFiltersCount})
+                  </span>
+                )}
+              </Button>
+
+              <Button
+                variant='primary'
+                size='md'
+                onClick={() => setShowModal(true)}
+                disabled={disableButton}
+              >
+                <Plus className='w-5 h-5' />
+                <span className='hidden sm:inline font-medium'>
+                  Add Department
+                </span>
+              </Button>
+            </div>
+          </div>
+
+          {/* Filter Panel */}
+          {showFilters && (
+            <div className='border-t border-gray-100 pt-4 grid grid-cols-5 gap-2 text-sm'>
+              <FilterBar
+                filters={[
+                  {
+                    label: 'faculty',
+                    name: 'faculty',
+                    htmlFor: 'faculty-filter',
+                    placeHolder: 'All Faculties',
+                    data: facultiesData?.faculties,
+                    labelKey: 'name',
+                    value: filters.faculty,
+                  },
+                ]}
+                hasActiveFilters={hasActiveFilters}
+                clearFilters={clearFilters}
+                onFilterChange={handleFilterChange}
+              />
+            </div>
+          )}
         </div>
       </div>
 
       {/* Faculties Table or Empty States */}
       {!filteredDepartments.length && !isLoading ? (
         <EmptyCard
-          icon={searchQuery ? Search : Layers}
-          title={searchQuery ? 'No departments found' : 'No departments yet'}
+          icon={hasActiveFilters ? Search : Layers}
+          title={hasActiveFilters ? 'No departments found' : 'No departments yet'}
           message={
-            searchQuery
+            hasActiveFilters
               ? 'Try adjusting your search query'
               : 'Get started by adding your first department'
           }
           iconBg='bg-gray-100'
           iconColor='text-gray-400'
         >
-          {!searchQuery && (
+          {!hasActiveFilters && (
             <Button
               variant='primary'
               size='md'
@@ -186,7 +243,7 @@ function AdminDepartment() {
           renderRow={renderRow}
           data={filteredDepartments}
           isPending={isLoading}
-          skeleton={false}
+          showSkeletonHead={false}
         />
       )}
 

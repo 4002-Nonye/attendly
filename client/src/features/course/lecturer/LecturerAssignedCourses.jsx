@@ -7,7 +7,7 @@ import DataTable from '../../../components/DataTable';
 import Button from '../../../components/Button';
 import LecturerCourseCardSkeleton from '../../../components/LecturerCourseCardSkeleton';
 import CourseCard from '../../../components/CourseCard';
-import { useFilteredCourses } from '../../../hooks/useFilteredCourses';
+import { useFilteredCourses } from '../../../hooks/filters/useFilteredCourses';
 import { useCourseSessionStatus } from '../general/useCourseSessionStatus';
 import ClipLoader from 'react-spinners/ClipLoader';
 import { useHandleCreateSession } from '../../session/lecturer/useHandleCreateSession';
@@ -28,6 +28,7 @@ function LecturerAssignedCourses() {
 
   // filter courses
   const filteredCourses = useFilteredCourses(courseData?.courses, searchQuery);
+
 
   // add session status to course
   const { coursesWithSessionStatus } = useCourseSessionStatus(

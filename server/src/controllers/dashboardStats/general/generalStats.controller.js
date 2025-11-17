@@ -69,12 +69,7 @@ exports.getRecentSessions = async (req, res) => {
           courseCode: session.course.courseCode,
           startedBy: session.startedBy.fullName,
           endedBy: session.endedBy?.fullName || '',
-          date: session.createdAt.toISOString().split('T')[0],
-          time: new Date(session.createdAt).toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false,
-          }),
+          createdAt: session.createdAt,
           status: session.status,
           attended: attendanceCount,
           enrolled: enrolledCount,

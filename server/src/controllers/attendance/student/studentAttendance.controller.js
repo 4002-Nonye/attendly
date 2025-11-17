@@ -51,8 +51,6 @@ exports.markAttendance = async (req, res) => {
       semester: session.semester,
     });
 
-
-
     return res
       .status(201)
       .json({ message: 'Attendance marked successfully', attendance });
@@ -66,9 +64,9 @@ exports.getStudentAttendanceReport = async (req, res) => {
   try {
     const { id, schoolId } = req.user;
 
-    // TODO : GET THE PERCENTAGE FOR CALCULATING ELIGIBILITY FROM SCHOOL'S SETTING
+    // TODO: GET THE PERCENTAGE FOR CALCULATING ELIGIBILITY FROM SCHOOL'S SETTING
 
-    //  Get the school's current academic period
+    // Get the school's current academic period
     const schoolDoc = await School.findById(schoolId).select(
       'currentAcademicYear currentSemester'
     );
@@ -81,7 +79,7 @@ exports.getStudentAttendanceReport = async (req, res) => {
         .status(400)
         .json({ error: 'No active academic period for this school' });
 
-    //  Get the student's level (so we only report courses for that level)
+    // Get the student level
     const student = await User.findById(id).select('level');
     if (!student) return res.status(404).json({ error: 'Student not found' });
 
@@ -90,13 +88,14 @@ exports.getStudentAttendanceReport = async (req, res) => {
       {
         $match: {
           student: mongoose.Types.ObjectId.createFromHexString(id),
-          enrollmentStatus:'active',
+          enrollmentStatus: 'active',
           academicYear: mongoose.Types.ObjectId.createFromHexString(
             currentAcademicYear.toString()
           ),
           semester: currentSemester,
         },
       },
+
       // 2. Lookup the course details
       {
         $lookup: {
@@ -106,23 +105,32 @@ exports.getStudentAttendanceReport = async (req, res) => {
           as: 'course',
         },
       },
+
       // 3. Each enrollment - one course
       { $unwind: '$course' },
 
-      // 4. Filter out courses that are not for this student's level
+      // 4. Filter out courses that are not for this student level
       {
         $match: { 'course.level': student.level },
       },
 
-      // 5. Lookup sessions for the current academic period
+      // 5. Lookup sessions only after student enrolled
       {
         $lookup: {
           from: 'sessions',
-          let: { courseId: '$course._id' },
+          let: {
+            courseId: '$course._id',
+            enrollmentDate: '$createdAt',
+          },
           pipeline: [
             {
               $match: {
-                $expr: { $eq: ['$course', '$$courseId'] },
+                $expr: {
+                  $and: [
+                    { $eq: ['$course', '$$courseId'] },
+                    { $gte: ['$createdAt', '$$enrollmentDate'] },
+                  ],
+                },
                 academicYear: mongoose.Types.ObjectId.createFromHexString(
                   currentAcademicYear.toString()
                 ),
@@ -138,7 +146,11 @@ exports.getStudentAttendanceReport = async (req, res) => {
       {
         $lookup: {
           from: 'attendances',
-          let: { courseId: '$course._id', studentId: '$student' },
+          let: {
+            courseId: '$course._id',
+            studentId: '$student',
+            enrollmentDate: '$createdAt',
+          },
           pipeline: [
             {
               $match: {
@@ -146,6 +158,7 @@ exports.getStudentAttendanceReport = async (req, res) => {
                   $and: [
                     { $eq: ['$course', '$$courseId'] },
                     { $eq: ['$student', '$$studentId'] },
+                    { $gte: ['$createdAt', '$$enrollmentDate'] },
                   ],
                 },
                 academicYear: mongoose.Types.ObjectId.createFromHexString(
@@ -216,12 +229,14 @@ exports.getStudentAttendanceReport = async (req, res) => {
           totalAttended: 1,
           attendancePercentage: 1,
           eligible: 1,
+          enrolledAt: '$createdAt',
         },
       },
     ]);
 
     return res.status(200).json({ report });
   } catch (error) {
+    console.error('Attendance report error:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -301,12 +316,7 @@ exports.getStudentSessionDetails = async (req, res) => {
       // send to fe
       return {
         sessionId: s._id,
-        date: s.createdAt.toISOString().split('T')[0], // YYYY-MM-DD
-        time: new Date(s.createdAt).toLocaleTimeString('en-US', {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-        }),
+        createdAt: s.createdAt,
         lecturer: s.startedBy?.fullName || 'Unknown',
         sessionStatus: s.status, // -> "active" or "ended"
         studentStatus: finalStatus, // -> "Present", "Absent", "Not yet taken"

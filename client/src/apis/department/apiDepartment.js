@@ -11,7 +11,6 @@ export const getDepartmentsOptions = async (facultyId) => {
   }
 };
 
-
 // for dropdown (filtering in-app )
 export const getAllDepartments = async () => {
   try {
@@ -22,13 +21,9 @@ export const getAllDepartments = async () => {
   }
 };
 
-export const getDepartmentStats = async ({ queryKey }) => {
-  const [_key, query] = queryKey;
- 
-  const params = new URLSearchParams(query).toString();
-
+export const getDepartmentStats = async () => {
   try {
-    const response = await axios.get(`/api/departments?${params}`);
+    const response = await axios.get(`/api/departments`);
     return response.data;
   } catch (error) {
     throw error.response.data;

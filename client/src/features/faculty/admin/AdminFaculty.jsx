@@ -13,8 +13,7 @@ import ConfirmDeleteDialog from '../../../components/ConfirmDeleteDialog';
 import { useButtonState } from '../../../hooks/useButtonState';
 import { useSearchQuery } from '../../../hooks/useSearchQuery';
 import { useOpenModalFromActions } from '../../../hooks/useOpenModalFromActions';
-
-
+import { useFilteredFaculties } from '../../../hooks/filters/useFilteredFaculties';
 
 function AdminFaculty() {
   const { disableButton } = useButtonState();
@@ -27,11 +26,11 @@ function AdminFaculty() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedFaculty, setSelectedFaculty] = useState(null);
 
-  const isLoading = disableButton ? false : isPending;
+  const isLoading = !disableButton && isPending;
 
   // open modal when quick actions button is clicked in dashboard
   useOpenModalFromActions('mode', 'add', setShowModal);
-  
+
   const handleEdit = (faculty) => {
     setSelectedFaculty(faculty);
     setShowModal(true);
@@ -112,16 +111,10 @@ function AdminFaculty() {
     </tr>
   );
 
-  const filteredFaculties =
-    faculties?.facultyStats?.filter((faculty) => {
-      const fullName = `faculty of ${faculty.name}`.toLowerCase(); // 'add faculty of'
-      const query = searchQuery.toLowerCase();
-      return (
-        faculty.name.toLowerCase().includes(query) ||
-        fullName.includes(searchQuery)
-      );
-    }) || [];
-
+  const filteredFaculties = useFilteredFaculties(
+    faculties?.facultyStats,
+    searchQuery
+  );
 
   return (
     <div className='w-full'>

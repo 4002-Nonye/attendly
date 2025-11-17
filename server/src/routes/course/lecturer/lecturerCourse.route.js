@@ -1,3 +1,4 @@
+
 const express = require('express');
 const requireLogin = require('../../../middlewares/requireLogin');
 const { requireLecturerAccess } = require('../../../middlewares/roleAccess');
@@ -6,12 +7,7 @@ const {
   unassignLecturer,
   getAssignedCoursesForLecturer,
 } = require('../../../controllers/course/lecturer/lecturerCourse.controller');
-const {
-  getLecturerAttendanceOverview,
-  getLecturerSessionDetails,
-  getLecturerSessionStudentDetails,
-  getLecturerAttendanceReport,
-} = require('../../../controllers/attendance/lecturer/lecturerAttendance.controller');
+
 const {
   createSession,
 } = require('../../../controllers/session/lecturer/lecturerSession.controller');
@@ -49,36 +45,6 @@ lecturerCourseRoute.post(
   createSession
 );
 
-// Get lecturer attendance overview
-lecturerCourseRoute.get(
-  '/attendance/overview',
-  requireLogin,
-  requireLecturerAccess,
-  getLecturerAttendanceOverview
-);
 
-// Get all sessions for a course
-lecturerCourseRoute.get(
-  '/:courseId/sessions',
-  requireLogin,
-  requireLecturerAccess,
-  getLecturerSessionDetails
-);
-
-// Get all students for a session
-lecturerCourseRoute.get(
-  '/:courseId/:sessionId/students',
-  requireLogin,
-  requireLecturerAccess,
-  getLecturerSessionStudentDetails
-);
-
-// Get lecturer course attendance report
-lecturerCourseRoute.get(
-  '/:courseId/report',
-  requireLogin,
-  requireLecturerAccess,
-  getLecturerAttendanceReport
-);
 
 module.exports = lecturerCourseRoute;

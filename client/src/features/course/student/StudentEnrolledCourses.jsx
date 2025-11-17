@@ -9,7 +9,7 @@ import LecturerCourseCardSkeleton from '../../../components/LecturerCourseCardSk
 import CourseCard from '../../../components/CourseCard';
 import Button from '../../../components/Button';
 import { useSearchQuery } from '../../../hooks/useSearchQuery';
-import { useFilteredCourses } from '../../../hooks/useFilteredCourses';
+import { useFilteredCourses } from '../../../hooks/filters/useFilteredCourses';
 import { useCourseSessionStatus } from '../general/useCourseSessionStatus';
 import { useActiveSessionStudent } from '../../session/student/useActiveSessionStudent';
 import DataTable from '../../../components/DataTable';

@@ -9,7 +9,7 @@ import DataTable from '../../../components/DataTable';
 import SessionsCard from '../../../components/SessionsCard';
 import { useActiveSessionStudent } from './useActiveSessionStudent';
 import { formatTime } from '../../../utils/dateHelper';
-import { useFilteredSessions } from '../../../hooks/useFilteredSessions';
+import { useFilteredSessions } from '../../../hooks/filters/useFilteredSessions';
 import SessionsCardSkeleton from '../../../components/SessionCardSkeleton';
 import { useMarkAttendance } from './useMarkAttendance';
 import { useState } from 'react';

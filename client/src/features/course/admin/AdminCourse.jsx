@@ -6,6 +6,7 @@ import {
   Search,
   Trash2,
   ClipboardList,
+  Filter,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import PageHeader from '../../../components/PageHeader';
@@ -17,7 +18,6 @@ import DataTable from '../../../components/DataTable';
 import ConfirmDeleteDialog from '../../../components/ConfirmDeleteDialog';
 import { useDeleteCourse } from './useDeleteCourse';
 
-import { useDebounce } from 'use-debounce';
 import CourseForm from './CourseForm';
 import { useAllCourses } from '../general/useAllCourses';
 import { useButtonState } from '../../../hooks/useButtonState';
@@ -26,36 +26,35 @@ import { MAX_LEVEL } from '../../../config/level';
 
 import FilterBar from '../../../components/FilterBar';
 import { useOpenModalFromActions } from '../../../hooks/useOpenModalFromActions';
-import { useFilters } from '../../../hooks/useFilters';
+import { useFilters } from '../../../hooks/filters/useFilters';
+import { useFilteredCourses } from '../../../hooks/filters/useFilteredCourses';
 
 
 function AdminCourse() {
   const { disableButton } = useButtonState();
   const navigate = useNavigate();
+  const [showFilters, setShowFilters] = useState(false);
+
+
   const {
     searchQuery,
     filters,
     handleSearch,
     handleFilterChange,
     clearFilters,
-    hasActiveFilters
-  } = useFilters();
+    hasActiveFilters,
+    activeFiltersCount,
+  } = useFilters({ department: '', level: '' });
 
-  const [debouncedQuery] = useDebounce(searchQuery, 500);
-
-  const { data: courses, isPending: isCoursesPending } = useAllCourses(
-    {
-      search: debouncedQuery,
-      department: filters.department,
-      level: filters.level,
-    },
-    { enabled: !disableButton }
-  );
-
-  // use unfiltered course to generate department options for dropdown
-  const { data: deptOptions, isPending: isOptPending } = useAllCourses({
+  const { data: courses, isPending: isCoursesPending } = useAllCourses({
     enabled: !disableButton,
   });
+
+  const filteredCourses = useFilteredCourses(
+    courses?.courses,
+    searchQuery,
+    filters
+  );
 
   const { deleteCourse, isPending: isDeleting } = useDeleteCourse();
 
@@ -63,19 +62,13 @@ function AdminCourse() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
 
-  const isSearchPending = searchQuery !== debouncedQuery;
-  const isLoading = disableButton
-    ? false
-    : isCoursesPending || isSearchPending || isOptPending;
+  const isLoading = disableButton ? false : isCoursesPending;
 
   // open modal when quick actions button is clicked in dashboard
   useOpenModalFromActions('mode', 'add', setShowModal);
 
-
-
+  // TODO: REDIRECT TO RIGHT PATH
   const handleViewAttendance = (course) => {
-    // TODO
-    // Navigate to attendance page for this course
     navigate(`/admin/courses/${course._id}/attendance`);
   };
 
@@ -166,18 +159,18 @@ function AdminCourse() {
     </tr>
   );
 
-  const filteredCourses = courses?.courses || [];
-  const allCourses = deptOptions?.courses || [];
+  const allCourses = courses?.courses || [];
 
   // generate options for dept dropdown
   const departments = Array.from(
     new Map(
       allCourses?.map((course) => [course.department._id, course.department])
     ).values()
+
   );
 
   const levels = generateLevel(MAX_LEVEL);
- 
+
   return (
     <div className='w-full'>
       <PageHeader
@@ -186,53 +179,80 @@ function AdminCourse() {
         subtitle='Manage all courses in your institution'
       />
 
-      {/* Search, Filters & CTA */}
+      {/* Search & Filters */}
       <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6'>
-        {/* Filters Row */}
+        <div className='flex flex-col gap-4'>
 
-        {/* Search & Add Button Row */}
-        <div className='flex justify-between gap-3 items-center'>
-          <SearchBar
-            placeholder='Search courses...'
-            value={searchQuery}
-            onChange={handleSearch}
-            disabled={disableButton}
-          />
-          <Button
-            variant='primary'
-            size='md'
-            onClick={() => setShowModal(true)}
-            disabled={disableButton}
-          >
-            <Plus className='w-5 h-5' />
-            <span className='hidden sm:inline font-medium'>Add Course</span>
-          </Button>
-        </div>
+          {/* Search Bar and Actions */}
+          <div className='flex justify-between gap-3 items-center'>
+            <SearchBar
+              placeholder='Search courses...'
+              value={searchQuery}
+              onChange={handleSearch}
+              disabled={disableButton}
+            />
 
-        <div className='flex flex-wrap gap-3 mt-4'>
-          <FilterBar
-            filters={[
-              {
-                name: 'department',
-                htmlFor: 'department-filter',
-                placeHolder: 'All Departments',
-                data: departments,
-                labelKey: 'name',
-                value: filters.department,
-              },
-              {
-                name: 'level',
-                htmlFor: 'level-filter',
-                placeHolder: 'All Levels',
-                data: levels,
-                labelKey: 'level',
-                value: filters.level,
-              },
-            ]}
-            hasActiveFilters={hasActiveFilters}
-            clearFilters={clearFilters}
-            onFilterChange={handleFilterChange}
-          />
+            <div className='flex gap-3'>
+              <Button
+                variant='outline'
+                icon={Filter}
+                size='md'
+                onClick={() => setShowFilters(!showFilters)}
+                disabled={disableButton}
+              >
+                <span className='hidden sm:inline font-medium text-base'>
+                  Filters
+                </span>
+                {activeFiltersCount > 0 && (
+                  <span className='font-medium text-sm'>
+                    ({activeFiltersCount})
+                  </span>
+                )}
+              </Button>
+
+              <Button
+                variant='primary'
+                size='md'
+                onClick={() => setShowModal(true)}
+                disabled={disableButton}
+              >
+                <Plus className='w-5 h-5' />
+                <span className='hidden sm:inline font-medium'>Add Course</span>
+              </Button>
+            </div>
+          </div>
+
+          {/* Filter Panel */}
+          {showFilters && (
+            <div className='border-t border-gray-100 pt-4 grid grid-cols-1 md:grid-cols-5 gap-4 text-sm'>
+              <FilterBar
+                filters={[
+
+                  {
+                    label:'Department',
+                    name: 'department',
+                    htmlFor: 'department-filter',
+                    placeHolder: 'All Departments',
+                    data: departments,
+                    labelKey: 'name',
+                    value: filters.department,
+                  },
+                  {
+                      label:'Level',
+                    name: 'level',
+                    htmlFor: 'level-filter',
+                    placeHolder: 'All Levels',
+                    data: levels,
+                    labelKey: 'level',
+                    value: filters.level,
+                  },
+                ]}
+                hasActiveFilters={hasActiveFilters}
+                clearFilters={clearFilters}
+                onFilterChange={handleFilterChange}
+              />
+            </div>
+          )}
         </div>
       </div>
 
@@ -267,12 +287,11 @@ function AdminCourse() {
           renderRow={renderRow}
           data={filteredCourses}
           isPending={isLoading}
-          skeleton={false}
+          showSkeletonHead={false}
         />
       )}
 
       {/* Add/Edit Modal */}
-
       <CourseForm
         isOpen={showModal}
         onClose={handleCloseModal}

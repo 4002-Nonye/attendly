@@ -34,13 +34,14 @@ exports.getAdminAttendanceReport = async (req, res) => {
         mongoose.Types.ObjectId.createFromHexString(departmentId);
     if (level) matchFilters['student.level'] = parseInt(level);
 
-    console.log(matchFilters);
+  
 
     const report = await StudentEnrollment.aggregate([
       // 1. Filter enrollments by course
       {
         $match: {
           course: mongoose.Types.ObjectId.createFromHexString(courseId),
+          enrollmentStatus: 'active'  
         },
       },
 

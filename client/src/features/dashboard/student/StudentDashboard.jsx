@@ -1,6 +1,5 @@
 import {
   BookOpen,
-
   Calendar,
   Clock,
   AlertCircle,
@@ -8,6 +7,7 @@ import {
   Plus,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import {formatTime,formatYear} from '../../../utils/dateHelper'
 import PageHeader from '../../../components/PageHeader';
 import { useStudentDashboardStats } from './useStudentDashboardStats';
 import { useStudentAttReport } from '../../attendance/student/useStudentAttReport';
@@ -43,7 +43,6 @@ function StudentDashboard() {
 
   const statsData = getStudentStats(stats);
 
-
   const columns = ['Course', 'Date & Time', 'Status'];
 
   // table row
@@ -63,16 +62,11 @@ function StudentDashboard() {
       <td className='px-4 lg:px-6 py-4 whitespace-nowrap'>
         <div className='flex items-center gap-2 text-sm text-gray-900'>
           <Calendar className='w-4 h-4 text-gray-400' />
-          <span>
-            {new Date(session.date).toLocaleDateString('en-US', {
-              month: 'short',
-              day: 'numeric',
-            })}
-          </span>
+          <span>{formatYear(session.createdAt,'short')}</span>
         </div>
         <div className='flex items-center gap-2 text-sm text-gray-500 mt-1'>
           <Clock className='w-4 h-4 text-gray-400' />
-          <span>{session.time}</span>
+          <span>{formatTime(session.createdAt)}</span>
         </div>
       </td>
       <td className='px-4 lg:px-6 py-4 whitespace-nowrap'>
@@ -128,7 +122,10 @@ function StudentDashboard() {
             {courseAttendance.length > 0 ? (
               <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3 lg:gap-4'>
                 {courseAttendance.map((course) => (
-                  <StudentAttendanceCard key={course.courseId} course={course} />
+                  <StudentAttendanceCard
+                    key={course.courseId}
+                    course={course}
+                  />
                 ))}
               </div>
             ) : (

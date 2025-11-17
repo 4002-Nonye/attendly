@@ -20,6 +20,10 @@ import SessionDetailsPage from './pages/session/SessionDetailsPage';
 import ActiveSessions from './pages/session/ActiveSessions';
 import LecturerPage from './pages/users/LecturerPage';
 import StudentPage from './pages/users/StudentPage';
+import AttendanceOverviewPage from './pages/attendance/AttendanceOverviewPage';
+import AttendancePage from './pages/attendance/AttendancePage';
+import AttendanceDetailsPage from './pages/attendance/AttendanceDetailsPage';
+import AttendanceStudentsDetailsPage from './pages/attendance/AttendanceStudentsDetailsPage';
 
 function App() {
   return (
@@ -100,7 +104,17 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path='attendance' element='attendance' />
+
+          <Route path='attendance' element={<AttendancePage />}>
+            <Route index element={<AttendanceOverviewPage />} />
+            <Route path=':courseId' element={<AttendanceDetailsPage />} />
+            <Route
+              path=':courseId/session/:sessionId'
+              element={<AttendanceStudentsDetailsPage />}
+            />
+
+          </Route>
+
           <Route path='profile' element='profile' />
           <Route path='sessions' element={<SessionPage />}>
             <Route

@@ -18,8 +18,9 @@ export function useFilteredUsers(userData, searchQuery, filters) {
       const matchesDepartment =
         !filters.department || lecturer.department?._id === filters.department;
 
-      return matchesSearch && matchesFaculty && matchesDepartment;
+      const matchesLevel = !filters.level || lecturer?.level === Number(filters.level);
+
+      return matchesSearch && matchesFaculty && matchesDepartment && matchesLevel;
     });
   }, [userData, filters, searchQuery]);
-  
 }

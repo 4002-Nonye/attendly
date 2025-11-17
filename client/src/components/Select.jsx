@@ -16,7 +16,7 @@ function Select({
 
 
   return (
-    <>
+    <div className='flex flex-col capitalize'>
       {label && (
         <label
           htmlFor={htmlFor}
@@ -59,7 +59,7 @@ function Select({
           `}
         />
       </div>
-    </>
+    </div>
   );
 }
 
