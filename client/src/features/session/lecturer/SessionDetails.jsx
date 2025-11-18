@@ -8,6 +8,7 @@ import SessionQRCodeCard from '../../../components/SessionQRCodeCard';
 import EmptyCard from '../../../components/EmptyCard';
 
 import SessionDetailSkeleton from '../../../components/SessionDetailSkeleton';
+import BackButton from '../../../components/BackButton';
 
 function SessionDetailsPage() {
   const { id: sessionId } = useParams();
@@ -56,16 +57,10 @@ function SessionDetailsPage() {
   return (
     <div className='w-full'>
       {/* Header */}
-      <Button
-        onClick={() => navigate(-1)}
-        className='inline-flex bg-white shadow-md py-1 items-center gap-2 text-gray-600 hover:text-gray-900 mb-7'
-      >
-        <ArrowLeft size={18} />
-        <span className='text-sm font-medium'>Go Back</span>
-      </Button>
+      <BackButton navigate={navigate} text='Go Back' />
 
       {/* Main Grid */}
-      <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
+      <div className='grid grid-cols-1 xl:grid-cols-3 gap-6'>
         {/* Left Column - Course & Session Info */}
         <div className='lg:col-span-2 space-y-6'>
           {/* Course Information */}

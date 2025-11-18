@@ -52,7 +52,7 @@ exports.getSchoolAttendanceTrend = async (req, res) => {
     // Calculate rate for each day
     weekData.forEach((day) => {
       if (day.total > 0) {
-        day.rate = Number((day.present / day.total) * 100).toFixed(1);
+        day.rate = Math.round((day.present / day.total) * 100);
       }
     });
     // starts from Monday instead of Sunday

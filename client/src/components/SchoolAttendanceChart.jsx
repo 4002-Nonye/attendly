@@ -13,6 +13,7 @@ import PropTypes from 'prop-types';
 import SectionIntro from './SectionIntro';
 
 function SchoolAttendanceChart({ hasData, data, averageRate }) {
+ 
   return (
     <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-6'>
       <div className='flex items-start justify-between'>

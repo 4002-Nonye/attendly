@@ -64,7 +64,7 @@ exports.getLecturerAttendanceOverview = async (req, res) => {
           pipeline: [
             {
               $match: {
-                enrollmentStatus: 'active', // ← ONLY ACTIVE STUDENTS
+                enrollmentStatus: 'active',
               },
             },
           ],
@@ -92,11 +92,11 @@ exports.getLecturerAttendanceOverview = async (req, res) => {
         },
       },
 
-      // 5. Compute total students who enrolled in a course (ACTIVE ONLY)
+      // 5. Compute total students who enrolled in a course (enrollmentStatus === 'active')
       {
         $addFields: {
           totalStudents: {
-            $size: '$studentenrollments', // Now only counts active students
+            $size: '$studentenrollments',
           },
         },
       },
@@ -146,7 +146,7 @@ exports.getLecturerAttendanceOverview = async (req, res) => {
                                 $size: '$sessions',
                               },
                               {
-                                $size: '$studentenrollments', // Now only active students
+                                $size: '$studentenrollments',
                               },
                             ],
                           },
@@ -185,7 +185,6 @@ exports.getLecturerAttendanceOverview = async (req, res) => {
 };
 
 exports.getLecturerSessionDetails = async (req, res) => {
-  // returns session date -> total students -> total present -> total absent -> average attendance (% present) -> view details
   try {
     const { courseId } = req.params;
     const { id, schoolId } = req.user;
@@ -194,7 +193,6 @@ exports.getLecturerSessionDetails = async (req, res) => {
       return res.status(400).json({ error: 'Invalid course ID' });
     }
 
-    // Fetch current academic year and semester from lecturer’s school
     const school = await School.findById(schoolId).select(
       'currentAcademicYear currentSemester'
     );
@@ -205,7 +203,6 @@ exports.getLecturerSessionDetails = async (req, res) => {
       });
     }
 
-    // check if lecturer is assigned to the course
     const course = await Course.findOne({
       _id: courseId,
       lecturers: { $in: [mongoose.Types.ObjectId.createFromHexString(id)] },
@@ -217,15 +214,12 @@ exports.getLecturerSessionDetails = async (req, res) => {
 
     const sessionDetails = await Course.aggregate([
       {
-        // 1. Find course that was clicked
         $match: {
           _id: mongoose.Types.ObjectId.createFromHexString(courseId),
           lecturers: { $in: [mongoose.Types.ObjectId.createFromHexString(id)] },
         },
       },
-
       {
-        // 2. Go into student enrollments and find all active enrolled students for that course
         $lookup: {
           from: 'studentenrollments',
           localField: '_id',
@@ -240,9 +234,7 @@ exports.getLecturerSessionDetails = async (req, res) => {
           ],
         },
       },
-
       {
-        // 3. Go into sessions and find all sessions tied to that course
         $lookup: {
           from: 'sessions',
           localField: '_id',
@@ -258,16 +250,12 @@ exports.getLecturerSessionDetails = async (req, res) => {
           ],
         },
       },
-
       {
-        // 4. Unpack the sessions found (array) so each session becomes a separate doc (makes it easier to perform actions)
         $unwind: {
           path: '$sessions',
         },
       },
-
       {
-        // 6. Go into attendance and look for all docs for each session (using pipeline for accurate matching)
         $lookup: {
           from: 'attendances',
           let: { sessionId: '$sessions._id' },
@@ -281,18 +269,14 @@ exports.getLecturerSessionDetails = async (req, res) => {
           as: 'sessionAttendances',
         },
       },
-
       {
-        // 7. Compute total students enrolled in that course
         $addFields: {
           totalStudents: {
             $size: '$studentenrollments',
           },
         },
       },
-
       {
-        // 8. Compute total present for each session
         $addFields: {
           totalPresent: {
             $size: {
@@ -307,24 +291,46 @@ exports.getLecturerSessionDetails = async (req, res) => {
           },
         },
       },
-
       {
-        // 9. Compute total absent for each session
+        // Calculate absent/pending based on session status
         $addFields: {
-          totalAbsent: {
+          unmarkedCount: {
             $subtract: ['$totalStudents', '$totalPresent'],
+          },
+          totalAbsent: {
+            $cond: [
+              {
+                $in: ['$sessions.status', ['ended']],
+              },
+              {
+                $subtract: ['$totalStudents', '$totalPresent'],
+              },
+              0,
+            ],
+          },
+          totalPending: {
+            $cond: [
+              {
+                $eq: ['$sessions.status', 'active'], 
+              },
+              {
+                $subtract: ['$totalStudents', '$totalPresent'],
+              },
+              0,
+            ],
           },
         },
       },
-
       {
-        // 10. Calculate average attendance per session
-        // averageAttendance (%) = (Number of "Present" students in session / Total students enrolled in session) × 100
+
         $addFields: {
           averageAttendance: {
             $cond: [
               {
-                $gt: ['$totalStudents', 0], // only calculate if there are students enrolled in that course
+                $and: [
+                  { $gt: ['$totalStudents', 0] },
+                  { $in: ['$sessions.status', ['ended']] }, 
+                ],
               },
               {
                 $round: [
@@ -333,28 +339,33 @@ exports.getLecturerSessionDetails = async (req, res) => {
                       {
                         $divide: ['$totalPresent', '$totalStudents'],
                       },
-                      100, // convert to percentage
+                      100,
                     ],
                   },
-                  0, // round to whole number
+                  1,
                 ],
               },
-              0, // else if no students enrolled in the course, avg attendance is 0
+              null,
             ],
           },
         },
       },
-
       {
-        // 11. result
         $project: {
           _id: '$sessions._id',
           createdAt: '$sessions.createdAt',
+          updatedAt: '$sessions.updatedAt',
+          status: '$sessions.status',
           totalStudents: 1,
           totalPresent: 1,
           totalAbsent: 1,
+          totalPending: 1,
           averageAttendance: 1,
         },
+      },
+      {
+
+        $sort: { createdAt: -1 },
       },
     ]);
 
@@ -363,11 +374,12 @@ exports.getLecturerSessionDetails = async (req, res) => {
         _id: course._id,
         courseCode: course.courseCode,
         courseTitle: course.courseTitle,
+        totalSessions: sessionDetails.length,
       },
       sessionDetails,
     });
   } catch (error) {
-    console.log(error);
+    console.error('Error fetching session details:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -455,8 +467,14 @@ exports.getLecturerSessionStudentDetails = async (req, res) => {
 
     res.status(200).json({
       session: {
-        id: session._id,
+        _id: session._id,
         status: session.status,
+        createdAt: session.createdAt,
+        course: {
+          _id: course._id,
+          courseCode: course.courseCode,
+          courseTitle: course.courseTitle,
+        },
       },
       students: details,
     });
@@ -467,7 +485,6 @@ exports.getLecturerSessionStudentDetails = async (req, res) => {
 };
 
 exports.getLecturerAttendanceReport = async (req, res) => {
-  // returns total students -> student matricNo -> name -> sessions total -> attended total -> absent total -> % attended -> eligible
   try {
     const { courseId } = req.params;
     const { id, schoolId } = req.user;
@@ -476,18 +493,19 @@ exports.getLecturerAttendanceReport = async (req, res) => {
       return res.status(400).json({ error: 'Invalid course ID' });
     }
 
-    // check if lecturer is assigned to the course
+    // Check if lecturer is assigned to the course
     const course = await Course.findOne({
       _id: courseId,
       lecturers: { $in: [mongoose.Types.ObjectId.createFromHexString(id)] },
-    });
+    }).select('courseCode courseTitle level semester');
+
     if (!course) {
-      return res.status(403).json({ error: 'Course not found' });
+      return res.status(403).json({ error: 'Course not found or unauthorized' });
     }
 
-    // Fetch current academic year and semester from lecturer’s school
+    // Fetch current academic year and semester
     const school = await School.findById(schoolId).select(
-      'currentAcademicYear currentSemester'
+      'currentAcademicYear currentSemester attendanceThreshold'
     );
 
     if (!school || !school.currentAcademicYear) {
@@ -496,7 +514,10 @@ exports.getLecturerAttendanceReport = async (req, res) => {
       });
     }
 
-    const report = await Course.aggregate([
+    //  Get threshold (default to 75% if not set)
+    const threshold = school.attendanceThreshold || 75;
+
+    const reportData = await Course.aggregate([
       // 1. Match course
       {
         $match: {
@@ -505,7 +526,7 @@ exports.getLecturerAttendanceReport = async (req, res) => {
         },
       },
 
-      // 2. Fetch only sessions belonging to this academic period
+      // 2. Fetch sessions for current academic period
       {
         $lookup: {
           from: 'sessions',
@@ -517,6 +538,7 @@ exports.getLecturerAttendanceReport = async (req, res) => {
               $match: {
                 academicYear: school.currentAcademicYear,
                 semester: school.currentSemester,
+                status: { $in: ['ended'] }, 
               },
             },
           ],
@@ -535,12 +557,22 @@ exports.getLecturerAttendanceReport = async (req, res) => {
             {
               $match: {
                 enrollmentStatus: 'active',
+                academicYear: school.currentAcademicYear,
+                semester: school.currentSemester,
               },
             },
           ],
         },
       },
       { $addFields: { totalStudents: { $size: '$studentEnrollments' } } },
+      
+      //  when no students enrolled
+      {
+        $match: {
+          totalStudents: { $gt: 0 }
+        }
+      },
+      
       { $unwind: '$studentEnrollments' },
 
       // 4. Get student info
@@ -555,7 +587,7 @@ exports.getLecturerAttendanceReport = async (req, res) => {
       },
       { $unwind: '$studentInfo' },
 
-      // 5. Get attendances for this academic period
+      // 5. get attendances for this student in this period
       {
         $lookup: {
           from: 'attendances',
@@ -579,7 +611,7 @@ exports.getLecturerAttendanceReport = async (req, res) => {
         },
       },
 
-      // 6. Compute totals and percentages
+      // 6. compute totals and percentages
       { $addFields: { totalAttended: { $size: '$studentAttendances' } } },
       {
         $addFields: {
@@ -600,16 +632,21 @@ exports.getLecturerAttendanceReport = async (req, res) => {
                       100,
                     ],
                   },
-                  0,
+                  1, //  round to 1 decimal place
                 ],
               },
             ],
           },
         },
       },
-      { $addFields: { eligible: { $gte: ['$attendancePercentage', 70] } } },
 
-      // 7. Final projection
+      { 
+        $addFields: { 
+          eligible: { $gte: ['$attendancePercentage', threshold] } 
+        } 
+      },
+
+      // 7. final result
       {
         $project: {
           _id: 0,
@@ -623,15 +660,42 @@ exports.getLecturerAttendanceReport = async (req, res) => {
           eligible: 1,
         },
       },
+      
+      //  sort by matricNo
+      {
+        $sort: { studentMatricNo: 1 }
+      }
     ]);
 
-    return res.status(200).json({ report });
+    //  calculate summary stats
+    const totalStudents = reportData.length;
+    const eligibleCount = reportData.filter(s => s.eligible).length;
+    const notEligibleCount = totalStudents - eligibleCount;
+    const totalSessions = reportData[0]?.totalSessions || 0;
+
+
+    return res.status(200).json({
+      course: {
+        _id: course._id,
+        courseCode: course.courseCode,
+        courseTitle: course.courseTitle,
+        level: course.level,
+        semester: course.semester,
+        totalSessions,
+      },
+      summary: {
+        totalStudents,
+        eligibleCount,
+        notEligibleCount,
+        threshold,
+      },
+      students: reportData,
+    });
   } catch (error) {
-    console.error(error);
+    console.error('Error generating attendance report:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
-
 exports.downloadLecturerAttendanceReport = async (req, res) => {
   // returns downloadable PDF for a course
 };

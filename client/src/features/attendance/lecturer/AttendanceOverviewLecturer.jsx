@@ -10,6 +10,7 @@ import { useAttendanceOverview } from './useAttendanceOverview';
 import { useSearchQuery } from '../../../hooks/useSearchQuery';
 import { useFilteredCourses } from '../../../hooks/filters/useFilteredCourses';
 import { getAttendanceColor } from '../../../utils/courseHelpers';
+import ReportButton from '../../../components/ReportButton';
 
 function AttendanceOverviewLecturer() {
   const { disableButton } = useButtonState();
@@ -65,14 +66,10 @@ function AttendanceOverviewLecturer() {
         </span>
       </td>
       <td className='px-6 py-4 whitespace-nowrap'>
-        <Button
-          variant='primary'
-          size='sm'
-          onClick={() => navigate(`report/${course._id}`)}
-          title='View eligibility report'
-        >
-          <span className='hidden sm:inline'>View Report</span>
-        </Button>
+        <ReportButton
+          courseId={course._id}
+          navigate={navigate}
+        />
       </td>
     </tr>
   );
