@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Clock, Calendar, AlertCircle, Search } from 'lucide-react';
+import { useMemo } from 'react';
+import { Clock, Search } from 'lucide-react';
 
 import DataTable from '../../../components/DataTable';
 import PageHeader from '../../../components/PageHeader';
@@ -12,6 +12,9 @@ import AttendanceCourseInfoSkeleton from '../../../components/AttendanceCourseIn
 import BackButton from '../../../components/BackButton';
 import { useSearchQuery } from '../../../hooks/useSearchQuery';
 import { useFilteredUsers } from '../../../hooks/filters/useFilteredUsers';
+import { getStatusBadge } from '../../../utils/courseHelpers';
+
+import SessionInfoCard from '../../../components/SessionInfoCard';
 
 function AttendanceSessionStudentsDetails() {
   const { courseId, sessionId } = useParams();
@@ -23,50 +26,58 @@ function AttendanceSessionStudentsDetails() {
     sessionId,
   });
 
-  const students = data?.students || [];
+  const students = useMemo(() => data?.students || [], [data?.students]);
   const session = data?.session || {};
   const course = session?.course || {};
 
   // Filter students based on search query
   const filteredStudents = useFilteredUsers(students, searchQuery);
 
+  // Calculate stats 
+  const stats = useMemo(() => {
+    const presentCount = students.filter((s) => s.status === 'Present').length;
+    const absentCount = students.filter((s) => s.status === 'Absent').length;
+    const pendingCount = students.filter((s) => s.status === 'Pending').length;
+    const totalStudents = students.length;
+    const attendanceRate =
+      totalStudents > 0 ? ((presentCount / totalStudents) * 100).toFixed(1) : 0;
+
+    return {
+      presentCount,
+      absentCount,
+      pendingCount,
+      totalStudents,
+      attendanceRate,
+    };
+  }, [students]);
+
+  const isSessionEnded =
+    session.status === 'ended' || session.status === 'closed';
+
   const columns = ['Matric Number', 'Full Name', 'Status', 'Time Marked'];
 
-  // Helper function to get status badge styling
-  const getStatusStyle = (status) => {
-    const styles = {
-      Present: 'bg-green-100 text-green-800',
-      Absent: 'bg-red-100 text-red-800',
-      Pending: 'bg-yellow-100 text-yellow-800',
-    };
-    return styles[status] || 'bg-gray-100 text-gray-800';
-  };
+const renderRow = (student) => {
+  const { className, label, icon: Icon } = getStatusBadge(student.status);
 
-  // Helper function to get status icon
-  const getStatusIcon = (status) => {
-    if (status === 'Present') return '✓';
-    if (status === 'Absent') return '✗';
-    if (status === 'Pending') return '⏳';
-    return '';
-  };
-
-  const renderRow = (student) => (
+  return (
     <tr key={student.studentId} className='hover:bg-gray-50 transition-colors'>
       <td className='px-6 py-4 text-sm font-medium text-gray-900 uppercase'>
         {student.matricNo}
       </td>
+
       <td className='px-6 py-4 text-sm text-gray-700 capitalize'>
         {student.fullName}
       </td>
-      <td className='px-6 py-4'>
+
+      <td className='px-6 py-4 whitespace-nowrap'>
         <span
-          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusStyle(
-            student.status
-          )}`}
+          className={`inline-flex items-center gap-1 px-2.5  rounded-full text-xs font-medium py-1 ${className}`}
         >
-          {getStatusIcon(student.status)} {student.status}
+          <Icon className='w-4 h-4 ' />
+          {label}
         </span>
       </td>
+
       <td className='px-6 py-4 text-sm text-gray-700'>
         {student.timeMarked ? (
           <span className='flex items-center gap-1'>
@@ -79,26 +90,7 @@ function AttendanceSessionStudentsDetails() {
       </td>
     </tr>
   );
-
-  // Calculate counts from filtered students
-  const presentCount = filteredStudents.filter(
-    (s) => s.status === 'Present'
-  ).length;
-  const absentCount = filteredStudents.filter(
-    (s) => s.status === 'Absent'
-  ).length;
-  const pendingCount = filteredStudents.filter(
-    (s) => s.status === 'Pending'
-  ).length;
-  const totalStudents = filteredStudents.length;
-
-  // Calculate attendance rate (only for ended sessions)
-  const isSessionEnded =
-    session.status === 'ended' || session.status === 'closed';
-  const attendanceRate =
-    isSessionEnded && totalStudents > 0
-      ? ((presentCount / totalStudents) * 100).toFixed(1)
-      : null;
+};
 
   return (
     <div className='w-full'>
@@ -117,110 +109,17 @@ function AttendanceSessionStudentsDetails() {
       {isPending ? (
         <AttendanceCourseInfoSkeleton height={'10rem'} />
       ) : session._id ? (
-        <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6'>
-          <div className='border-b border-gray-100 pb-4 mb-4'>
-            <h3 className='text-lg font-semibold text-gray-900'>
-              <span className='uppercase'>{course.courseCode}</span> -{' '}
-              <span className='capitalize'>{course.courseTitle}</span>
-            </h3>
-            <div className='flex items-center gap-4 mt-2 text-sm text-gray-600'>
-              <span className='flex items-center gap-1'>
-                <Calendar className='w-4 h-4' />
-                {formatYear(session.createdAt)}
-              </span>
-              <span className='flex items-center gap-1'>
-                <Clock className='w-4 h-4' />
-                {formatTime(session.createdAt)}
-              </span>
-            </div>
-            <div className='mt-3'>
-              <span
-                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium capitalize ${
-                  session.status === 'active'
-                    ? 'bg-green-100 text-green-800'
-                    : session.status === 'ended' || session.status === 'closed'
-                    ? 'bg-gray-100 text-gray-800'
-                    : 'bg-yellow-100 text-yellow-800'
-                }`}
-              >
-                Session: {session.status}
-              </span>
-            </div>
-          </div>
+        <SessionInfoCard
+          course={course}
+          session={{
+            status: session.status,
+            formattedDate: formatYear(session.createdAt),
+            formattedStartTime: formatTime(session.createdAt),
+          }}
+          stats={stats}
+          isSessionEnded={isSessionEnded}
 
-          {/* Stats Grid */}
-          <div className='grid grid-cols-2 md:grid-cols-5 gap-4'>
-            <div>
-              <p className='text-sm text-gray-600'>Total Students</p>
-              <p className='text-2xl font-bold text-gray-900'>
-                {students.length}
-              </p>
-            </div>
-            <div>
-              <p className='text-sm text-gray-600'>Present</p>
-              <p className='text-2xl font-bold text-green-600'>
-                {students.filter((s) => s.status === 'Present').length}
-              </p>
-            </div>
-            <div>
-              <p className='text-sm text-gray-600'>
-                {isSessionEnded ? 'Absent' : 'Pending'}
-              </p>
-              <p
-                className={`text-2xl font-bold ${
-                  isSessionEnded ? 'text-red-600' : 'text-yellow-600'
-                }`}
-              >
-                {isSessionEnded
-                  ? students.filter((s) => s.status === 'Absent').length
-                  : students.filter((s) => s.status === 'Pending').length}
-              </p>
-            </div>
-            {session.status === 'active' &&
-              students.filter((s) => s.status === 'Absent').length > 0 && (
-                <div>
-                  <p className='text-sm text-gray-600'>Absent</p>
-                  <p className='text-2xl font-bold text-red-600'>
-                    {students.filter((s) => s.status === 'Absent').length}
-                  </p>
-                </div>
-              )}
-            <div>
-              <p className='text-sm text-gray-600'>Attendance Rate</p>
-              <p className='text-2xl font-bold text-blue-600'>
-                {isSessionEnded && students.length > 0
-                  ? `${(
-                      (students.filter((s) => s.status === 'Present').length /
-                        students.length) *
-                      100
-                    ).toFixed(1)}%`
-                  : '-'}
-              </p>
-            </div>
-          </div>
-
-          {/* Warning for Active Sessions */}
-          {session.status === 'active' &&
-            students.filter((s) => s.status === 'Pending').length > 0 && (
-              <div className='mt-4 pt-4 border-t border-gray-100'>
-                <div className='flex items-start gap-2 text-sm text-yellow-700 bg-yellow-50 p-3 rounded-lg'>
-                  <AlertCircle className='w-4 h-4 mt-0.5 flex-shrink-0' />
-                  <p>
-                    This session is still active.{' '}
-                    {students.filter((s) => s.status === 'Pending').length}{' '}
-                    student
-                    {students.filter((s) => s.status === 'Pending').length !== 1
-                      ? 's'
-                      : ''}
-                    {students.filter((s) => s.status === 'Pending').length !== 1
-                      ? ' have'
-                      : ' has'}{' '}
-                    not yet marked attendance.
-                  </p>
-                </div>
-              </div>
-            )}
-        </div>
+        />
       ) : null}
 
       {/* Search Bar */}

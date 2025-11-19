@@ -8,7 +8,7 @@ function ReportButton({ courseId, isPending, navigate }) {
     <Button
       variant='primary'
       size='sm'
-      onClick={() => navigate(`/lecturer/attendance/report/${courseId}`)}
+      onClick={() => navigate(`/attendance/course/${courseId}/report`)}
       disabled={isPending}
     >
       <span className='inline'>View Report</span>

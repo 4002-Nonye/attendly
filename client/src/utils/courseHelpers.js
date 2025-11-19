@@ -28,18 +28,18 @@ export const getStatusBadge = (status) => {
   const statusConfig = {
     Present: {
       icon: CheckCircle,
-      className: 'bg-green-100 text-green-800',
+      className: 'bg-green-100 text-green-800 ',
       label: 'Present',
     },
     Absent: {
       icon: XCircle,
-      className: 'bg-red-100 text-red-800',
+      className: 'bg-red-100 text-red-800 ',
       label: 'Absent',
     },
     default: {
       icon: Clock,
       className: 'bg-gray-100 text-gray-800',
-      label: 'Not Yet Taken',
+      label: 'Pending',
     },
   };
   return statusConfig[status] || statusConfig.default;

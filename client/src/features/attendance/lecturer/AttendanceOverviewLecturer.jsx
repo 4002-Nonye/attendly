@@ -35,7 +35,7 @@ function AttendanceOverviewLecturer() {
     <tr key={course._id} className='hover:bg-gray-50 transition-colors'>
       <td className='px-6 py-4'>
         <Link
-          to={`${course._id}`}
+          to={`course/${course._id}`}
           className='text-sm  font-medium text-blue-600 hover:underline'
           title='View sessions for this course'
         >
@@ -66,10 +66,7 @@ function AttendanceOverviewLecturer() {
         </span>
       </td>
       <td className='px-6 py-4 whitespace-nowrap'>
-        <ReportButton
-          courseId={course._id}
-          navigate={navigate}
-        />
+        <ReportButton courseId={course._id} navigate={navigate} />
       </td>
     </tr>
   );
