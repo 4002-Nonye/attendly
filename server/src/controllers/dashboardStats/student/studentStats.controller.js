@@ -78,6 +78,8 @@ exports.getStudentDashboardStats = async (req, res) => {
       enrollmentDates[e.course.toString()] = e.createdAt;
     });
 
+    
+
     //  conditions: for each course, only count sessions after student enrolled (prevents past records)
     const sessionConditions = validCourseIds.map((courseId) => ({
       course: courseId,

@@ -13,7 +13,7 @@ function TableSkeleton({ showSkeletonHead = true }) {
         {[...Array(5)].map((_, i) => (
           <div
             key={i}
-            className='h-14 bg-gray-100 rounded mb-2 animate-pulse'
+            className='h-14 bg-gray-200 rounded mb-2 animate-pulse'
           ></div>
         ))}
       </div>

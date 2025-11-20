@@ -6,7 +6,7 @@ function SessionStatsGrid({ stats, isSessionEnded, sessionStatus }) {
       {/* Total Students */}
       <div>
         <p className='text-sm text-gray-600'>Total Students</p>
-        <p className='text-2xl font-bold text-gray-900'>
+        <p className='text-lg font-bold text-gray-900'>
           {stats.totalStudents}
         </p>
       </div>
@@ -14,7 +14,7 @@ function SessionStatsGrid({ stats, isSessionEnded, sessionStatus }) {
       {/* Present */}
       <div>
         <p className='text-sm text-gray-600'>Present</p>
-        <p className='text-2xl font-bold text-green-600'>
+        <p className='text-lg font-bold text-green-600'>
           {stats.presentCount}
         </p>
       </div>
@@ -25,7 +25,7 @@ function SessionStatsGrid({ stats, isSessionEnded, sessionStatus }) {
           {isSessionEnded ? 'Absent' : 'Pending'}
         </p>
         <p
-          className={`text-2xl font-bold ${
+          className={`text-lg font-bold ${
             isSessionEnded ? 'text-red-600' : 'text-yellow-600'
           }`}
         >
@@ -37,7 +37,7 @@ function SessionStatsGrid({ stats, isSessionEnded, sessionStatus }) {
       {sessionStatus === 'active' && stats.absentCount > 0 && (
         <div>
           <p className='text-sm text-gray-600'>Absent</p>
-          <p className='text-2xl font-bold text-red-600'>
+          <p className='text-lg font-bold text-red-600'>
             {stats.absentCount}
           </p>
         </div>
@@ -46,7 +46,7 @@ function SessionStatsGrid({ stats, isSessionEnded, sessionStatus }) {
       {/* Attendance Rate */}
       <div>
         <p className='text-sm text-gray-600'>Attendance Rate</p>
-        <p className='text-2xl font-bold text-blue-600'>
+        <p className='text-lg font-bold text-blue-600'>
           {isSessionEnded && stats.totalStudents > 0
             ? `${stats.attendanceRate}%`
             : '-'}

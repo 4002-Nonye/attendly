@@ -29,16 +29,13 @@ function SessionDetailsPage() {
 
   if (isPending && !initialSessionData) return <SessionDetailSkeleton />;
 
-  if (!session) {
-    return (
-      <div className='w-full'>
-        <Button
-          onClick={() => navigate(-1)}
-          className='inline-flex bg-white shadow-md py-1 items-center gap-2 text-gray-600 hover:text-gray-900 mb-7'
-        >
-          <ArrowLeft size={18} />
-          <span className='text-sm font-medium'>Go Back</span>
-        </Button>
+
+  return (
+    <div className='w-full'>
+      {/* Header */}
+      <BackButton navigate={navigate} text='Go Back' className='mb-5' />
+
+      {!session ? (
         <EmptyCard
           icon={AlertCircle}
           iconColor='text-gray-400'
@@ -50,29 +47,21 @@ function SessionDetailsPage() {
             View All Sessions
           </Button>
         </EmptyCard>
-      </div>
-    );
-  }
+      ) : (
+        <div className='grid grid-cols-1 xl:grid-cols-3 gap-6'>
+          {/* Left Column - Course & Session Info */}
+          <div className='lg:col-span-2 space-y-6'>
+            {/* Course Information */}
+            <SessionCourseInfo course={session.course} />
 
-  return (
-    <div className='w-full'>
-      {/* Header */}
-      <BackButton navigate={navigate} text='Go Back' />
+            {/* Session Details */}
+            <SessionInfo session={session} />
+          </div>
 
-      {/* Main Grid */}
-      <div className='grid grid-cols-1 xl:grid-cols-3 gap-6'>
-        {/* Left Column - Course & Session Info */}
-        <div className='lg:col-span-2 space-y-6'>
-          {/* Course Information */}
-          <SessionCourseInfo course={session.course} />
-
-          {/* Session Details */}
-          <SessionInfo session={session} />
+          {/* Right Column - QR Code */}
+          <SessionQRCodeCard session={session} />
         </div>
-
-        {/* Right Column - QR Code */}
-        <SessionQRCodeCard session={session} />
-      </div>
+      )}
     </div>
   );
 }

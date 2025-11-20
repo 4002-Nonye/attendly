@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Calendar, Clock } from 'lucide-react';
 import Alert from './Alert';
 import SessionStatsGrid from './SessionStatsGrid';
+import { getStatusStyle } from '../utils/courseHelpers';
 
 function SessionInfoCard({
   course,
@@ -36,11 +37,7 @@ function SessionInfoCard({
         <div className='mt-3'>
           <span
             className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium capitalize ${
-              session.status === 'active'
-                ? 'bg-green-100 text-green-800'
-                : isSessionEnded
-                ? 'bg-gray-100 text-gray-800'
-                : 'bg-yellow-100 text-yellow-800'
+            getStatusStyle(session.status)
             }`}
           >
             Session: {session.status}

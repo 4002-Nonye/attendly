@@ -41,3 +41,15 @@ export const getLecturerSessionStudentDetails = async (ids) => {
     throw error.response.data;
   }
 };
+
+export const getLecturerAttendanceReport = async (courseId) => {
+
+  try {
+    const response = await axios.get(
+      `/api/lecturer/attendance/courses/${courseId}/report`
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};

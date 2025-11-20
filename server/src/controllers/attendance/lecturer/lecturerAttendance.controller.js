@@ -4,9 +4,7 @@ const Attendance = mongoose.model('Attendance');
 const Session = mongoose.model('Session');
 const StudentEnrollment = mongoose.model('StudentEnrollment');
 const School = mongoose.model('School');
-
 exports.getLecturerAttendanceOverview = async (req, res) => {
-  // returns course -> total sessions -> total students -> average attendance
   try {
     const { id, schoolId } = req.user;
 
@@ -32,7 +30,7 @@ exports.getLecturerAttendanceOverview = async (req, res) => {
         },
       },
 
-      // 2. Go into sessions collection and find all sessions for a course : save as 'sessions'
+      // 2. Get all sessions for this course
       {
         $lookup: {
           from: 'sessions',
@@ -54,136 +52,37 @@ exports.getLecturerAttendanceOverview = async (req, res) => {
         },
       },
 
-      // 3. Go into student enrollments collection and get ACTIVE students who registered for a course : save as 'studentenrollments
-      {
-        $lookup: {
-          from: 'studentenrollments',
-          localField: '_id',
-          foreignField: 'course',
-          as: 'studentenrollments',
-          pipeline: [
-            {
-              $match: {
-                enrollmentStatus: 'active',
-              },
-            },
-          ],
-        },
-      },
-
-      // 4. Go into attendance collection to get all attendances for a course of an academic period : save as 'attendances'
-      {
-        $lookup: {
-          from: 'attendances',
-          let: { courseId: '$_id', sessionIds: '$sessions._id' },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    { $eq: ['$course', '$$courseId'] },
-                    { $in: ['$session', '$$sessionIds'] },
-                  ],
-                },
-              },
-            },
-          ],
-          as: 'attendances',
-        },
-      },
-
-      // 5. Compute total students who enrolled in a course (enrollmentStatus === 'active')
+      // 3. Add totalSessions field
       {
         $addFields: {
-          totalStudents: {
-            $size: '$studentenrollments',
-          },
-        },
+          totalSessions: { $size: '$sessions' }
+        }
       },
 
-      // 6. Compute total sessions for a course
+      // 4. Filter: Only return courses with sessions > 0
       {
-        $addFields: {
-          totalSessions: {
-            $size: '$sessions',
-          },
-        },
+        $match: {
+          totalSessions: { $gt: 0 }
+        }
       },
 
-      // 7. Calculate average attendance
-      {
-        $addFields: {
-          averageAttendance: {
-            $cond: [
-              {
-                $gt: [
-                  {
-                    $size: '$sessions',
-                  },
-                  0,
-                ],
-              },
-              {
-                $round: [
-                  {
-                    $multiply: [
-                      {
-                        $divide: [
-                          {
-                            $size: {
-                              $filter: {
-                                input: '$attendances',
-                                as: 'att',
-                                cond: {
-                                  $eq: ['$$att.status', 'Present'],
-                                },
-                              },
-                            },
-                          },
-                          {
-                            $multiply: [
-                              {
-                                $size: '$sessions',
-                              },
-                              {
-                                $size: '$studentenrollments',
-                              },
-                            ],
-                          },
-                        ],
-                      },
-                      100,
-                    ],
-                  },
-                  0,
-                ],
-              },
-              0,
-            ],
-          },
-        },
-      },
-
-      // Final result
+      // 5. Final projection 
       {
         $project: {
           _id: 1,
           courseCode: 1,
           courseTitle: 1,
-          totalSessions: 1,
-          totalStudents: 1,
-          averageAttendance: 1,
-        },
-      },
+          totalSessions: 1
+        }
+      }
     ]);
 
     return res.status(200).json({ overview });
   } catch (error) {
-    console.log(error);
+    console.error('Error in getLecturerAttendanceOverview:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
-
 exports.getLecturerSessionDetails = async (req, res) => {
   try {
     const { courseId } = req.params;
@@ -219,6 +118,7 @@ exports.getLecturerSessionDetails = async (req, res) => {
           lecturers: { $in: [mongoose.Types.ObjectId.createFromHexString(id)] },
         },
       },
+      // Get ALL student enrollments (including inactive)
       {
         $lookup: {
           from: 'studentenrollments',
@@ -228,12 +128,20 @@ exports.getLecturerSessionDetails = async (req, res) => {
           pipeline: [
             {
               $match: {
-                enrollmentStatus: 'active',
+                academicYear: school.currentAcademicYear,
+                semester: school.currentSemester,
               },
             },
+            {
+              $project: {
+                student: 1,
+                createdAt: 1
+              }
+            }
           ],
         },
       },
+      // Get all sessions
       {
         $lookup: {
           from: 'sessions',
@@ -247,14 +155,27 @@ exports.getLecturerSessionDetails = async (req, res) => {
                 semester: school.currentSemester,
               },
             },
+            { $sort: { createdAt: -1 } }
           ],
         },
       },
+      { $unwind: '$sessions' },
+      // For each session, find students who were enrolled BEFORE the session
       {
-        $unwind: {
-          path: '$sessions',
-        },
+        $addFields: {
+          // Filter students who were enrolled before this session
+          eligibleStudents: {
+            $filter: {
+              input: '$studentenrollments',
+              as: 'enrollment',
+              cond: {
+                $lte: ['$$enrollment.createdAt', '$sessions.createdAt']
+              }
+            }
+          }
+        }
       },
+      // Get attendances for this session
       {
         $lookup: {
           from: 'attendances',
@@ -269,76 +190,56 @@ exports.getLecturerSessionDetails = async (req, res) => {
           as: 'sessionAttendances',
         },
       },
+      // Calculate totals based on ELIGIBLE students only
       {
         $addFields: {
-          totalStudents: {
-            $size: '$studentenrollments',
-          },
-        },
-      },
-      {
-        $addFields: {
+          totalEligibleStudents: { $size: '$eligibleStudents' },
           totalPresent: {
             $size: {
               $filter: {
                 input: '$sessionAttendances',
                 as: 'att',
-                cond: {
-                  $eq: ['$$att.status', 'Present'],
-                },
+                cond: { $eq: ['$$att.status', 'Present'] },
               },
             },
           },
         },
       },
+      // Calculate absent/pending based on session status and ELIGIBLE students
       {
-        // Calculate absent/pending based on session status
         $addFields: {
-          unmarkedCount: {
-            $subtract: ['$totalStudents', '$totalPresent'],
-          },
           totalAbsent: {
             $cond: [
-              {
-                $in: ['$sessions.status', ['ended']],
-              },
-              {
-                $subtract: ['$totalStudents', '$totalPresent'],
-              },
+              { $eq: ['$sessions.status', 'ended'] },
+              { $max: [{ $subtract: ['$totalEligibleStudents', '$totalPresent'] }, 0] },
               0,
             ],
           },
           totalPending: {
             $cond: [
-              {
-                $eq: ['$sessions.status', 'active'], 
-              },
-              {
-                $subtract: ['$totalStudents', '$totalPresent'],
-              },
+              { $eq: ['$sessions.status', 'active'] },
+              { $max: [{ $subtract: ['$totalEligibleStudents', '$totalPresent'] }, 0] },
               0,
             ],
           },
         },
       },
+      // Calculate attendance rate based on ELIGIBLE students
       {
-
         $addFields: {
           averageAttendance: {
             $cond: [
               {
                 $and: [
-                  { $gt: ['$totalStudents', 0] },
-                  { $in: ['$sessions.status', ['ended']] }, 
+                  { $gt: ['$totalEligibleStudents', 0] },
+                  { $eq: ['$sessions.status', 'ended'] },
                 ],
               },
               {
                 $round: [
                   {
                     $multiply: [
-                      {
-                        $divide: ['$totalPresent', '$totalStudents'],
-                      },
+                      { $divide: ['$totalPresent', '$totalEligibleStudents'] },
                       100,
                     ],
                   },
@@ -350,23 +251,21 @@ exports.getLecturerSessionDetails = async (req, res) => {
           },
         },
       },
+      // Final projection
       {
         $project: {
           _id: '$sessions._id',
           createdAt: '$sessions.createdAt',
           updatedAt: '$sessions.updatedAt',
           status: '$sessions.status',
-          totalStudents: 1,
+          totalStudents: '$totalEligibleStudents',
           totalPresent: 1,
           totalAbsent: 1,
           totalPending: 1,
           averageAttendance: 1,
         },
       },
-      {
-
-        $sort: { createdAt: -1 },
-      },
+      { $sort: { createdAt: -1 } },
     ]);
 
     return res.status(200).json({
@@ -385,7 +284,6 @@ exports.getLecturerSessionDetails = async (req, res) => {
 };
 
 exports.getLecturerSessionStudentDetails = async (req, res) => {
-  // returns studentId (matricNo) -> fullName -> status -> time marked
   try {
     const { sessionId, courseId } = req.params;
     const { id, schoolId } = req.user;
@@ -394,7 +292,7 @@ exports.getLecturerSessionStudentDetails = async (req, res) => {
       return res.status(400).json({ error: 'Invalid session ID' });
     }
 
-    // 1.  Get current academic period of the lecturer's school
+    // 1. Get current academic period of the lecturer's school
     const schoolData = await School.findById(schoolId);
 
     if (!schoolData?.currentAcademicYear) {
@@ -404,16 +302,14 @@ exports.getLecturerSessionStudentDetails = async (req, res) => {
     const currentYearId = schoolData.currentAcademicYear;
     const currentSemester = schoolData.currentSemester;
 
-    // 2.  Ensure the lecturer is assigned to the course
+    // 2. Ensure the lecturer is assigned to the course
     const course = await Course.findOne({
       _id: courseId,
       lecturers: { $in: [mongoose.Types.ObjectId.createFromHexString(id)] },
     });
 
     if (!course) {
-      return res
-        .status(403)
-        .json({ error: 'Course not found or unauthorized' });
+      return res.status(403).json({ error: 'Course not found or unauthorized' });
     }
 
     // 3. Find the session only within current academic period
@@ -425,45 +321,85 @@ exports.getLecturerSessionStudentDetails = async (req, res) => {
     });
 
     if (!session) {
-      return res
-        .status(404)
-        .json({ error: 'Session not found in current period' });
+      return res.status(404).json({ error: 'Session not found in current period' });
     }
 
-    // 4. Get active enrolled students (for that course)
-    const enrollments = await StudentEnrollment.find({
-      course: courseId,
-      academicYear: currentYearId,
-      semester: currentSemester,
-      enrollmentStatus: 'active',
-    }).populate('student', 'matricNo fullName');
-
-    // 5. Get attendance records for this session
-    const attendances = await Attendance.find({
-      session: sessionId,
-      course: courseId,
-    }).select('status createdAt student');
-
-    // 6. Map attendances by student
-    const attendanceMap = new Map(
-      attendances.map((a) => [a.student.toString(), a])
-    );
-
-    // 7. Build details list
-    const details = enrollments.map((enr) => {
-      const record = attendanceMap.get(enr.student._id.toString());
-      return {
-        studentId: enr.student._id,
-        matricNo: enr.student.matricNo,
-        fullName: enr.student.fullName,
-        status: record
-          ? record.status
-          : session.status === 'ended'
-          ? 'Absent'
-          : 'Pending',
-        timeMarked: record ? record.createdAt : null,
-      };
-    });
+    // 4. Use aggregation to get ALL students (including inactive) who were enrolled at session time
+    const studentDetails = await StudentEnrollment.aggregate([
+      {
+        $match: {
+          course: mongoose.Types.ObjectId.createFromHexString(courseId),
+          academicYear: currentYearId,
+          semester: currentSemester,
+          createdAt: { $lte: session.createdAt } // Only students enrolled before session
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'student',
+          foreignField: '_id',
+          as: 'studentInfo',
+          pipeline: [
+            { $project: { matricNo: 1, fullName: 1 } }
+          ]
+        }
+      },
+      { $unwind: '$studentInfo' },
+      {
+        $lookup: {
+          from: 'attendances',
+          let: { studentId: '$student' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$student', '$$studentId'] },
+                    { $eq: ['$session', mongoose.Types.ObjectId.createFromHexString(sessionId)] }
+                  ]
+                }
+              }
+            }
+          ],
+          as: 'attendance'
+        }
+      },
+      {
+        $addFields: {
+          attendanceRecord: { $arrayElemAt: ['$attendance', 0] }
+        }
+      },
+      {
+        $project: {
+          studentId: '$student',
+          matricNo: '$studentInfo.matricNo',
+          fullName: '$studentInfo.fullName',
+          status: {
+            $cond: {
+              if: { $gt: [{ $size: '$attendance' }, 0] },
+              then: '$attendanceRecord.status',
+              else: {
+                $cond: {
+                  if: { $eq: [session.status, 'ended'] },
+                  then: 'Absent',
+                  else: 'Pending'
+                }
+              }
+            }
+          },
+          timeMarked: {
+            $cond: {
+              if: { $gt: [{ $size: '$attendance' }, 0] },
+              then: '$attendanceRecord.createdAt',
+              else: null
+            }
+          },
+          enrollmentDate: '$createdAt'
+        }
+      },
+      { $sort: { matricNo: 1 } }
+    ]);
 
     res.status(200).json({
       session: {
@@ -476,10 +412,10 @@ exports.getLecturerSessionStudentDetails = async (req, res) => {
           courseTitle: course.courseTitle,
         },
       },
-      students: details,
+      students: studentDetails,
     });
   } catch (error) {
-    console.log(error);
+    console.error('Error in getLecturerSessionStudentDetails:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -514,7 +450,6 @@ exports.getLecturerAttendanceReport = async (req, res) => {
       });
     }
 
-    //  Get threshold (default to 75% if not set)
     const threshold = school.attendanceThreshold || 75;
 
     const reportData = await Course.aggregate([
@@ -526,25 +461,26 @@ exports.getLecturerAttendanceReport = async (req, res) => {
         },
       },
 
-      // 2. Fetch sessions for current academic period
+      // 2. Fetch ALL sessions for current academic period (sorted by date)
       {
         $lookup: {
           from: 'sessions',
           localField: '_id',
           foreignField: 'course',
-          as: 'sessions',
+          as: 'allSessions',
           pipeline: [
             {
               $match: {
                 academicYear: school.currentAcademicYear,
                 semester: school.currentSemester,
-                status: { $in: ['ended'] }, 
+                status: { $in: ['ended'] }, // Only count ended sessions
               },
             },
+            { $sort: { createdAt: 1 } },
           ],
         },
       },
-      { $addFields: { totalSessions: { $size: '$sessions' } } },
+      { $addFields: { totalSessionsHeld: { $size: '$allSessions' } } },
 
       // 3. Fetch active enrolled students
       {
@@ -565,14 +501,14 @@ exports.getLecturerAttendanceReport = async (req, res) => {
         },
       },
       { $addFields: { totalStudents: { $size: '$studentEnrollments' } } },
-      
-      //  when no students enrolled
+
+      // Guard: when no students enrolled
       {
         $match: {
-          totalStudents: { $gt: 0 }
-        }
+          totalStudents: { $gt: 0 },
+        },
       },
-      
+
       { $unwind: '$studentEnrollments' },
 
       // 4. Get student info
@@ -587,21 +523,68 @@ exports.getLecturerAttendanceReport = async (req, res) => {
       },
       { $unwind: '$studentInfo' },
 
-      // 5. get attendances for this student in this period
+      // 5. Find which session number the student enrolled at
+      {
+        $addFields: {
+          // Find sessions that occurred BEFORE enrollment
+          sessionsBeforeEnrollment: {
+            $filter: {
+              input: '$allSessions',
+              as: 'session',
+              cond: { $lt: ['$$session.createdAt', '$studentEnrollments.createdAt'] }
+            }
+          },
+          // Find sessions that occurred AFTER enrollment (applicable sessions)
+          applicableSessionsArray: {
+            $filter: {
+              input: '$allSessions',
+              as: 'session',
+              cond: { $gte: ['$$session.createdAt', '$studentEnrollments.createdAt'] }
+            }
+          }
+        }
+      },
+
+      // 6. Calculate enrollment details
+      {
+        $addFields: {
+          sessionsBeforeEnrollmentCount: { $size: '$sessionsBeforeEnrollment' },
+          enrolledAtSession: { 
+            $cond: [
+              { $eq: [{ $size: '$sessionsBeforeEnrollment' }, 0] },
+              1, // If no sessions before enrollment, enrolled at first session
+              { $add: [{ $size: '$sessionsBeforeEnrollment' }, 1] } // Otherwise, enrolled at next session
+            ]
+          },
+          applicableSessions: { $size: '$applicableSessionsArray' },
+          applicableSessionIds: {
+            $map: {
+              input: '$applicableSessionsArray',
+              as: 'session',
+              in: '$$session._id'
+            }
+          }
+        },
+      },
+
+      // 7. Get attendances for this student (only for applicable sessions)
       {
         $lookup: {
           from: 'attendances',
-          let: { courseId: '$_id', studentId: '$studentEnrollments.student' },
+          let: { 
+            studentId: '$studentEnrollments.student',
+            applicableSessionIds: '$applicableSessionIds'
+          },
           pipeline: [
             {
               $match: {
                 $expr: {
                   $and: [
-                    { $eq: ['$course', '$$courseId'] },
                     { $eq: ['$student', '$$studentId'] },
+                    { $in: ['$session', '$$applicableSessionIds'] },
                     { $eq: ['$status', 'Present'] },
                     { $eq: ['$academicYear', school.currentAcademicYear] },
-                    { $eq: ['$semester', school.currentSemester] },
+                    { $eq: ['$semester', school.currentSemester] }
                   ],
                 },
               },
@@ -611,28 +594,38 @@ exports.getLecturerAttendanceReport = async (req, res) => {
         },
       },
 
-      // 6. compute totals and percentages
-      { $addFields: { totalAttended: { $size: '$studentAttendances' } } },
+      // 8. Compute totals and percentages based on applicable sessions
+      { 
+        $addFields: { 
+          totalAttended: { $size: '$studentAttendances' } 
+        } 
+      },
       {
         $addFields: {
-          totalAbsent: { $subtract: ['$totalSessions', '$totalAttended'] },
+          totalAbsent: { 
+            $cond: [
+              { $eq: ['$applicableSessions', 0] },
+              0,
+              { $subtract: ['$applicableSessions', '$totalAttended'] }
+            ]
+          },
         },
       },
       {
         $addFields: {
           attendancePercentage: {
             $cond: [
-              { $eq: ['$totalSessions', 0] },
+              { $eq: ['$applicableSessions', 0] },
               0,
               {
                 $round: [
                   {
                     $multiply: [
-                      { $divide: ['$totalAttended', '$totalSessions'] },
+                      { $divide: ['$totalAttended', '$applicableSessions'] },
                       100,
                     ],
                   },
-                  1, //  round to 1 decimal place
+                  1,
                 ],
               },
             ],
@@ -640,39 +633,46 @@ exports.getLecturerAttendanceReport = async (req, res) => {
         },
       },
 
-      { 
-        $addFields: { 
-          eligible: { $gte: ['$attendancePercentage', threshold] } 
-        } 
+      {
+        $addFields: {
+          eligible: { $gte: ['$attendancePercentage', threshold] },
+        },
       },
 
-      // 7. final result
+      // 9. Final result projection
       {
         $project: {
           _id: 0,
           studentId: '$studentEnrollments.student',
-          studentName: '$studentInfo.fullName',
-          studentMatricNo: '$studentInfo.matricNo',
-          totalSessions: 1,
+          fullName: '$studentInfo.fullName',
+          matricNo: '$studentInfo.matricNo',
+          enrolledAtSession: 1,
+          totalSessions: '$applicableSessions', // Only sessions after enrollment
           totalAttended: 1,
           totalAbsent: 1,
           attendancePercentage: 1,
           eligible: 1,
+          enrollmentDate: '$studentEnrollments.createdAt',
         },
       },
-      
-      //  sort by matricNo
+
+      // Sort by matricNo
       {
-        $sort: { studentMatricNo: 1 }
-      }
+        $sort: { matricNo: 1 },
+      },
     ]);
 
-    //  calculate summary stats
+    // Calculate summary stats
     const totalStudents = reportData.length;
-    const eligibleCount = reportData.filter(s => s.eligible).length;
+    const eligibleCount = reportData.filter((s) => s.eligible).length;
     const notEligibleCount = totalStudents - eligibleCount;
-    const totalSessions = reportData[0]?.totalSessions || 0;
-
+    
+    const totalSessionsHeld = await Session.countDocuments({
+      course: courseId,
+      academicYear: school.currentAcademicYear,
+      semester: school.currentSemester,
+      status: 'ended'
+    });
 
     return res.status(200).json({
       course: {
@@ -681,7 +681,7 @@ exports.getLecturerAttendanceReport = async (req, res) => {
         courseTitle: course.courseTitle,
         level: course.level,
         semester: course.semester,
-        totalSessions,
+        totalSessions: totalSessionsHeld,
       },
       summary: {
         totalStudents,

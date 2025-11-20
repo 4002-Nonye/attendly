@@ -32,7 +32,7 @@ function DataTable({
               ))}
             </tr>
           </thead>
-          <tbody className='bg-white divide-y divide-gray-200'>
+          <tbody className='bg-white divide-y divide-gray-200 whitespace-nowrap'>
             {isPending && !skeleton ? (
               <TableSkeletonRows rows={5} />
             ) : (

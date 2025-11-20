@@ -2,12 +2,12 @@ import PropTypes from 'prop-types';
 import { ArrowLeft } from 'lucide-react';
 import Button from './Button';
 
-
-function BackButton({ navigate, text }) {
+function BackButton({ navigate, text, className }) {
   return (
+  
     <Button
       onClick={() => navigate(-1)}
-      className='inline-flex bg-white shadow-md py-1 items-center gap-2 text-gray-600 hover:text-gray-900'
+      className={`inline-flex bg-white shadow-md py-1 items-center gap-2 text-gray-600 hover:text-gray-900  ${className}`}
     >
       <ArrowLeft size={18} />
       <span className='font-medium'>{text}</span>
@@ -17,7 +17,8 @@ function BackButton({ navigate, text }) {
 
 BackButton.propTypes = {
   navigate: PropTypes.func.isRequired,
-  text: PropTypes.string.isRequired,  
+  text: PropTypes.string.isRequired,
+  className: PropTypes.string,
 };
 
 export default BackButton;

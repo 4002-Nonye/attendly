@@ -2,14 +2,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Calendar, Search } from 'lucide-react';
 import { useButtonState } from '../../../hooks/useButtonState';
 import DataTable from '../../../components/DataTable';
-import Button from '../../../components/Button';
+
 import EmptyCard from '../../../components/EmptyCard';
 import PageHeader from '../../../components/PageHeader';
 import SearchBar from '../../../components/SearchBar';
 import { useAttendanceOverview } from './useAttendanceOverview';
 import { useSearchQuery } from '../../../hooks/useSearchQuery';
 import { useFilteredCourses } from '../../../hooks/filters/useFilteredCourses';
-import { getAttendanceColor } from '../../../utils/courseHelpers';
+
 import ReportButton from '../../../components/ReportButton';
 
 function AttendanceOverviewLecturer() {
@@ -18,6 +18,7 @@ function AttendanceOverviewLecturer() {
   const [searchQuery, setSearchQuery] = useSearchQuery();
 
   const { data, isPending } = useAttendanceOverview();
+ 
 
   // filter courses
   const filteredCourses = useFilteredCourses(data?.overview, searchQuery);
@@ -26,8 +27,6 @@ function AttendanceOverviewLecturer() {
     'ID',
     'Course',
     'Total Sessions',
-    'Total Students',
-    'Avg Attendance',
     'Actions',
   ];
 
@@ -50,21 +49,10 @@ function AttendanceOverviewLecturer() {
           {course.courseTitle}
         </span>
       </td>
-      <td className='px-6 py-4 text-sm text-gray-700 text-center'>
+      <td className='px-6 py-4 text-sm text-gray-700'>
         {course.totalSessions || 0}
       </td>
-      <td className='px-6 py-4 text-sm text-gray-700 text-center'>
-        {course.totalStudents || 0}
-      </td>
-      <td className='px-6 py-4 text-center'>
-        <span
-          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium ${getAttendanceColor(
-            course.averageAttendance
-          )}`}
-        >
-          {course.averageAttendance?.toFixed(1) || 0}%
-        </span>
-      </td>
+     
       <td className='px-6 py-4 whitespace-nowrap'>
         <ReportButton courseId={course._id} navigate={navigate} />
       </td>

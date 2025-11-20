@@ -39,7 +39,7 @@ function Alert({
       icon: 'text-green-600',
     },
     info: {
-      container: 'bg-blue-50 text-blue-700',
+      container: 'bg-blue-50 text-blue-900',
       border: 'border-blue-200',
       icon: 'text-blue-600',
     },
@@ -60,8 +60,8 @@ function Alert({
     },
     lg: {
       container: 'p-4 rounded-lg',
-      icon: 'w-5 h-5',
-      title: 'text-base',
+      icon: 'w-6 h-6',
+      title: 'text-sm',
       message: 'text-sm',
     },
   };
@@ -74,10 +74,10 @@ function Alert({
 
   return (
     <div 
-      className={`flex items-start gap-2 ${styles.container} ${sizes.container} ${borderClass} ${className}`}
+      className={`flex items-start gap-2  ${styles.container} ${sizes.container} ${borderClass} ${className}`}
     >
       {Icon && (
-        <Icon className={`${sizes.icon} ${styles.icon} mt-0.5 flex-shrink-0`} />
+        <Icon className={`  ${sizes.icon} ${styles.icon} mt-0.5 `} />
       )}
       <div className='flex-1'>
         {title && (

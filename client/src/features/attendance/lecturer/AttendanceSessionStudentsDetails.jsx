@@ -5,16 +5,15 @@ import DataTable from '../../../components/DataTable';
 import PageHeader from '../../../components/PageHeader';
 import SearchBar from '../../../components/SearchBar';
 import EmptyCard from '../../../components/EmptyCard';
+import StatusBadge from '../../../components/StatusBadge';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSessionStudentDetails } from './useSessionStudentDetails';
 import { formatTime, formatYear } from '../../../utils/dateHelper';
-import AttendanceCourseInfoSkeleton from '../../../components/AttendanceCourseInfoSkeleton';
 import BackButton from '../../../components/BackButton';
 import { useSearchQuery } from '../../../hooks/useSearchQuery';
 import { useFilteredUsers } from '../../../hooks/filters/useFilteredUsers';
-import { getStatusBadge } from '../../../utils/courseHelpers';
-
 import SessionInfoCard from '../../../components/SessionInfoCard';
+import SessionStudentsSkeleton from '../../../components/SessionStudentSkeleton';
 
 function AttendanceSessionStudentsDetails() {
   const { courseId, sessionId } = useParams();
@@ -26,6 +25,7 @@ function AttendanceSessionStudentsDetails() {
     sessionId,
   });
 
+ 
   const students = useMemo(() => data?.students || [], [data?.students]);
   const session = data?.session || {};
   const course = session?.course || {};
@@ -33,7 +33,7 @@ function AttendanceSessionStudentsDetails() {
   // Filter students based on search query
   const filteredStudents = useFilteredUsers(students, searchQuery);
 
-  // Calculate stats 
+  // Calculate stats
   const stats = useMemo(() => {
     const presentCount = students.filter((s) => s.status === 'Present').length;
     const absentCount = students.filter((s) => s.status === 'Absent').length;
@@ -56,41 +56,37 @@ function AttendanceSessionStudentsDetails() {
 
   const columns = ['Matric Number', 'Full Name', 'Status', 'Time Marked'];
 
-const renderRow = (student) => {
-  const { className, label, icon: Icon } = getStatusBadge(student.status);
+  const renderRow = (student) => {
+    return (
+      <tr
+        key={student.studentId}
+        className='hover:bg-gray-50 transition-colors'
+      >
+        <td className='px-6 py-4 text-sm font-medium text-gray-900 uppercase'>
+          {student.matricNo}
+        </td>
 
-  return (
-    <tr key={student.studentId} className='hover:bg-gray-50 transition-colors'>
-      <td className='px-6 py-4 text-sm font-medium text-gray-900 uppercase'>
-        {student.matricNo}
-      </td>
+        <td className='px-6 py-4 text-sm text-gray-700 capitalize'>
+          {student.fullName}
+        </td>
 
-      <td className='px-6 py-4 text-sm text-gray-700 capitalize'>
-        {student.fullName}
-      </td>
+        <td className='px-6 py-4 whitespace-nowrap'>
+          <StatusBadge status={student.status} />
+        </td>
 
-      <td className='px-6 py-4 whitespace-nowrap'>
-        <span
-          className={`inline-flex items-center gap-1 px-2.5  rounded-full text-xs font-medium py-1 ${className}`}
-        >
-          <Icon className='w-4 h-4 ' />
-          {label}
-        </span>
-      </td>
-
-      <td className='px-6 py-4 text-sm text-gray-700'>
-        {student.timeMarked ? (
-          <span className='flex items-center gap-1'>
-            <Clock className='w-4 h-4' />
-            {formatTime(student.timeMarked)}
-          </span>
-        ) : (
-          <span className='text-gray-400'>-</span>
-        )}
-      </td>
-    </tr>
-  );
-};
+        <td className='px-6 py-4 text-sm text-gray-700'>
+          {student.timeMarked ? (
+            <span className='flex items-center gap-1'>
+              <Clock className='w-4 h-4' />
+              {formatTime(student.timeMarked)}
+            </span>
+          ) : (
+            <span className='text-gray-400'>-</span>
+          )}
+        </td>
+      </tr>
+    );
+  };
 
   return (
     <div className='w-full'>
@@ -102,13 +98,12 @@ const renderRow = (student) => {
 
       {/* Back Button */}
       <div className='mb-6'>
-        <BackButton navigate={navigate} text='Back to sessions' />
+        <BackButton navigate={navigate} text='Back' />
       </div>
 
-      {/* Session Info Card with Skeleton */}
-      {isPending ? (
-        <AttendanceCourseInfoSkeleton height={'10rem'} />
-      ) : session._id ? (
+      {isPending && <SessionStudentsSkeleton />}
+      {/* Session Info Card */}
+      {session._id && (
         <SessionInfoCard
           course={course}
           session={{
@@ -118,22 +113,21 @@ const renderRow = (student) => {
           }}
           stats={stats}
           isSessionEnded={isSessionEnded}
-
         />
-      ) : null}
+      )}
 
       {/* Search Bar */}
       <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6'>
         <SearchBar
-          placeholder='Search by name or matric number...'
+          placeholder='Search by name or matric No...'
           value={searchQuery}
           onChange={setSearchQuery}
-          disabled={isPending}
+          disabled={false}
         />
       </div>
 
       {/* Students Table */}
-      {!filteredStudents.length && !isPending ? (
+      {!filteredStudents.length ? (
         <EmptyCard
           icon={Search}
           title='No students found'
@@ -150,7 +144,7 @@ const renderRow = (student) => {
           columns={columns}
           renderRow={renderRow}
           data={filteredStudents}
-          isPending={isPending}
+          isPending={false}
           showSkeletonHead={false}
         />
       )}

@@ -34,7 +34,7 @@ exports.getLecturerDashboardStats = async (req, res) => {
       // total students enrolled in lecturer's courses
       StudentEnrollment.distinct('student', {
         course: { $in: courseIds },
-        enrollmentStatus:"active"
+        enrollmentStatus: 'active',
       }),
 
       // total sessions
@@ -43,6 +43,7 @@ exports.getLecturerDashboardStats = async (req, res) => {
         course: { $in: courseIds },
         academicYear: school.currentAcademicYear,
         semester: school.currentSemester,
+        status: 'ended',
       }),
 
       // active sessions by this lecturer where still assigned

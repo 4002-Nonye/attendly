@@ -28,6 +28,7 @@ function Chart() {
             schoolAttendanceTrend.length
         )
       : 0;
+    
 
   // empty state check
   const hasFacultyTrendData = facultyAttendanceTrend?.length > 0;
@@ -35,6 +36,8 @@ function Chart() {
 
   return (
     <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8'>
+
+      
       {/* Chart 1: Attendance Trend  across school*/}
       {isWeeklySchoolPending ? (
         <ChartSkeleton />

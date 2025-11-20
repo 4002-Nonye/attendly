@@ -1,5 +1,6 @@
 import { AlertCircle } from 'lucide-react';
 import PropTypes from 'prop-types';
+import Alert from './Alert';
 
 const messages = {
   admin: {
@@ -23,15 +24,13 @@ function AcademicSetupAlert({ role = 'student' }) {
   const { title, description } = messages[role] || messages.student;
 
   return (
-    <div className='bg-yellow-50 border-b border-yellow-200 px-8 py-3'>
-      <div className='flex items-center gap-3'>
-        <AlertCircle className='text-yellow-600 flex-shrink-0' size={20} />
-        <div className='flex-1'>
-          <p className='text-sm text-yellow-800 font-medium'>{title}</p>
-          <p className='text-xs text-yellow-700 mt-0.5'>{description}</p>
-        </div>
-      </div>
-    </div>
+   <>
+
+
+    <div className='pb-5' size='lg'>
+       <Alert title={title} message={description} icon={AlertCircle}/>
+
+    </div></>
   );
 }
 
