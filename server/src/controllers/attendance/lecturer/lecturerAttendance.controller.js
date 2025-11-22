@@ -450,7 +450,7 @@ exports.getLecturerAttendanceReport = async (req, res) => {
       });
     }
 
-    const threshold = school.attendanceThreshold || 75;
+    const threshold = school.attendanceThreshold || 65;
 
     const reportData = await Course.aggregate([
       // 1. Match course
@@ -473,7 +473,7 @@ exports.getLecturerAttendanceReport = async (req, res) => {
               $match: {
                 academicYear: school.currentAcademicYear,
                 semester: school.currentSemester,
-                status: { $in: ['ended'] }, // Only count ended sessions
+                status: { $in: ['ended'] },
               },
             },
             { $sort: { createdAt: 1 } },
@@ -616,7 +616,7 @@ exports.getLecturerAttendanceReport = async (req, res) => {
           attendancePercentage: {
             $cond: [
               { $eq: ['$applicableSessions', 0] },
-              0,
+              100, //  100% if no applicable sessions 
               {
                 $round: [
                   {
@@ -625,7 +625,7 @@ exports.getLecturerAttendanceReport = async (req, res) => {
                       100,
                     ],
                   },
-                  1,
+                  0,
                 ],
               },
             ],
@@ -635,7 +635,13 @@ exports.getLecturerAttendanceReport = async (req, res) => {
 
       {
         $addFields: {
-          eligible: { $gte: ['$attendancePercentage', threshold] },
+          eligible: {
+            $cond: [
+              { $eq: ['$applicableSessions', 0] },
+              true, //  Always eligible if no applicable sessions 
+              { $gte: ['$attendancePercentage', threshold] }
+            ]
+          },
         },
       },
 
@@ -647,7 +653,7 @@ exports.getLecturerAttendanceReport = async (req, res) => {
           fullName: '$studentInfo.fullName',
           matricNo: '$studentInfo.matricNo',
           enrolledAtSession: 1,
-          totalSessions: '$applicableSessions', // Only sessions after enrollment
+          totalSessions: '$applicableSessions',
           totalAttended: 1,
           totalAbsent: 1,
           attendancePercentage: 1,

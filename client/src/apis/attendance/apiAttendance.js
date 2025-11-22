@@ -3,7 +3,18 @@ axios.defaults.withCredentials = true;
 
 export const getStudentAttendanceReport = async () => {
   try {
-    const response = await axios.get('/api/student/courses/attendance-report');
+    const response = await axios.get('/api/student/attendance/report');
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+export const getStudentSessionDetails = async (courseId) => {
+  try {
+    const response = await axios.get(
+      `/api/student/attendance/courses/${courseId}/details`
+    );
     return response.data;
   } catch (error) {
     throw error.response.data;
@@ -43,7 +54,6 @@ export const getLecturerSessionStudentDetails = async (ids) => {
 };
 
 export const getLecturerAttendanceReport = async (courseId) => {
-
   try {
     const response = await axios.get(
       `/api/lecturer/attendance/courses/${courseId}/report`

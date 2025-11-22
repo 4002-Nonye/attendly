@@ -106,12 +106,21 @@ function App() {
             }
           />
 
-         <Route path='attendance' element={<AttendancePage />}>
-  <Route index element={<AttendanceOverviewPage />} />
-  <Route path='course/:courseId' element={<AttendanceDetailsPage />} />
-  <Route path='course/:courseId/report' element={<AttendanceReport />} />
-  <Route path='course/:courseId/session/:sessionId' element={<AttendanceStudentsDetailsPage />} />
-</Route>
+          <Route path='attendance' element={<AttendancePage />}>
+            <Route index element={<AttendanceOverviewPage />} />
+            <Route
+              path='course/:courseId'
+              element={<AttendanceDetailsPage />}
+            />
+            <Route
+              path='course/:courseId/report'
+              element={<AttendanceReport />}
+            />
+            <Route
+              path='course/:courseId/session/:sessionId'
+              element={<AttendanceStudentsDetailsPage />}
+            />
+          </Route>
           <Route path='profile' element='profile' />
           <Route path='sessions' element={<SessionPage />}>
             <Route

@@ -1,9 +1,12 @@
-import { Calendar, Download, Search } from 'lucide-react';
+import { AlertCircle, Calendar, Download, Search } from 'lucide-react';
 import { useAttendanceReport } from './useAttendanceReport';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSearchQuery } from '../../../hooks/useSearchQuery';
 import { useFilteredUsers } from '../../../hooks/filters/useFilteredUsers';
-import { getAttendanceColor } from '../../../utils/courseHelpers';
+import {
+  getAttendanceColor,
+  getEligibilityStyle,
+} from '../../../utils/courseHelpers';
 import ReportSkeleton from '../../../components/ReportSkeleton';
 import PageHeader from '../../../components/PageHeader';
 import Alert from '../../../components/Alert';
@@ -76,13 +79,15 @@ function AttendanceReport() {
             {student.attendancePercentage}%
           </span>
         </td>
-        <td className='px-6 py-4 '>
+        <td className='px-6 py-4  '>
           {student.eligible ? (
-            <span className='inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium'>
+            <span className={getEligibilityStyle(student.eligible)}>
+              <Calendar className='w-3 h-3' />
               Eligible
             </span>
           ) : (
-            <span className='inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-100 text-red-700 text-xs font-medium'>
+            <span className={getEligibilityStyle(student.eligible)}>
+              <AlertCircle className='w-3 h-3' />
               Not Eligible
             </span>
           )}

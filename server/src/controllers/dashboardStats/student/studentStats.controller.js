@@ -78,8 +78,6 @@ exports.getStudentDashboardStats = async (req, res) => {
       enrollmentDates[e.course.toString()] = e.createdAt;
     });
 
-    
-
     //  conditions: for each course, only count sessions after student enrolled (prevents past records)
     const sessionConditions = validCourseIds.map((courseId) => ({
       course: courseId,
@@ -87,50 +85,64 @@ exports.getStudentDashboardStats = async (req, res) => {
     }));
 
     // Run stats in at a go
-    const [totalSessions, attendedSessions, missedSessions] = await Promise.all(
-      [
-        Session.countDocuments({
-          schoolId,
-          course: { $in: validCourseIds },
-          academicYear: school.currentAcademicYear,
-          semester: school.currentSemester,
-          $or: sessionConditions,
-        }),
-        Attendance.countDocuments({
-          student: studentId,
-          course: { $in: validCourseIds },
-          academicYear: school.currentAcademicYear,
-          semester: school.currentSemester,
-          status: 'Present',
-        }),
-        Session.countDocuments({
-          schoolId,
-          course: { $in: validCourseIds },
-          academicYear: school.currentAcademicYear,
-          semester: school.currentSemester,
-          status: 'ended', // count only ended sessions
-          $or: sessionConditions,
-          _id: {
-            // exclude records where the student was present
-            $nin: await Attendance.find({
-              student: studentId,
-              course: { $in: validCourseIds },
-              academicYear: school.currentAcademicYear,
-              semester: school.currentSemester,
-              status: 'Present',
-            }).distinct('session'),
-          },
-        }),
-      ]
-    );
-    return res.status(200).json({
-      totalCourses: validCourseIds.length,
-      totalSessions,
-      attendedSessions,
-      missedSessions,
-      academicYear: school.currentAcademicYear,
-      semester: school.currentSemester,
-    });
+const [totalSessions, attendedSessions, missedSessions, presentSessionIds] = await Promise.all([
+  // Total sessions after enrollment
+  Session.countDocuments({
+    schoolId,
+    course: { $in: validCourseIds },
+    academicYear: school.currentAcademicYear,
+    semester: school.currentSemester,
+    $or: sessionConditions,
+  }),
+
+  // Attended sessions (Present)
+  Attendance.countDocuments({
+    student: studentId,
+    course: { $in: validCourseIds },
+    academicYear: school.currentAcademicYear,
+    semester: school.currentSemester,
+    status: 'Present',
+  }),
+
+  // Missed sessions (Absent)
+  Attendance.countDocuments({
+    student: studentId,
+    course: { $in: validCourseIds },
+    academicYear: school.currentAcademicYear,
+    semester: school.currentSemester,
+    status: 'Absent',
+  }),
+
+  // Get session IDs where student marked attendance (Present or Absent)
+  Attendance.find({
+    student: studentId,
+    course: { $in: validCourseIds },
+    academicYear: school.currentAcademicYear,
+    semester: school.currentSemester,
+  }).distinct('session'),
+]);
+
+// Active sessions where student hasn't marked attendance yet
+const activePendingSessions = await Session.countDocuments({
+  schoolId,
+  course: { $in: validCourseIds },
+  academicYear: school.currentAcademicYear,
+  semester: school.currentSemester,
+  status: 'active',
+  $or: sessionConditions,
+  _id: { $nin: presentSessionIds }, // Exclude sessions already marked
+});
+
+return res.status(200).json({
+  totalCourses: validCourseIds.length,
+  totalSessions,
+  attendedSessions,
+  missedSessions,
+  activeSessions: activePendingSessions,
+  academicYear: school.currentAcademicYear,
+  semester: school.currentSemester,
+});
+  
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Internal server error' });
@@ -186,7 +198,6 @@ exports.getStudentRecentSessions = async (req, res) => {
     }
 
     const filteredCourseIds = filteredEnrollments.map((e) => e.course._id);
-   
 
     // create map of courseId -> enrollment date
     const enrollmentDates = {};

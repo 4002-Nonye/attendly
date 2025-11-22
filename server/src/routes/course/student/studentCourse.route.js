@@ -6,8 +6,6 @@ const {
   getRegisteredCoursesForStudent,
   unregisterCourse,
 } = require('../../../controllers/course/student/studentCourse.controller');
-const { getStudentAttendanceReport, getStudentSessionDetails } = require('../../../controllers/attendance/student/studentAttendance.controller');
-
 
 const studentCourseRoute = express.Router();
 
@@ -33,25 +31,5 @@ studentCourseRoute.delete(
   requireStudentAccess,
   unregisterCourse
 );
-
-
-// Get student attendance report
-studentCourseRoute.get(
-  '/attendance-report',
-  requireLogin,
-  requireStudentAccess,
-  getStudentAttendanceReport
-);
-
-// Get student session details
-studentCourseRoute.get(
-  '/:courseId/attendance-details',
-  requireLogin,
-  requireStudentAccess,
-  getStudentSessionDetails
-);
-
-
-
 
 module.exports = studentCourseRoute;

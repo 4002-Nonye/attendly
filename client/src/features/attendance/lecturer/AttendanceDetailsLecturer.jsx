@@ -93,7 +93,7 @@ function AttendanceDetailsLecturer() {
           <Link to={`session/${session._id}`}>
             <Button variant='outline' size='sm'>
               <Eye className='w-4 h-4 block sm:hidden' />
-              <span className='hidden sm:inline'>View</span>
+              <span className='hidden sm:inline'>View details</span>
             </Button>
           </Link>
         </td>

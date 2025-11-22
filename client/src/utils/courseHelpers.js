@@ -74,3 +74,10 @@ export const getStatusStyle = (status) => {
 
   return styles[status?.toLowerCase()] || styles.inactive;
 };
+
+export const getEligibilityStyle = (eligible) => {
+  const baseStyle =
+    'inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium';
+  if (eligible) return ` ${baseStyle} bg-green-100 text-green-700`;
+  else return ` ${baseStyle} bg-red-100 text-red-700`;
+};

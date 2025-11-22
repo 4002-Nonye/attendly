@@ -8,6 +8,7 @@ import {
   CalendarClock,
   CheckCircle,
   XCircle,
+  Clock,
 } from 'lucide-react';
 
 // ADMIN STATS
@@ -100,8 +101,14 @@ export const getStudentStats = (stat = {}) => [
   },
   {
     label: 'Missed Classes',
-   value: stat.missedSessions??0,
+    value: stat.missedSessions ?? 0,
     icon: XCircle,
     color: 'bg-red-100 text-red-600',
+  },
+  {
+    label: 'Active Classes',
+    value: stat.activeSessions ?? 0,
+    icon: Clock,
+    color: 'bg-yellow-100 text-yellow-600',
   },
 ];
