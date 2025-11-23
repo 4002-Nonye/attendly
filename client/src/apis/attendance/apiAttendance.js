@@ -63,3 +63,12 @@ export const getLecturerAttendanceReport = async (courseId) => {
     throw error.response.data;
   }
 };
+
+export const getAdminAttendanceReport = async () => {
+  try {
+    const response = await axios.get('/api/admin/attendance/report');
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};

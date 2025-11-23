@@ -22,7 +22,7 @@ function AttendanceOverviewStudent() {
   const { data, isPending } = useStudentAttReport();
 
   const courses = data?.report || [];
-  console.log(courses);
+
 
   // Filter courses by search query
   const filteredCourses = useFilteredCourses(courses, searchQuery);

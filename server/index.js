@@ -35,7 +35,7 @@ const studentStatsRoute = require('./src/routes/dashboardStats/student/studentSt
 const userRoute = require('./src/routes/user/user.route');
 const lecturerAttendanceRoute = require('./src/routes/attendance/lecturer/lecturerAttendance.route');
 const studentAttendanceRoute = require('./src/routes/attendance/student/studentAttendance.route');
-
+const adminAttendanceRoute = require('./src/routes/attendance/admin/adminAttendance.route');
 
 require('./src/lib/passport');
 
@@ -69,9 +69,10 @@ app.use('/api/admin/dashboard', adminStatsRoute);
 app.use('/api/lecturer/dashboard', lecturerStatsRoute);
 app.use('/api/dashboard', generalStatsRoute);
 app.use('/api/student/dashboard', studentStatsRoute);
-app.use('/api/users',userRoute)
-app.use('/api/lecturer/attendance',lecturerAttendanceRoute)
-app.use('/api/student/attendance',studentAttendanceRoute)
+app.use('/api/users', userRoute);
+app.use('/api/lecturer/attendance', lecturerAttendanceRoute);
+app.use('/api/student/attendance', studentAttendanceRoute);
+app.use('/api/admin/attendance', adminAttendanceRoute);
 
 app.listen(process.env.PORT, () => {
   // Connect to the database after server starts

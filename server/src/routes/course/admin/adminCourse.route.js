@@ -6,9 +6,7 @@ const {
   editCourse,
   deleteCourse,
 } = require('../../../controllers/course/admin/adminCourse.controller');
-const {
-  getAdminAttendanceReport,
-} = require('../../../controllers/attendance/admin/adminAttendance.controller');
+
 const {
   getTotalCourses,
 } = require('../../../controllers/course/course.controller');
@@ -24,12 +22,6 @@ adminCourseRoute.post('/', requireLogin, requireAdminAccess, createCourse);
 adminCourseRoute.put('/:id', requireLogin, requireAdminAccess, editCourse);
 // Delete a course
 adminCourseRoute.delete('/:id', requireLogin, requireAdminAccess, deleteCourse);
-// Admin attendance report
-adminCourseRoute.get(
-  '/attendance-report',
-  requireLogin,
-  requireAdminAccess,
-  getAdminAttendanceReport
-);
+
 
 module.exports = adminCourseRoute;

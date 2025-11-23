@@ -32,7 +32,6 @@ import { useFilteredCourses } from '../../../hooks/filters/useFilteredCourses';
 
 function AdminCourse() {
   const { disableButton } = useButtonState();
-  const navigate = useNavigate();
   const [showFilters, setShowFilters] = useState(false);
 
 
@@ -66,11 +65,6 @@ function AdminCourse() {
 
   // open modal when quick actions button is clicked in dashboard
   useOpenModalFromActions('mode', 'add', setShowModal);
-
-  // TODO: REDIRECT TO RIGHT PATH
-  const handleViewAttendance = (course) => {
-    navigate(`/admin/courses/${course._id}/attendance`);
-  };
 
   const handleEdit = (course) => {
     setSelectedCourse(course);
@@ -130,14 +124,6 @@ function AdminCourse() {
 
       <td className='px-6 py-4'>
         <div className='flex items-start gap-3'>
-          <button
-            type='button'
-            onClick={() => handleViewAttendance(course)}
-            className='text-green-500 hover:text-green-700 transition-colors'
-            title='View attendance'
-          >
-            <ClipboardList size={20} />
-          </button>
           <button
             type='button'
             onClick={() => handleEdit(course)}

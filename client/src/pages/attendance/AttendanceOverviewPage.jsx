@@ -1,4 +1,4 @@
-
+import AttendanceOverviewAdmin from '../../features/attendance/admin/AttendanceOverviewAdmin';
 import AttendanceOverviewLecturer from '../../features/attendance/lecturer/AttendanceOverviewLecturer';
 
 import AttendanceOverviewstudent from '../../features/attendance/student/AttendanceOverviewstudent';
@@ -11,9 +11,9 @@ function AttendanceOverviewPage() {
   return (
     <div className='flex'>
       {role === 'lecturer' && <AttendanceOverviewLecturer />}
-       {role === 'student' && <AttendanceOverviewstudent />}
-      
-      </div>
+      {role === 'student' && <AttendanceOverviewstudent />}
+      {role === 'admin' && <AttendanceOverviewAdmin />}
+    </div>
   );
 }
 

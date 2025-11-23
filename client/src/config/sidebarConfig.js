@@ -19,7 +19,7 @@ export const sidebarConfig = {
     { name: 'Courses', icon: BookOpen, to: '/courses' },
     { name: 'Lecturers', icon: Users2, to: '/lecturers' },
     { name: 'Students', icon: GraduationCap, to: '/students' },
-    { name: 'Attendance', icon: ClipboardList, to: '/reports' },
+    { name: 'Attendance', icon: ClipboardList, to: '/attendance' },
    // { name: 'Academic year', icon: CalendarDays, to: '/academic-year' }, // TODO : PUT IN SETTINGS
   ],
   lecturer: [

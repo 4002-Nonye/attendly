@@ -4,18 +4,23 @@ function AttendanceReportHeader({ course, summary }) {
   return (
     <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6  '>
       {/* Course Title */}
-      <div className='flex items-start justify-between mb-4 pb-4 border-b border-gray-100'>
-        <h3 className='text-lg font-semibold text-gray-900'>
-          <span className='uppercase'>{course.courseCode}</span> —{' '}
-          <span className='capitalize'>{course.courseTitle}</span>
+      <div className='border-b border-gray-100 pb-4 mb-4'>
+        <h3 className='text-lg font-semibold text-gray-900 uppercase'>
+          {course.courseCode}
         </h3>
+        <p className='text-sm text-gray-600 capitalize mt-1'>
+          {course.courseTitle}
+        </p>
       </div>
 
       {/* Report Stats */}
       <div className='grid grid-cols-2 md:grid-cols-4 gap-6'>
         <div>
           <p className='text-xs text-gray-500 uppercase tracking-wide mb-1'>
-            Total Sessions <span className='font-bold text-[10px] text-red-500'>(completed)</span>
+            Total Sessions{' '}
+            <span className='font-bold text-[10px] text-red-500'>
+              (completed)
+            </span>
           </p>
           <p className='text-2xl font-bold'>{course.totalSessions || 0}</p>
         </div>
