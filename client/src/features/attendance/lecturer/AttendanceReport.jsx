@@ -11,11 +11,14 @@ import ReportSkeleton from '../../../components/ReportSkeleton';
 import PageHeader from '../../../components/PageHeader';
 import Alert from '../../../components/Alert';
 import SearchBar from '../../../components/SearchBar';
-import Button from '../../../components/Button';
+
 import DataTable from '../../../components/DataTable';
 import BackButton from '../../../components/BackButton';
 import AttendanceReportHeader from '../../../components/AttendanceReportHeader';
 import EmptyCard from '../../../components/EmptyCard';
+import DownloadReportButton from '../../../components/DownloadReportButton';
+import toast from 'react-hot-toast';
+import { useDownloadReport } from '../admin/useDownloadReport';
 
 function AttendanceReport() {
   const navigate = useNavigate();
@@ -23,12 +26,21 @@ function AttendanceReport() {
   const { courseId } = useParams();
 
   const { data, isPending } = useAttendanceReport(courseId);
-
+  const { downloadAttendanceReport, isPending: isDownloading } =
+    useDownloadReport();
   const course = data?.course || {};
   const summary = data?.summary || {};
   const students = data?.students || [];
 
   const filteredStudents = useFilteredUsers(students, searchQuery);
+
+  const handleDownload = () => {
+    if (!courseId) {
+      toast.error('Course ID is missing');
+      return;
+    }
+    downloadAttendanceReport(courseId);
+  };
 
   const columns = [
     'Matric No',
@@ -130,11 +142,13 @@ function AttendanceReport() {
             value={searchQuery}
             onChange={setSearchQuery}
           />
-
-          <Button variant='primary' className='gap-2' size='sm'>
-            <Download className='w-4 h-4' />
-            <span className='hidden sm:inline'>Download Report</span>
-          </Button>
+          <DownloadReportButton
+            onDownload={handleDownload}
+            isDownloading={isDownloading}
+            disabled={!courseId}
+          >
+            Download Report
+          </DownloadReportButton>
         </div>
       </div>
 

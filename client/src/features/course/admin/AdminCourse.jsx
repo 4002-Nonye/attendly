@@ -5,10 +5,9 @@ import {
   Plus,
   Search,
   Trash2,
-  ClipboardList,
   Filter,
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+
 import PageHeader from '../../../components/PageHeader';
 import Button from '../../../components/Button';
 import EmptyCard from '../../../components/EmptyCard';

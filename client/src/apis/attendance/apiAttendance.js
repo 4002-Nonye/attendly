@@ -72,3 +72,25 @@ export const getAdminAttendanceReport = async () => {
     throw error.response.data;
   }
 };
+
+export const getAdminCourseAttendanceDetails = async (courseId) => {
+  try {
+    const response = await axios.get(
+      `/api/admin/attendance/courses/${courseId}/details`
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+
+export const downloadAttendanceReport = async (courseId) => {
+  const response = await axios.get(
+    `/api/admin/attendance/courses/${courseId}/download`,
+    {
+      responseType: 'blob',
+    }
+  );
+  return response.data;
+};

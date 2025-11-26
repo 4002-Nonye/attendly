@@ -1,250 +1,10 @@
 const mongoose = require('mongoose');
-const StudentEnrollment = mongoose.model('StudentEnrollment');
+const { generateAttendancePDF } = require('../../../lib/pdfReportGenerator');
+const {
+  buildStudentAttendanceAggregation,
+} = require('../../../utils/attendanceAggregation');
 const School = mongoose.model('School');
 const Course = mongoose.model('Course');
-
-
-exports.getAdminAttendanceReport1 = async (req, res) => {
-  // accepts filters: facultyId, departmentId, level, courseId
-  // returns
-  // course information
-  // student id -> name -> sessions total -> attended total -> % attended -> eligible
-  // scoped to the current academic year and semester
-  try {
-    const { facultyId, departmentId, level, courseId } = req.query;
-    const { schoolId } = req.user;
-
-    if (!facultyId || !departmentId || !level || !courseId)
-      return res.status(400).json({ error: 'All fields are required' });
-
-    // find the school's current academic period
-    const school = await School.findById(schoolId)
-      .select('currentAcademicYear currentSemester')
-      .lean();
-
-    if (!school) return res.status(404).json({ error: 'School not found' });
-
-    const matchFilters = {};
-
-    // Build filters
-    if (facultyId)
-      matchFilters['student.faculty'] =
-        mongoose.Types.ObjectId.createFromHexString(facultyId);
-    if (departmentId)
-      matchFilters['student.department'] =
-        mongoose.Types.ObjectId.createFromHexString(departmentId);
-    if (level) matchFilters['student.level'] = parseInt(level);
-
-  
-
-    const report = await StudentEnrollment.aggregate([
-      // 1. Filter enrollments by course
-      {
-        $match: {
-          course: mongoose.Types.ObjectId.createFromHexString(courseId),
-          enrollmentStatus: 'active'  
-        },
-      },
-
-      // 2. Lookup student info from users
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'student',
-          foreignField: '_id',
-          as: 'student',
-        },
-      },
-      { $unwind: '$student' },
-
-      //   3. Apply faculty/department/level filters
-      {
-        $match: matchFilters,
-      },
-
-      // 4. Lookup all sessions for this course — scoped to current academic period
-      {
-        $lookup: {
-          from: 'sessions',
-          let: { courseId: '$course' },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    { $eq: ['$course', '$$courseId'] },
-                    { $eq: ['$academicYear', school.currentAcademicYear] },
-                    { $eq: ['$semester', school.currentSemester] },
-                  ],
-                },
-              },
-            },
-          ],
-          as: 'sessions',
-        },
-      },
-
-      // 5. Lookup attendance records for this student (same academic period)
-      {
-        $lookup: {
-          from: 'attendances',
-          let: { studentId: '$student._id', courseId: '$course' },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    { $eq: ['$student', '$$studentId'] },
-                    { $eq: ['$course', '$$courseId'] },
-                    { $eq: ['$academicYear', school.currentAcademicYear] },
-                    { $eq: ['$semester', school.currentSemester] },
-                  ],
-                },
-              },
-            },
-          ],
-          as: 'attendances',
-        },
-      },
-
-      // 6. Compute totals per student
-      {
-        $addFields: {
-          totalSessions: { $size: '$sessions' },
-          attendedSessions: {
-            $size: {
-              $filter: {
-                input: '$attendances',
-                as: 'att',
-                cond: { $eq: ['$$att.status', 'Present'] },
-              },
-            },
-          },
-        },
-      },
-
-      // 7. Compute attendance % & eligibility
-      {
-        $addFields: {
-          attendancePercentage: {
-            $cond: [
-              { $gt: ['$totalSessions', 0] },
-              {
-                $round: [
-                  {
-                    $multiply: [
-                      { $divide: ['$attendedSessions', '$totalSessions'] },
-                      100,
-                    ],
-                  },
-                  2,
-                ],
-              },
-              0,
-            ],
-          },
-          eligible: {
-            $gte: [{ $divide: ['$attendedSessions', '$totalSessions'] }, 0.7],
-          },
-        },
-      },
-
-      // 8. Lookup course info
-      {
-        $lookup: {
-          from: 'courses',
-          localField: 'course',
-          foreignField: '_id',
-          as: 'courseInfo',
-        },
-      },
-      { $unwind: '$courseInfo' },
-
-      // 9. Lookup faculty info
-      {
-        $lookup: {
-          from: 'faculties',
-          localField: 'courseInfo.faculty',
-          foreignField: '_id',
-          as: 'faculty',
-        },
-      },
-      { $unwind: '$faculty' },
-
-      // 10. Lookup department info
-      {
-        $lookup: {
-          from: 'departments',
-          localField: 'courseInfo.department',
-          foreignField: '_id',
-          as: 'department',
-        },
-      },
-      { $unwind: '$department' },
-
-      // 11. Lookup lecturer info
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'courseInfo.lecturers',
-          foreignField: '_id',
-          as: 'lecturers',
-        },
-      },
-
-      // 12. Group all students into an array and include course info once
-      {
-        $group: {
-          _id: '$course',
-          courseInfo: { $first: '$courseInfo' },
-          faculty: { $first: '$faculty' },
-          department: { $first: '$department' },
-          lecturers: { $first: '$lecturers' },
-          students: {
-            $push: {
-              studentId: '$student._id',
-              matricNo: '$student.matricNo',
-              fullName: '$student.fullName',
-              totalSessions: '$totalSessions',
-              attendedSessions: '$attendedSessions',
-              attendancePercentage: '$attendancePercentage',
-              eligible: '$eligible',
-            },
-          },
-          totalStudents: { $sum: 1 },
-        },
-      },
-
-      // 13. Project final structure
-      {
-        $project: {
-          _id: 0,
-          courseInfo: {
-            _id: '$courseInfo._id',
-            courseCode: '$courseInfo.courseCode',
-            courseTitle: '$courseInfo.courseTitle',
-            level: '$courseInfo.level',
-          },
-          faculty: { _id: '$faculty._id', name: '$faculty.name' },
-          department: { _id: '$department._id', name: '$department.name' },
-          lecturers: { _id: '$lecturers._id', fullName: '$lecturers.fullName' },
-          totalStudents: 1,
-          students: 1,
-        },
-      },
-    ]);
-
-    res.json({ data: report });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-};
-
-exports.downloadAdminAttendanceReport = async (req, res) => {
-  // returns downloadable PDF across chosen scope
-};
-
 
 exports.getAdminAttendanceReport = async (req, res) => {
   try {
@@ -258,17 +18,20 @@ exports.getAdminAttendanceReport = async (req, res) => {
 
     if (!school) return res.status(404).json({ error: 'School not found' });
 
-
     // TODO: ADD ATTENDANCE THRESHOLD
     const threshold = school.attendanceThreshold || 65;
 
-    const matchFilters = { 
-      schoolId: mongoose.Types.ObjectId.createFromHexString(schoolId) 
+    const matchFilters = {
+      schoolId: mongoose.Types.ObjectId.createFromHexString(schoolId),
     };
 
     // Build filters for courses
-    if (facultyId) matchFilters.faculty = mongoose.Types.ObjectId.createFromHexString(facultyId);
-    if (departmentId) matchFilters.department = mongoose.Types.ObjectId.createFromHexString(departmentId);
+    if (facultyId)
+      matchFilters.faculty =
+        mongoose.Types.ObjectId.createFromHexString(facultyId);
+    if (departmentId)
+      matchFilters.department =
+        mongoose.Types.ObjectId.createFromHexString(departmentId);
     if (level) matchFilters.level = parseInt(level);
 
     const coursesList = await Course.aggregate([
@@ -276,14 +39,18 @@ exports.getAdminAttendanceReport = async (req, res) => {
       { $match: matchFilters },
 
       // 2. Optional: Search filter
-      ...(search ? [{
-        $match: {
-          $or: [
-            { courseCode: { $regex: search, $options: 'i' } },
-            { courseTitle: { $regex: search, $options: 'i' } }
+      ...(search
+        ? [
+            {
+              $match: {
+                $or: [
+                  { courseCode: { $regex: search, $options: 'i' } },
+                  { courseTitle: { $regex: search, $options: 'i' } },
+                ],
+              },
+            },
           ]
-        }
-      }] : []),
+        : []),
 
       // 3. Lookup department
       {
@@ -291,8 +58,8 @@ exports.getAdminAttendanceReport = async (req, res) => {
           from: 'departments',
           localField: 'department',
           foreignField: '_id',
-          as: 'department'
-        }
+          as: 'department',
+        },
       },
       { $unwind: { path: '$department', preserveNullAndEmptyArrays: true } },
 
@@ -302,8 +69,8 @@ exports.getAdminAttendanceReport = async (req, res) => {
           from: 'faculties',
           localField: 'faculty',
           foreignField: '_id',
-          as: 'faculty'
-        }
+          as: 'faculty',
+        },
       },
       { $unwind: { path: '$faculty', preserveNullAndEmptyArrays: true } },
 
@@ -320,15 +87,15 @@ exports.getAdminAttendanceReport = async (req, res) => {
                     { $eq: ['$course', '$$courseId'] },
                     { $eq: ['$academicYear', school.currentAcademicYear] },
                     { $eq: ['$semester', school.currentSemester] },
-                    { $in: ['$status', ['ended']] }
-                  ]
-                }
-              }
+                    { $in: ['$status', ['ended']] },
+                  ],
+                },
+              },
             },
-            { $sort: { createdAt: 1 } }
+            { $sort: { createdAt: 1 } },
           ],
-          as: 'allSessions'
-        }
+          as: 'allSessions',
+        },
       },
 
       // 6. Get active enrolled students with their enrollment dates
@@ -344,14 +111,14 @@ exports.getAdminAttendanceReport = async (req, res) => {
                     { $eq: ['$course', '$$courseId'] },
                     { $eq: ['$enrollmentStatus', 'active'] },
                     { $eq: ['$academicYear', school.currentAcademicYear] },
-                    { $eq: ['$semester', school.currentSemester] }
-                  ]
-                }
-              }
-            }
+                    { $eq: ['$semester', school.currentSemester] },
+                  ],
+                },
+              },
+            },
           ],
-          as: 'enrollments'
-        }
+          as: 'enrollments',
+        },
       },
 
       // 7. Calculate per-student attendance
@@ -369,9 +136,14 @@ exports.getAdminAttendanceReport = async (req, res) => {
                       $filter: {
                         input: '$allSessions',
                         as: 'session',
-                        cond: { $gte: ['$$session.createdAt', '$$enrollment.createdAt'] }
-                      }
-                    }
+                        cond: {
+                          $gte: [
+                            '$$session.createdAt',
+                            '$$enrollment.createdAt',
+                          ],
+                        },
+                      },
+                    },
                   },
                   in: {
                     studentId: '$$enrollment.student',
@@ -380,15 +152,15 @@ exports.getAdminAttendanceReport = async (req, res) => {
                       $map: {
                         input: '$$applicableSessions',
                         as: 'session',
-                        in: '$$session._id'
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
+                        in: '$$session._id',
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
       },
 
       // 8. Lookup attendance records for all students
@@ -404,21 +176,21 @@ exports.getAdminAttendanceReport = async (req, res) => {
                     { $eq: ['$course', '$$courseId'] },
                     { $eq: ['$academicYear', school.currentAcademicYear] },
                     { $eq: ['$semester', school.currentSemester] },
-                    { $eq: ['$status', 'Present'] }
-                  ]
-                }
-              }
+                    { $eq: ['$status', 'Present'] },
+                  ],
+                },
+              },
             },
             {
               $group: {
                 _id: '$student',
                 attendedSessions: { $push: '$session' },
-                attendedCount: { $sum: 1 }
-              }
-            }
+                attendedCount: { $sum: 1 },
+              },
+            },
           ],
-          as: 'attendanceRecords'
-        }
+          as: 'attendanceRecords',
+        },
       },
 
       // 9. Calculate eligibility per student
@@ -438,12 +210,14 @@ exports.getAdminAttendanceReport = async (req, res) => {
                           $filter: {
                             input: '$attendanceRecords',
                             as: 'record',
-                            cond: { $eq: ['$$record._id', '$$student.studentId'] }
-                          }
+                            cond: {
+                              $eq: ['$$record._id', '$$student.studentId'],
+                            },
+                          },
                         },
-                        0
-                      ]
-                    }
+                        0,
+                      ],
+                    },
                   },
                   in: {
                     $let: {
@@ -452,15 +226,23 @@ exports.getAdminAttendanceReport = async (req, res) => {
                         attendedApplicable: {
                           $size: {
                             $filter: {
-                              input: { $ifNull: ['$$studentAttendance.attendedSessions', []] },
+                              input: {
+                                $ifNull: [
+                                  '$$studentAttendance.attendedSessions',
+                                  [],
+                                ],
+                              },
                               as: 'attendedSession',
-                              cond: { 
-                                $in: ['$$attendedSession', '$$student.applicableSessionIds'] 
-                              }
-                            }
-                          }
+                              cond: {
+                                $in: [
+                                  '$$attendedSession',
+                                  '$$student.applicableSessionIds',
+                                ],
+                              },
+                            },
+                          },
                         },
-                        applicableCount: '$$student.applicableSessionCount'
+                        applicableCount: '$$student.applicableSessionCount',
                       },
                       in: {
                         attendedCount: '$$attendedApplicable',
@@ -471,11 +253,16 @@ exports.getAdminAttendanceReport = async (req, res) => {
                             100,
                             {
                               $multiply: [
-                                { $divide: ['$$attendedApplicable', '$$applicableCount'] },
-                                100
-                              ]
-                            }
-                          ]
+                                {
+                                  $divide: [
+                                    '$$attendedApplicable',
+                                    '$$applicableCount',
+                                  ],
+                                },
+                                100,
+                              ],
+                            },
+                          ],
                         },
                         eligible: {
                           $cond: [
@@ -485,23 +272,28 @@ exports.getAdminAttendanceReport = async (req, res) => {
                               $gte: [
                                 {
                                   $multiply: [
-                                    { $divide: ['$$attendedApplicable', '$$applicableCount'] },
-                                    100
-                                  ]
+                                    {
+                                      $divide: [
+                                        '$$attendedApplicable',
+                                        '$$applicableCount',
+                                      ],
+                                    },
+                                    100,
+                                  ],
                                 },
-                                threshold
-                              ]
-                            }
-                          ]
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
+                                threshold,
+                              ],
+                            },
+                          ],
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
       },
 
       // 10. Calculate summary stats
@@ -509,17 +301,17 @@ exports.getAdminAttendanceReport = async (req, res) => {
         $addFields: {
           totalStudents: { $size: '$enrollments' },
           totalSessions: { $size: '$allSessions' },
-          
+
           eligibleCount: {
             $size: {
               $filter: {
                 input: '$eligibilityData',
                 as: 'data',
-                cond: '$$data.eligible'
-              }
-            }
+                cond: '$$data.eligible',
+              },
+            },
           },
-          
+
           // Average attendance across all students
           avgAttendance: {
             $cond: [
@@ -531,26 +323,26 @@ exports.getAdminAttendanceReport = async (req, res) => {
                       $map: {
                         input: '$eligibilityData',
                         as: 'data',
-                        in: '$$data.attendanceRate'
-                      }
-                    }
+                        in: '$$data.attendanceRate',
+                      },
+                    },
                   },
-                  0
-                ]
+                  0,
+                ],
               },
-              0
-            ]
-          }
-        }
+              0,
+            ],
+          },
+        },
       },
 
       // 11. Calculate not eligible count
       {
         $addFields: {
           notEligibleCount: {
-            $subtract: ['$totalStudents', '$eligibleCount']
-          }
-        }
+            $subtract: ['$totalStudents', '$eligibleCount'],
+          },
+        },
       },
 
       // 12. Project final structure
@@ -566,17 +358,214 @@ exports.getAdminAttendanceReport = async (req, res) => {
           totalSessions: 1,
           avgAttendance: 1,
           eligibleCount: 1,
-          notEligibleCount: 1
-        }
+          notEligibleCount: 1,
+        },
       },
 
       // 13. Sort by course code
-      { $sort: { courseCode: 1 } }
+      { $sort: { courseCode: 1 } },
     ]);
 
     res.json({ data: coursesList });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+exports.getAdminCourseAttendanceDetails = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const { schoolId } = req.user;
+
+    // Find the school's current academic period
+    const school = await School.findById(schoolId)
+      .select('currentAcademicYear currentSemester attendanceThreshold')
+      .lean();
+
+    if (!school) return res.status(404).json({ error: 'School not found' });
+
+    const threshold = school.attendanceThreshold || 65;
+
+    // Get course details
+    const course = await Course.findOne({
+      _id: mongoose.Types.ObjectId.createFromHexString(courseId),
+      schoolId: mongoose.Types.ObjectId.createFromHexString(schoolId),
+    })
+      .populate('department', 'name')
+      .populate('faculty', 'name')
+      .lean();
+
+    if (!course) return res.status(404).json({ error: 'Course not found' });
+
+    //Build and execute aggregation pipeline
+
+    const pipeline = buildStudentAttendanceAggregation(
+      courseId,
+      schoolId,
+      school,
+      threshold,
+      course
+    );
+    const result = await Course.aggregate(pipeline);
+    if (!result || result.length === 0) {
+      return res.json({
+        courseInfo: {
+          _id: course._id,
+          courseCode: course.courseCode,
+          courseTitle: course.courseTitle,
+          level: course.level,
+          department: course.department,
+          faculty: course.faculty,
+          totalSessions: 0,
+        },
+        summary: {
+          totalStudents: 0,
+          eligibleCount: 0,
+          notEligibleCount: 0,
+          threshold: threshold,
+        },
+        students: [],
+      });
+    }
+
+    const data = result[0];
+
+    res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+exports.downloadAdminAttendanceReport = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const { schoolId } = req.user;
+
+    // Find the school's current academic period
+    const school = await School.findById(schoolId)
+      .select(
+        'currentAcademicYear currentSemester attendanceThreshold schoolName'
+      )
+      .populate('currentAcademicYear', 'year')
+      .lean();
+
+    if (!school) return res.status(404).json({ error: 'School not found' });
+
+    const threshold = school.attendanceThreshold || 65;
+
+    // Get course details
+    const course = await Course.findOne({
+      _id: mongoose.Types.ObjectId.createFromHexString(courseId),
+      schoolId: mongoose.Types.ObjectId.createFromHexString(schoolId),
+    })
+      .populate('department', 'name')
+      .populate('faculty', 'name')
+      .lean();
+
+    if (!course) return res.status(404).json({ error: 'Course not found' });
+
+    // Extract the academic year ID from the populated object
+    const academicYearId = school.currentAcademicYear._id;
+    const academicYearValue = school.currentAcademicYear.year;
+
+    // Build and execute aggregation pipeline
+    const pipeline = buildStudentAttendanceAggregation(
+      courseId,
+      schoolId,
+      {
+        currentAcademicYear: academicYearId,
+        currentSemester: school.currentSemester,
+      },
+      threshold,
+      course
+    );
+
+    const result = await Course.aggregate(pipeline);
+
+    // Handle empty results
+    if (!result || result.length === 0) {
+      const emptyData = {
+        universityName: school.schoolName || 'My University',
+        courseCode: course.courseCode,
+        courseTitle: course.courseTitle,
+        students: [],
+      };
+
+      const pdfBuffer = await generateAttendancePDF(emptyData, {
+        watermark: true,
+        confidential: true,
+        showSealPlaceholder: true,
+      });
+
+      const emptyFilename = `attendance-${course.courseCode.replace(
+        /\s+/g,
+        '-'
+      )}-${academicYearValue.replace('/', '-')}-${
+        school.currentSemester
+      }-Semester-${Date.now()}.pdf`;
+
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="${emptyFilename}"`
+      );
+      return res.send(pdfBuffer);
+    }
+
+    const data = result[0];
+
+    // Format data for PDF generation
+    const pdfData = {
+      universityName: school.schoolName || 'My University',
+      courseCode: data.courseInfo.courseCode,
+      courseTitle: data.courseInfo.courseTitle,
+      department: data.courseInfo.department?.name,
+      faculty: data.courseInfo.faculty?.name,
+      academicYear: academicYearValue,
+      semester: school.currentSemester,
+      threshold: threshold,
+      totalSessions: data.courseInfo.totalSessions,
+      summary: data.summary,
+      students: data.students.map((student) => ({
+        matricNo: student.matricNo,
+        fullName: student.fullName,
+        enrolledAtSession: student.enrolledAtSession,
+        totalSessions: student.totalSessions,
+        totalAttended: student.totalAttended,
+        totalAbsent: student.totalAbsent,
+        attendancePercentage: student.attendancePercentage,
+        eligible: student.eligible,
+      })),
+    };
+
+    // PDF generation options
+    const pdfOptions = {
+      watermark: true,
+      confidential: true,
+      showSealPlaceholder: true,
+    };
+
+    // Generate PDF
+    const pdfBuffer = await generateAttendancePDF(pdfData, pdfOptions);
+
+    // Set response headers and send
+    const filename = `attendance-${data.courseInfo.courseCode.replace(
+      /\s+/g,
+      '-'
+    )}-${academicYearValue.replace('/', '-')}-${
+      school.currentSemester
+    }-Semester-${Date.now()}.pdf`;
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Length', pdfBuffer.length);
+    res.setHeader('Cache-Control', 'no-cache');
+
+    res.send(pdfBuffer);
+  } catch (error) {
+    console.error('PDF generation failed:', error);
+    res.status(500).json({ error: 'Failed to generate PDF' });
   }
 };

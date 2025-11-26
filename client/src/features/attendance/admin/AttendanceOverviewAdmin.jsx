@@ -51,6 +51,7 @@ function AttendanceOverviewAdmin() {
   const columns = [
     'Course',
     'Department',
+    'Level',
     'Students',
     'Avg Attendance',
     'Eligible',
@@ -80,6 +81,9 @@ function AttendanceOverviewAdmin() {
             Faculty of {course.faculty?.name || '-'}
           </p>
         </div>
+      </td>
+      <td className='px-6 py-4 text-sm font-medium text-gray-900'>
+        {course.level}
       </td>
       <td className='px-6 py-4 text-sm font-medium text-gray-900'>
         {course.totalStudents}
