@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
-
+const User = mongoose.model('User');
 const School = mongoose.model('School');
-
 
 // get only schools that have at least one faculty and the faculty has at least 1 department
 exports.getSchools = async (req, res) => {
@@ -66,5 +65,61 @@ exports.getSchools = async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// Admin: sets school-wide threshold
+// Lecturer: sets own threshold
+
+exports.setAttendanceThreshold = async (req, res) => {
+  try {
+    const { threshold } = req.body;
+    const { id: userId, role, schoolId } = req.user;
+
+    // validate threshold
+    if (
+      !threshold ||
+      typeof threshold !== 'number' ||
+      threshold < 50 ||
+      threshold > 100
+    ) {
+      return res
+        .status(400)
+        .json({ error: 'Threshold must be a number between 50 and 100' });
+    }
+
+    if (role === 'admin') {
+      // Admin sets school-wide threshold
+      const school = await School.findByIdAndUpdate(
+        schoolId,
+        { attendanceThreshold: threshold },
+        { new: true }
+      );
+      if (!school) {
+        return res.status(404).json({ error: 'School not found' });
+      }
+      return res.json({
+        message: 'School attendance threshold updated',
+        threshold: school.attendanceThreshold,
+      });
+    } else if (role === 'lecturer') {
+      // Lecturer sets personal threshold
+      const lecturer = await User.findByIdAndUpdate(
+        userId,
+        { attendanceThreshold: threshold },
+        { new: true }
+      );
+      if (!lecturer) {
+        return res.status(404).json({ error: 'Lecturer not found' });
+      }
+      return res.json({
+        message: 'Your attendance threshold updated',
+        threshold: lecturer.attendanceThreshold,
+      });
+    
+    }
+  } catch (err) {
+    console.error('Error setting attendance threshold:', err);
+    res.status(500).json({ error: 'Server error' });
   }
 };

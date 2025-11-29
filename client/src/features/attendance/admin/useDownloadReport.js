@@ -6,19 +6,26 @@ import { downloadAttendanceReport as downloadAttendanceReportApi } from '../../.
 export function useDownloadReport() {
   const mutation = useMutation({
     mutationFn: downloadAttendanceReportApi,
-    onSuccess: (blob, courseId) => {
+    onSuccess: (data) => {
+     
+      const { blob, filename } = data;
+
       // Create blob URL and trigger download
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `attendance-report-${courseId}-${Date.now()}.pdf`;
+      link.download = filename; // Use the filename from backend
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
+      
       toast.success('Report downloaded successfully!');
     },
-    onError: (err) => toast.error(err.error),
+    onError: (err) => {
+      const errorMessage =  err?.message || 'Failed to download report';
+      toast.error(errorMessage);
+    },
   });
 
   return {
@@ -26,3 +33,4 @@ export function useDownloadReport() {
     isPending: mutation.isPending,
   };
 }
+

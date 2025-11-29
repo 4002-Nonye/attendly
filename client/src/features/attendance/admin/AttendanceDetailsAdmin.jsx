@@ -22,6 +22,7 @@ import Alert from '../../../components/Alert';
 import { useDownloadReport } from './useDownloadReport';
 import toast from 'react-hot-toast';
 import DownloadReportButton from '../../../components/DownloadReportButton';
+import { useSchoolInfo } from '../../../hooks/useSchoolInfo';
 
 function AttendanceDetailsAdmin() {
   const { courseId } = useParams();
@@ -29,18 +30,20 @@ function AttendanceDetailsAdmin() {
   const { data, isPending } = useAttendanceDetails(courseId);
   const { downloadAttendanceReport, isPending: isDownloading } =
     useDownloadReport();
+
+  const { user } = useSchoolInfo();
   const { courseInfo, summary, students = [] } = data || {};
   const navigate = useNavigate();
 
   // Filter students by search
   const filteredStudents = useFilteredUsers(students, searchQuery);
-  
+
   const handleDownload = () => {
     if (!courseId) {
       toast.error('Course ID is missing');
       return;
     }
-    downloadAttendanceReport(courseId);
+    downloadAttendanceReport({ courseId, role: user?.role });
   };
 
   const columns = [
@@ -163,7 +166,6 @@ function AttendanceDetailsAdmin() {
             onDownload={handleDownload}
             isDownloading={isDownloading}
             disabled={!courseId}
-
           >
             Download Report
           </DownloadReportButton>

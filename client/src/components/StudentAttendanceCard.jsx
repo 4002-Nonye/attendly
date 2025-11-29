@@ -98,6 +98,7 @@ function StudentAttendanceCard({ course, attendanceView = true }) {
           variant='primary'
           size='sm'
           fullWidth
+          disabled={!course.totalSessions}
         >
           View Details
         </Button>

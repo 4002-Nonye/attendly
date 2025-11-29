@@ -3,7 +3,12 @@ import { Settings, LogOut } from 'lucide-react';
 import PropTypes from 'prop-types';
 import logo from '../assets/logo-black.svg';
 import Button from '../components/Button';
+import { useSchoolInfo } from '../hooks/useSchoolInfo';
+import { useLogout } from '../features/auth/hooks/useLogout';
 function Sidebar({ options }) {
+  const { user } = useSchoolInfo();
+  const {logout}=useLogout()
+
   return (
     <aside className='w-60 xl:w-72 min-h-screen py-5 lg:flex flex-col  border-r border-gray-200 hidden'>
       {/* Logo */}
@@ -38,27 +43,29 @@ function Sidebar({ options }) {
       {/* Footer */}
       <div className='mt-auto px-2 space-y-1 '>
         {/* Settings */}
-        <NavLink
-          to='/settings'
-          className={({ isActive }) =>
-            `flex text-sm items-center gap-3 px-4 py-3 rounded-lg transition-colors duration-200 ${
-             isActive
-                      ? 'bg-blue-950 text-white'
-                      : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100'
-            }`
-          }
-        >
-          <Settings size={18} />
-          <span className='text-sm font-medium'>Settings</span>
-        </NavLink>
+        {user.role === 'admin' && (
+          <NavLink
+            to='/settings'
+            className={({ isActive }) =>
+              `flex text-sm items-center gap-3 px-4 py-3 rounded-lg transition-colors duration-200 ${
+                isActive
+                  ? 'bg-blue-950 text-white'
+                  : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100'
+              }`
+            }
+          >
+            <Settings size={18} />
+            <span className='text-sm font-medium'>Settings</span>
+          </NavLink>
+        )}
 
         {/* Logout */}
         <Button
           variant='outline'
           icon={LogOut}
+          onClick={logout}
           fullWidth
           className='transition-colors justify-start duration-200 text-slate-500 hover:text-red-400 hover:bg-white/5 border-none text-sm '
-
         >
           Logout
         </Button>

@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { CheckCircle, XCircle } from 'lucide-react';
+import { CheckCircle, XCircle, Target } from 'lucide-react';
 
 function StudentSessionSummary({ course }) {
   return (
@@ -11,6 +11,13 @@ function StudentSessionSummary({ course }) {
         <p className='text-sm text-gray-600 capitalize mt-1'>
           {course.courseTitle}
         </p>
+
+        <div className='flex items-center gap-2 mt-3'>
+          <Target className='w-4 h-4 text-blue-600' />
+          <span className='text-sm text-gray-600'>
+            Required Threshold: <span className='font-semibold text-gray-900'>{course.threshold}%</span>
+          </span>
+        </div>
       </div>
 
       <div className='grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4'>
@@ -75,6 +82,7 @@ StudentSessionSummary.propTypes = {
     totalPending: PropTypes.number,
     attendancePercentage: PropTypes.number.isRequired,
     eligible: PropTypes.bool.isRequired,
+    threshold: PropTypes.number,
   }).isRequired,
 };
 

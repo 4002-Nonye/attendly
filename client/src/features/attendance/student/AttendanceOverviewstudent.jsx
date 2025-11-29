@@ -90,6 +90,7 @@ function AttendanceOverviewStudent() {
           onClick={() => navigate(`/attendance/course/${course.courseId}`)}
           variant='primary'
           size='sm'
+          disabled={!course.totalSessions}
         >
           <span className='hidden sm:inline'>View Details</span>
         </Button>

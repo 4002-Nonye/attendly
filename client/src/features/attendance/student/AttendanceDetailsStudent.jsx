@@ -14,8 +14,10 @@ function AttendanceDetailsStudent() {
   const navigate = useNavigate();
 
   const { data, isPending } = useStudentSessionDetails(courseId);
+  console.log(data)
 
   const course = data?.course || {};
+
   const sessions = data?.sessions || [];
 
   const columns = ['Date', 'Lecturer', 'Started At', 'Marked At', 'Status'];
@@ -88,9 +90,6 @@ function AttendanceDetailsStudent() {
         <SessionStudentsSkeleton showSearchbar={false} />
       ) : (
         <>
-          {/* Course Summary Card */}
-          <StudentSessionSummary course={course}/>
-
           {/* Sessions Table */}
           {sessions.length === 0 ? (
             <EmptyCard
@@ -101,11 +100,15 @@ function AttendanceDetailsStudent() {
               iconColor='text-gray-400'
             />
           ) : (
-            <DataTable
-              columns={columns}
-              renderRow={renderRow}
-              data={sessions}
-            />
+            <>
+              {/* Course Summary Card */}
+              <StudentSessionSummary course={course} />
+              <DataTable
+                columns={columns}
+                renderRow={renderRow}
+                data={sessions}
+              />
+            </>
           )}
         </>
       )}

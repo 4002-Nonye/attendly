@@ -1,8 +1,3 @@
-// ============================================
-// BACKEND - Modern Professional PDF Generator
-// lib/pdfReportGenerator.js
-// ============================================
-
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
@@ -27,29 +22,21 @@ async function generateAttendancePDF(data, options = {}) {
         addWatermark(doc);
       }
 
-      // ============================================
-      // HEADER SECTION WITH BETTER TEXT WRAPPING
-      // ============================================
+      // HEADER SECTION
       let currentY = 50;
 
-      // University Name - Centered, Bold, Large
       doc
         .fontSize(18)
         .font('Helvetica-Bold')
         .text(
-          data.universityName.toUpperCase() || 'MY UNIVERSITY',
+          data.universityName?.toUpperCase() || 'MY UNIVERSITY',
           50,
           currentY,
-          {
-            align: 'center',
-            width: pageWidth,
-          }
+          { align: 'center', width: pageWidth }
         );
 
-      // Report Title - Centered with proper wrapping
-      currentY += 30; // Increased spacing
-      
-      // Truncate course title if too long
+      currentY += 30;
+
       const maxCourseTitleLength = 50;
       let courseTitle = data.courseTitle || '';
       if (courseTitle.length > maxCourseTitleLength) {
@@ -57,45 +44,36 @@ async function generateAttendancePDF(data, options = {}) {
       }
 
       doc
-        .fontSize(12) // Reduced font size for better fit
+        .fontSize(12)
         .font('Helvetica-Bold')
-        .text(
-          `ATTENDANCE REPORT FOR ${data.courseCode}`,
-          50,
-          currentY,
-          { align: 'center', width: pageWidth }
-        );
-      
-      // Course Title on separate line if needed
+        .text(`ATTENDANCE REPORT FOR ${data.courseCode}`, 50, currentY, {
+          align: 'center',
+          width: pageWidth,
+        });
+
       currentY += 20;
+
       doc
         .fontSize(11)
         .font('Helvetica-Bold')
-        .text(
-          courseTitle.toUpperCase(),
-          50,
-          currentY,
-          { align: 'center', width: pageWidth }
-        );
+        .text(courseTitle.toUpperCase(), 50, currentY, {
+          align: 'center',
+          width: pageWidth,
+        });
 
-      // Department - Centered with increased spacing
       if (data.department) {
-        currentY += 25; // Increased spacing
+        currentY += 25;
         doc
-          .fontSize(11) // Slightly smaller
+          .fontSize(11)
           .font('Helvetica')
           .text(
             `DEPARTMENT OF ${data.department.toUpperCase()}`,
             50,
             currentY,
-            {
-              align: 'center',
-              width: pageWidth,
-            }
+            { align: 'center', width: pageWidth }
           );
       }
 
-      // Academic Year and Semester - Centered
       currentY += 20;
       const semesterText = data.semester
         ? `${data.semester.toUpperCase()} SEMESTER`
@@ -108,10 +86,8 @@ async function generateAttendancePDF(data, options = {}) {
           width: pageWidth,
         });
 
-      // ============================================
-      // SUMMARY STATISTICS - Vertical Layout
-      // ============================================
-      currentY += 30; // Increased spacing
+      // SUMMARY SECTION
+      currentY += 30;
       doc.fontSize(10).font('Helvetica-Bold');
 
       const stats = [
@@ -122,35 +98,33 @@ async function generateAttendancePDF(data, options = {}) {
           label: 'Total Ineligible Students',
           value: data.summary.notEligibleCount,
         },
+
+        {
+          label: 'Attendance Threshold',
+          value: `${data.threshold}%`,
+        },
       ];
 
-      stats.forEach((stat, index) => {
+      stats.forEach((stat) => {
         doc.text(`${stat.label}: ${stat.value}`, 50, currentY);
         currentY += 18;
       });
 
-      // ============================================
-      //  TABLE SECTION - WITH COLUMN BORDERS
-      // ============================================
-      currentY += 20; // Increased spacing before table
-      
-      // Check if we have enough space for the table
+      // TABLE SECTION
+
+      currentY += 20;
+
       if (currentY > 650) {
         doc.addPage();
         currentY = 50;
-        
-        // Re-add watermark on new page
-        if (options.watermark !== false) {
-          addWatermark(doc);
-        }
+        if (options.watermark !== false) addWatermark(doc);
       }
-      
+
       const tableTop = currentY;
       const rowHeight = 24;
       const tableLeft = 50;
       const tableRight = 550;
 
-      // Define columns with precise positions and widths
       const columns = [
         { x: 50, width: 25, label: 'S/N', align: 'center', key: 'sn' },
         {
@@ -193,211 +167,161 @@ async function generateAttendancePDF(data, options = {}) {
         },
       ];
 
-      // Function to capitalize names properly
       function capitalizeName(name) {
         if (!name) return '';
         return name
           .toLowerCase()
           .split(' ')
-          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
           .join(' ');
       }
 
-      // Function to draw table with full borders
       function drawTableBorders(startY, endY) {
-        // Draw outer border
         doc
           .rect(tableLeft, startY, tableRight - tableLeft, endY - startY)
           .stroke();
 
-        // Draw vertical lines between columns
-        columns.forEach((col, index) => {
-          if (index > 0) {
-            // Skip first column (left border)
-            const lineX = col.x;
-            doc.moveTo(lineX, startY).lineTo(lineX, endY).stroke();
+        columns.forEach((col, i) => {
+          if (i > 0) {
+            doc.moveTo(col.x, startY).lineTo(col.x, endY).stroke();
           }
         });
 
-        // Draw right border (last vertical line)
         doc.moveTo(tableRight, startY).lineTo(tableRight, endY).stroke();
       }
 
-      // Function to draw table header
       function drawTableHeader(y) {
         const headerHeight = 25;
 
-        // Draw header background
         doc
           .rect(tableLeft, y, tableRight - tableLeft, headerHeight)
           .fill('#f5f5f5');
 
-        // Draw header borders
         drawTableBorders(y, y + headerHeight);
 
-        // Draw header text with proper spacing
-        doc.fontSize(8).font('Helvetica-Bold').fillColor('#000000');
+        doc.fontSize(8).font('Helvetica-Bold').fillColor('#000');
 
         columns.forEach((col) => {
-          // Add padding to header text - especially for "Name" column
-          let text = col.label;
-          let xPosition = col.x;
-          let textWidth = col.width;
-
-          if (col.key === 'name') {
-            // Add left padding for Name header
-            xPosition = col.x + 3;
-            textWidth = col.width - 6;
-          }
-
-          doc.text(text, xPosition, y + 8, {
-            width: textWidth,
-            align: col.align,
-          });
+          const x = col.key === 'name' ? col.x + 3 : col.x;
+          const w = col.key === 'name' ? col.width - 6 : col.width;
+          doc.text(col.label, x, y + 8, { width: w, align: col.align });
         });
 
         return y + headerHeight;
       }
 
-      // Draw initial header and get the starting Y for data
       let dataStartY = drawTableHeader(tableTop);
       let currentDataY = dataStartY;
 
-      // Table data
       doc.font('Helvetica').fontSize(8);
 
       data.students.forEach((student, index) => {
-        // Check if we need a new page
         if (currentDataY + rowHeight > 710) {
-          // Draw borders for current page's data section
           drawTableBorders(dataStartY, currentDataY);
-
           doc.addPage();
-
-          // Re-add watermark on new page
-          if (options.watermark !== false) {
-            addWatermark(doc);
-          }
-
+          if (options.watermark !== false) addWatermark(doc);
           currentDataY = 50;
           dataStartY = drawTableHeader(currentDataY);
           currentDataY = dataStartY;
-          doc.font('Helvetica').fontSize(8);
         }
 
-        // Zebra striping for rows
         if (index % 2 === 0) {
           doc
             .rect(tableLeft, currentDataY, tableRight - tableLeft, rowHeight)
             .fill('#fafafa');
         }
 
-        doc.fillColor('#000000');
+        doc.fillColor('#000');
 
-        // S/N - with padding
-        doc.text((index + 1).toString(), columns[0].x, currentDataY + 8, {
+        doc.text(index + 1, columns[0].x, currentDataY + 8, {
           width: columns[0].width,
-          align: columns[0].align,
+          align: 'center',
         });
 
-        // Matric No - with padding
         doc.text(
           (student.matricNo || '').toUpperCase(),
           columns[1].x,
           currentDataY + 8,
           {
             width: columns[1].width,
-            align: columns[1].align,
+            align: 'center',
           }
         );
 
-        // Name - Capitalized and with proper padding
-        const studentName = capitalizeName(student.fullName || student.name);
-        doc.text(studentName, columns[2].x + 3, currentDataY + 8, {
-          // Added 3px left padding
-          width: columns[2].width - 6, // Reduced width to create padding
-          align: columns[2].align,
-          ellipsis: true,
-        });
+        doc.text(
+          capitalizeName(student.fullName),
+          columns[2].x + 3,
+          currentDataY + 8,
+          { width: columns[2].width - 6, align: 'left' }
+        );
 
-        // Enrolled At - with padding
         doc.text(
           `S${student.enrolledAtSession || 1}`,
           columns[3].x,
           currentDataY + 8,
           {
             width: columns[3].width,
-            align: columns[3].align,
+            align: 'center',
           }
         );
 
-        // Sessions - with padding
         doc.text(
           student.totalSessions.toString(),
           columns[4].x,
           currentDataY + 8,
           {
             width: columns[4].width,
-            align: columns[4].align,
+            align: 'center',
           }
         );
 
-        // Attended - with padding
         doc.text(
           student.totalAttended.toString(),
           columns[5].x,
           currentDataY + 8,
           {
             width: columns[5].width,
-            align: columns[5].align,
+            align: 'center',
           }
         );
 
-        // Missed - with padding
         doc.text(
           student.totalAbsent.toString(),
           columns[6].x,
           currentDataY + 8,
           {
             width: columns[6].width,
-            align: columns[6].align,
+            align: 'center',
           }
         );
 
-        // Rate (%) - with padding and color coding
         doc.font('Helvetica-Bold');
+
         const percentage = student.attendancePercentage;
-        if (percentage >= 75) {
-          doc.fillColor('#16a34a'); // Green
-        } else if (percentage >= 50) {
-          doc.fillColor('#f59e0b'); // Orange
-        } else {
-          doc.fillColor('#dc2626'); // Red
-        }
+        if (percentage >= 75) doc.fillColor('#16a34a');
+        else if (percentage >= 50) doc.fillColor('#f59e0b');
+        else doc.fillColor('#dc2626');
 
         doc.text(`${percentage.toFixed(1)}%`, columns[7].x, currentDataY + 8, {
           width: columns[7].width,
-          align: columns[7].align,
+          align: 'center',
         });
 
-        // Eligibility Status - with padding
         doc.font('Helvetica');
+
         if (student.eligible) {
           doc.fillColor('#16a34a').text('Yes', columns[8].x, currentDataY + 8, {
             width: columns[8].width,
-            align: columns[8].align,
+            align: 'center',
           });
         } else {
           doc.fillColor('#dc2626').text('No', columns[8].x, currentDataY + 8, {
             width: columns[8].width,
-            align: columns[8].align,
+            align: 'center',
           });
         }
 
-        // Reset color for next row
-        doc.fillColor('#000000');
-
-        // Draw horizontal line between rows
+        doc.fillColor('#000');
         doc
           .moveTo(tableLeft, currentDataY + rowHeight)
           .lineTo(tableRight, currentDataY + rowHeight)
@@ -406,49 +330,36 @@ async function generateAttendancePDF(data, options = {}) {
         currentDataY += rowHeight;
       });
 
-      // Draw final borders for the data section
       if (currentDataY > dataStartY) {
         drawTableBorders(dataStartY, currentDataY);
       }
 
-      // ============================================
       // FOOTER SECTION
-      // ============================================
       const footerY = Math.max(currentDataY + 20, doc.page.height - 110);
 
-      // Draw footer separator line
       doc
         .moveTo(50, footerY - 10)
         .lineTo(550, footerY - 10)
-        .lineWidth(0.5)
         .stroke();
 
-      doc.fontSize(10).font('Helvetica').fillColor('#000000');
+      doc.fontSize(10).font('Helvetica').fillColor('#000');
 
-      // Prepared by line
       doc.text('Prepared by: _______________________', 50, footerY, {
         width: 240,
-        align: 'left',
       });
 
-      // Approved by line
       doc.text('Approved by: _______________________', 310, footerY, {
         width: 240,
-        align: 'left',
       });
 
-      // Generated date
       const generatedDate = new Date().toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
       });
 
-      doc.text(`Generated on: ${generatedDate}`, 50, footerY + 25, {
-        align: 'left',
-      });
+      doc.text(`Generated on: ${generatedDate}`, 50, footerY + 25);
 
-      // Add confidential stamp if enabled
       if (options.confidential !== false) {
         doc
           .fontSize(8)
@@ -460,14 +371,11 @@ async function generateAttendancePDF(data, options = {}) {
           });
       }
 
-      // ============================================
-      // POWERED BY - Bottom of page
-      // ============================================
       const poweredByY = doc.page.height - 30;
       doc
         .fontSize(8)
         .font('Helvetica-Oblique')
-        .fillColor('#666666')
+        .fillColor('#666')
         .text('Powered by Attendly', 50, poweredByY, {
           align: 'center',
           width: pageWidth,
@@ -480,27 +388,23 @@ async function generateAttendancePDF(data, options = {}) {
   });
 }
 
-// Helper function to add watermark
 function addWatermark(doc) {
   const watermarkText = 'CONFIDENTIAL';
 
-  // Save current state
   doc.save();
 
-  // Move to center and rotate
   doc
     .translate(doc.page.width / 2, doc.page.height / 2)
-    .rotate(-45, { origin: [0, 0] })
+    .rotate(-45)
     .fontSize(80)
     .font('Helvetica-Bold')
-    .fillColor('#000000')
+    .fillColor('#000')
     .opacity(0.03)
     .text(watermarkText, -200, 0, {
       align: 'center',
       width: 400,
     });
 
-  // Restore state
   doc.restore();
 }
 

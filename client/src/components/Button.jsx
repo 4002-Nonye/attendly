@@ -24,8 +24,8 @@ function Button({
     secondaryDanger: 'bg-red-100 text-red-700 hover:bg-red-200',
     outline: 'border-2 border-gray-300 hover:bg-gray-100',
     pill: active
-      ? 'bg-white text-blue-700 shadow-sm'
-      : 'bg-transparent text-gray-600 hover:text-gray-900',
+      ? 'bg-blue-800 text-white shadow-md scale-105'
+      : 'bg-gray-100 text-gray-700 hover:bg-gray-200',
   };
 
   const sizeStyles = {

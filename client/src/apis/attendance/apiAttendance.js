@@ -64,6 +64,16 @@ export const getLecturerAttendanceReport = async (courseId) => {
   }
 };
 
+export const updateAttendanceThresholdLecturer = async (data) => {
+    try {
+    const response = await axios.patch('/api/lecturer/attendance/threshold',data);
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+
 export const getAdminAttendanceReport = async () => {
   try {
     const response = await axios.get('/api/admin/attendance/report');
@@ -84,13 +94,35 @@ export const getAdminCourseAttendanceDetails = async (courseId) => {
   }
 };
 
+export const downloadAttendanceReport = async ({ courseId, role }) => {
+  try {
+    const basePath = role === 'lecturer' ? '/api/lecturer' : '/api/admin';
 
-export const downloadAttendanceReport = async (courseId) => {
-  const response = await axios.get(
-    `/api/admin/attendance/courses/${courseId}/download`,
-    {
-      responseType: 'blob',
+    const response = await axios.get(
+      `${basePath}/attendance/courses/${courseId}/download`,
+      {
+        responseType: 'blob',
+      }
+    );
+
+    // Extract filename from Content-Disposition header
+    const contentDisposition = response.headers['content-disposition'];
+    let filename = `attendance-report-${courseId}-${Date.now()}.pdf`; // Fallback
+
+    if (contentDisposition) {
+      const filenameMatch = contentDisposition.match(/filename="(.+?)"/);
+      if (filenameMatch && filenameMatch[1]) {
+        filename = filenameMatch[1];
+      }
     }
-  );
-  return response.data;
+
+    // Return both blob and filename
+    return {
+      blob: response.data,
+      filename: filename,
+      courseId: courseId,
+    };
+  } catch (error) {
+    error.response.data;
+  }
 };

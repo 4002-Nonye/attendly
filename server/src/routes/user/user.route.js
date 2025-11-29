@@ -1,11 +1,8 @@
 const express = require('express');
 const { requireAdminAccess } = require('../../middlewares/roleAccess');
 const requireLogin = require('../../middlewares/requireLogin');
-const {
-  getLecturers,
-  getUserProfile,
-  getStudents,
-} = require('../../controllers/users/admin/user.controller');
+const { getLecturers, getStudents } = require('../../controllers/users/admin/adminUser.controller');
+const { getUserProfile } = require('../../controllers/users/general/user.controller');
 
 
 const userRoute = express.Router();

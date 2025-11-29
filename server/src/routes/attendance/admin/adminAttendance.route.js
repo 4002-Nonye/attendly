@@ -4,8 +4,9 @@ const { requireAdminAccess } = require('../../../middlewares/roleAccess');
 const {
   getAdminAttendanceReport,
   getAdminCourseAttendanceDetails,
-  downloadAdminAttendanceReport,
+
 } = require('../../../controllers/attendance/admin/adminAttendance.controller');
+const { downloadAttendanceReport } = require('../../../controllers/attendance/general/attendance.controller');
 
 const adminAttendanceRoute = express.Router();
 
@@ -24,6 +25,6 @@ adminAttendanceRoute.get(
   getAdminCourseAttendanceDetails
 );
 
-adminAttendanceRoute.get('/courses/:courseId/download',requireLogin,requireAdminAccess,downloadAdminAttendanceReport)
+adminAttendanceRoute.get('/courses/:courseId/download',requireLogin,requireAdminAccess,downloadAttendanceReport)
 
 module.exports = adminAttendanceRoute;

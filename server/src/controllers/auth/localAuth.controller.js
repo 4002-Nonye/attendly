@@ -120,7 +120,7 @@ exports.signup = async (req, res) => {
 // complete user profile if sign up with google
 exports.completeProfile = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const { id } = req.user;
     const { role, schoolInput, faculty, department, matricNo, level } =
       req.body;
 
@@ -187,7 +187,7 @@ exports.completeProfile = async (req, res) => {
       updateData = { ...updateData, schoolId: schoolDoc._id };
     }
 
-    const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
+    const updatedUser = await User.findByIdAndUpdate(id, updateData, {
       new: true,
     });
 
@@ -207,7 +207,7 @@ exports.completeProfile = async (req, res) => {
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 
-  //Basic validation
+  // validation
   if (!email || !password) {
     return res.status(400).json({ error: 'All fields are required' });
   }
@@ -399,5 +399,88 @@ exports.getUser = async (req, res) => {
   } catch (err) {
     console.log(err);
     return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+exports.changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const { id } = req.user;
+
+    // Input validation
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Both passwords are required' });
+    }
+
+    // Find user
+    const user = await User.findById(id).select('+password');
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Check if user has a password set
+    if (!user.password) {
+      return res.status(400).json({
+        error: 'No password set.',
+      });
+    }
+
+    // 1. Check old password correctness
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+
+    if (!isMatch) {
+      return res.status(400).json({ error: 'Current password is incorrect' });
+    }
+
+    // 2. Prevent reusing old password
+    const isSame = await bcrypt.compare(newPassword, user.password);
+    if (isSame) {
+      return res.status(400).json({
+        error: 'New password must be different from current password',
+      });
+    }
+
+    // 3. Hash new password
+    user.password = await hashPassword(newPassword);
+
+    await user.save();
+
+    return res.json({
+      message: 'Password changed successfully',
+    });
+  } catch (error) {
+    console.error('Change password error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+exports.setPassword = async (req, res) => {
+  try {
+    const { newPassword } = req.body;
+    const { id } = req.user;
+
+    if (!newPassword) {
+      return res.status(400).json({ error: 'Password is required' });
+    }
+
+    const user = await User.findById(id).select('+password');
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // 1. Ensure user currently has NO password
+    if (user.password) {
+      return res.status(400).json({ error: 'Password already set.' });
+    }
+
+    // 2. Hash new password
+    user.password = await hashPassword(newPassword);
+
+    await user.save();
+
+    return res.json({ message: 'Password set successfully' });
+  } catch (error) {
+    console.error('Set password error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 };

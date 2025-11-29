@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Course = mongoose.model('Course');
-const Attendance = mongoose.model('Attendance');
+const User = mongoose.model('User');
 const Session = mongoose.model('Session');
 const StudentEnrollment = mongoose.model('StudentEnrollment');
 const School = mongoose.model('School');
@@ -55,26 +55,26 @@ exports.getLecturerAttendanceOverview = async (req, res) => {
       // 3. Add totalSessions field
       {
         $addFields: {
-          totalSessions: { $size: '$sessions' }
-        }
+          totalSessions: { $size: '$sessions' },
+        },
       },
 
       // 4. Filter: Only return courses with sessions > 0
       {
         $match: {
-          totalSessions: { $gt: 0 }
-        }
+          totalSessions: { $gt: 0 },
+        },
       },
 
-      // 5. Final projection 
+      // 5. Final projection
       {
         $project: {
           _id: 1,
           courseCode: 1,
           courseTitle: 1,
-          totalSessions: 1
-        }
-      }
+          totalSessions: 1,
+        },
+      },
     ]);
 
     return res.status(200).json({ overview });
@@ -135,9 +135,9 @@ exports.getLecturerSessionDetails = async (req, res) => {
             {
               $project: {
                 student: 1,
-                createdAt: 1
-              }
-            }
+                createdAt: 1,
+              },
+            },
           ],
         },
       },
@@ -155,7 +155,7 @@ exports.getLecturerSessionDetails = async (req, res) => {
                 semester: school.currentSemester,
               },
             },
-            { $sort: { createdAt: -1 } }
+            { $sort: { createdAt: -1 } },
           ],
         },
       },
@@ -169,11 +169,11 @@ exports.getLecturerSessionDetails = async (req, res) => {
               input: '$studentenrollments',
               as: 'enrollment',
               cond: {
-                $lte: ['$$enrollment.createdAt', '$sessions.createdAt']
-              }
-            }
-          }
-        }
+                $lte: ['$$enrollment.createdAt', '$sessions.createdAt'],
+              },
+            },
+          },
+        },
       },
       // Get attendances for this session
       {
@@ -211,14 +211,24 @@ exports.getLecturerSessionDetails = async (req, res) => {
           totalAbsent: {
             $cond: [
               { $eq: ['$sessions.status', 'ended'] },
-              { $max: [{ $subtract: ['$totalEligibleStudents', '$totalPresent'] }, 0] },
+              {
+                $max: [
+                  { $subtract: ['$totalEligibleStudents', '$totalPresent'] },
+                  0,
+                ],
+              },
               0,
             ],
           },
           totalPending: {
             $cond: [
               { $eq: ['$sessions.status', 'active'] },
-              { $max: [{ $subtract: ['$totalEligibleStudents', '$totalPresent'] }, 0] },
+              {
+                $max: [
+                  { $subtract: ['$totalEligibleStudents', '$totalPresent'] },
+                  0,
+                ],
+              },
               0,
             ],
           },
@@ -309,7 +319,9 @@ exports.getLecturerSessionStudentDetails = async (req, res) => {
     });
 
     if (!course) {
-      return res.status(403).json({ error: 'Course not found or unauthorized' });
+      return res
+        .status(403)
+        .json({ error: 'Course not found or unauthorized' });
     }
 
     // 3. Find the session only within current academic period
@@ -321,7 +333,9 @@ exports.getLecturerSessionStudentDetails = async (req, res) => {
     });
 
     if (!session) {
-      return res.status(404).json({ error: 'Session not found in current period' });
+      return res
+        .status(404)
+        .json({ error: 'Session not found in current period' });
     }
 
     // 4. Use aggregation to get ALL students (including inactive) who were enrolled at session time
@@ -331,8 +345,8 @@ exports.getLecturerSessionStudentDetails = async (req, res) => {
           course: mongoose.Types.ObjectId.createFromHexString(courseId),
           academicYear: currentYearId,
           semester: currentSemester,
-          createdAt: { $lte: session.createdAt } // Only students enrolled before session
-        }
+          createdAt: { $lte: session.createdAt }, // Only students enrolled before session
+        },
       },
       {
         $lookup: {
@@ -340,10 +354,8 @@ exports.getLecturerSessionStudentDetails = async (req, res) => {
           localField: 'student',
           foreignField: '_id',
           as: 'studentInfo',
-          pipeline: [
-            { $project: { matricNo: 1, fullName: 1 } }
-          ]
-        }
+          pipeline: [{ $project: { matricNo: 1, fullName: 1 } }],
+        },
       },
       { $unwind: '$studentInfo' },
       {
@@ -356,19 +368,24 @@ exports.getLecturerSessionStudentDetails = async (req, res) => {
                 $expr: {
                   $and: [
                     { $eq: ['$student', '$$studentId'] },
-                    { $eq: ['$session', mongoose.Types.ObjectId.createFromHexString(sessionId)] }
-                  ]
-                }
-              }
-            }
+                    {
+                      $eq: [
+                        '$session',
+                        mongoose.Types.ObjectId.createFromHexString(sessionId),
+                      ],
+                    },
+                  ],
+                },
+              },
+            },
           ],
-          as: 'attendance'
-        }
+          as: 'attendance',
+        },
       },
       {
         $addFields: {
-          attendanceRecord: { $arrayElemAt: ['$attendance', 0] }
-        }
+          attendanceRecord: { $arrayElemAt: ['$attendance', 0] },
+        },
       },
       {
         $project: {
@@ -383,22 +400,22 @@ exports.getLecturerSessionStudentDetails = async (req, res) => {
                 $cond: {
                   if: { $eq: [session.status, 'ended'] },
                   then: 'Absent',
-                  else: 'Pending'
-                }
-              }
-            }
+                  else: 'Pending',
+                },
+              },
+            },
           },
           timeMarked: {
             $cond: {
               if: { $gt: [{ $size: '$attendance' }, 0] },
               then: '$attendanceRecord.createdAt',
-              else: null
-            }
+              else: null,
+            },
           },
-          enrollmentDate: '$createdAt'
-        }
+          enrollmentDate: '$createdAt',
+        },
       },
-      { $sort: { matricNo: 1 } }
+      { $sort: { matricNo: 1 } },
     ]);
 
     res.status(200).json({
@@ -423,7 +440,7 @@ exports.getLecturerSessionStudentDetails = async (req, res) => {
 exports.getLecturerAttendanceReport = async (req, res) => {
   try {
     const { courseId } = req.params;
-    const { id, schoolId } = req.user;
+    const { id: userId, schoolId, role } = req.user;
 
     if (!mongoose.Types.ObjectId.isValid(courseId)) {
       return res.status(400).json({ error: 'Invalid course ID' });
@@ -432,11 +449,13 @@ exports.getLecturerAttendanceReport = async (req, res) => {
     // Check if lecturer is assigned to the course
     const course = await Course.findOne({
       _id: courseId,
-      lecturers: { $in: [mongoose.Types.ObjectId.createFromHexString(id)] },
+      lecturers: { $in: [mongoose.Types.ObjectId.createFromHexString(userId)] },
     }).select('courseCode courseTitle level semester');
 
     if (!course) {
-      return res.status(403).json({ error: 'Course not found or unauthorized' });
+      return res
+        .status(403)
+        .json({ error: 'Course not found or unauthorized' });
     }
 
     // Fetch current academic year and semester
@@ -450,14 +469,25 @@ exports.getLecturerAttendanceReport = async (req, res) => {
       });
     }
 
-    const threshold = school.attendanceThreshold || 65;
+    let threshold = school.attendanceThreshold || 65;
+
+    // Lecturer threshold override
+    if (role === 'lecturer') {
+      const lecturer = await User.findById(userId)
+        .select('attendanceThreshold')
+        .lean();
+      if (lecturer?.attendanceThreshold) {
+        threshold = lecturer.attendanceThreshold; // lecturer override
+      }
+    }
+   
 
     const reportData = await Course.aggregate([
       // 1. Match course
       {
         $match: {
           _id: mongoose.Types.ObjectId.createFromHexString(courseId),
-          lecturers: { $in: [mongoose.Types.ObjectId.createFromHexString(id)] },
+          lecturers: { $in: [mongoose.Types.ObjectId.createFromHexString(userId)] },
         },
       },
 
@@ -531,39 +561,43 @@ exports.getLecturerAttendanceReport = async (req, res) => {
             $filter: {
               input: '$allSessions',
               as: 'session',
-              cond: { $lt: ['$$session.createdAt', '$studentEnrollments.createdAt'] }
-            }
+              cond: {
+                $lt: ['$$session.createdAt', '$studentEnrollments.createdAt'],
+              },
+            },
           },
           // Find sessions that occurred AFTER enrollment (applicable sessions)
           applicableSessionsArray: {
             $filter: {
               input: '$allSessions',
               as: 'session',
-              cond: { $gte: ['$$session.createdAt', '$studentEnrollments.createdAt'] }
-            }
-          }
-        }
+              cond: {
+                $gte: ['$$session.createdAt', '$studentEnrollments.createdAt'],
+              },
+            },
+          },
+        },
       },
 
       // 6. Calculate enrollment details
       {
         $addFields: {
           sessionsBeforeEnrollmentCount: { $size: '$sessionsBeforeEnrollment' },
-          enrolledAtSession: { 
+          enrolledAtSession: {
             $cond: [
               { $eq: [{ $size: '$sessionsBeforeEnrollment' }, 0] },
               1, // If no sessions before enrollment, enrolled at first session
-              { $add: [{ $size: '$sessionsBeforeEnrollment' }, 1] } // Otherwise, enrolled at next session
-            ]
+              { $add: [{ $size: '$sessionsBeforeEnrollment' }, 1] }, // Otherwise, enrolled at next session
+            ],
           },
           applicableSessions: { $size: '$applicableSessionsArray' },
           applicableSessionIds: {
             $map: {
               input: '$applicableSessionsArray',
               as: 'session',
-              in: '$$session._id'
-            }
-          }
+              in: '$$session._id',
+            },
+          },
         },
       },
 
@@ -571,9 +605,9 @@ exports.getLecturerAttendanceReport = async (req, res) => {
       {
         $lookup: {
           from: 'attendances',
-          let: { 
+          let: {
             studentId: '$studentEnrollments.student',
-            applicableSessionIds: '$applicableSessionIds'
+            applicableSessionIds: '$applicableSessionIds',
           },
           pipeline: [
             {
@@ -584,7 +618,7 @@ exports.getLecturerAttendanceReport = async (req, res) => {
                     { $in: ['$session', '$$applicableSessionIds'] },
                     { $eq: ['$status', 'Present'] },
                     { $eq: ['$academicYear', school.currentAcademicYear] },
-                    { $eq: ['$semester', school.currentSemester] }
+                    { $eq: ['$semester', school.currentSemester] },
                   ],
                 },
               },
@@ -595,19 +629,19 @@ exports.getLecturerAttendanceReport = async (req, res) => {
       },
 
       // 8. Compute totals and percentages based on applicable sessions
-      { 
-        $addFields: { 
-          totalAttended: { $size: '$studentAttendances' } 
-        } 
+      {
+        $addFields: {
+          totalAttended: { $size: '$studentAttendances' },
+        },
       },
       {
         $addFields: {
-          totalAbsent: { 
+          totalAbsent: {
             $cond: [
               { $eq: ['$applicableSessions', 0] },
               0,
-              { $subtract: ['$applicableSessions', '$totalAttended'] }
-            ]
+              { $subtract: ['$applicableSessions', '$totalAttended'] },
+            ],
           },
         },
       },
@@ -616,7 +650,7 @@ exports.getLecturerAttendanceReport = async (req, res) => {
           attendancePercentage: {
             $cond: [
               { $eq: ['$applicableSessions', 0] },
-              100, //  100% if no applicable sessions 
+              100, //  100% if no applicable sessions
               {
                 $round: [
                   {
@@ -638,9 +672,9 @@ exports.getLecturerAttendanceReport = async (req, res) => {
           eligible: {
             $cond: [
               { $eq: ['$applicableSessions', 0] },
-              true, //  Always eligible if no applicable sessions 
-              { $gte: ['$attendancePercentage', threshold] }
-            ]
+              true, //  Always eligible if no applicable sessions
+              { $gte: ['$attendancePercentage', threshold] },
+            ],
           },
         },
       },
@@ -672,12 +706,12 @@ exports.getLecturerAttendanceReport = async (req, res) => {
     const totalStudents = reportData.length;
     const eligibleCount = reportData.filter((s) => s.eligible).length;
     const notEligibleCount = totalStudents - eligibleCount;
-    
+
     const totalSessionsHeld = await Session.countDocuments({
       course: courseId,
       academicYear: school.currentAcademicYear,
       semester: school.currentSemester,
-      status: 'ended'
+      status: 'ended',
     });
 
     return res.status(200).json({
@@ -701,7 +735,4 @@ exports.getLecturerAttendanceReport = async (req, res) => {
     console.error('Error generating attendance report:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
-};
-exports.downloadLecturerAttendanceReport = async (req, res) => {
-  // returns downloadable PDF for a course
 };

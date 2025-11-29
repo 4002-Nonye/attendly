@@ -61,11 +61,13 @@ exports.markAttendance = async (req, res) => {
   }
 };
 
+
+
 exports.getStudentAttendanceReport = async (req, res) => {
   try {
     const { id, schoolId } = req.user;
 
-    // Get the school's current academic period
+    // Get the school's current academic period and default threshold
     const schoolDoc = await School.findById(schoolId).select(
       'currentAcademicYear currentSemester attendanceThreshold'
     );
@@ -73,12 +75,13 @@ exports.getStudentAttendanceReport = async (req, res) => {
     if (!schoolDoc) return res.status(404).json({ error: 'School not found' });
 
     const { currentAcademicYear, currentSemester, attendanceThreshold } = schoolDoc;
-    const threshold = attendanceThreshold || 65;
+    const defaultThreshold = attendanceThreshold || 65;
     
-    if (!currentAcademicYear || !currentSemester)
-      return res
-        .status(400)
-        .json({ error: 'No active academic period for this school' });
+    if (!currentAcademicYear || !currentSemester) {
+      return res.status(400).json({ 
+        error: 'No active academic period for this school' 
+      });
+    }
 
     // Get the student level
     const student = await User.findById(id).select('level');
@@ -115,7 +118,24 @@ exports.getStudentAttendanceReport = async (req, res) => {
         $match: { 'course.level': student.level },
       },
 
-      // 5. Lookup ALL sessions (after enrollment)
+      // 5. Lookup course lecturers to get their threshold overrides
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'course.lecturers',
+          foreignField: '_id',
+          as: 'lecturers',
+          pipeline: [
+            {
+              $project: {
+                attendanceThreshold: 1,
+              },
+            },
+          ],
+        },
+      },
+
+      // 6. Lookup ALL sessions (after enrollment)
       {
         $lookup: {
           from: 'sessions',
@@ -143,7 +163,7 @@ exports.getStudentAttendanceReport = async (req, res) => {
         },
       },
 
-      // 6. Lookup ENDED sessions only
+      // 7. Lookup ENDED sessions only
       {
         $lookup: {
           from: 'sessions',
@@ -172,7 +192,7 @@ exports.getStudentAttendanceReport = async (req, res) => {
         },
       },
 
-      // 7. Lookup attendances for this student
+      // 8. Lookup attendances for this student
       {
         $lookup: {
           from: 'attendances',
@@ -202,7 +222,7 @@ exports.getStudentAttendanceReport = async (req, res) => {
         },
       },
 
-      // 8. Compute totals
+      // 9. Compute totals
       {
         $addFields: {
           totalSessions: { $size: '$allSessions' },
@@ -230,10 +250,10 @@ exports.getStudentAttendanceReport = async (req, res) => {
         },
       },
 
-      // 9. Compute percentage (based on ENDED sessions only)
+      // 10. Calculate rounded percentage 
       {
         $addFields: {
-          attendancePercentage: {
+          roundedPercentage: {
             $cond: [
               { $eq: ['$endedSessionsCount', 0] },
               100,
@@ -253,20 +273,33 @@ exports.getStudentAttendanceReport = async (req, res) => {
         },
       },
 
-      // 10. Eligibility 
+      // 11. Determine threshold (lecturer override or school default)
+      {
+        $addFields: {
+          // Get first lecturer's threshold if exists, otherwise use school default
+          courseThreshold: {
+            $ifNull: [
+              { $arrayElemAt: ['$lecturers.attendanceThreshold', 0] },
+              defaultThreshold,
+            ],
+          },
+        },
+      },
+
+      // 12. Eligibility based on rounded percentage and course specific threshold
       {
         $addFields: {
           eligible: {
             $cond: [
               { $eq: ['$endedSessionsCount', 0] },
               true,
-              { $gte: ['$attendancePercentage', threshold] }
-            ]
+              { $gte: ['$roundedPercentage', '$courseThreshold'] },
+            ],
           },
         },
       },
 
-      // 11. Final projection
+      // 13. Final projection
       {
         $project: {
           _id: 0,
@@ -277,7 +310,8 @@ exports.getStudentAttendanceReport = async (req, res) => {
           endedSessions: '$endedSessionsCount',
           totalAttended: 1,
           totalMissed: 1,
-          attendancePercentage: 1,
+          attendancePercentage: '$roundedPercentage',
+          threshold: '$courseThreshold',
           eligible: 1,
           enrolledAt: '$createdAt',
         },
@@ -296,6 +330,8 @@ exports.getStudentAttendanceReport = async (req, res) => {
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+
 exports.getStudentSessionDetails = async (req, res) => {
   try {
     const { courseId } = req.params;
@@ -306,24 +342,36 @@ exports.getStudentSessionDetails = async (req, res) => {
       return res.status(400).json({ error: 'Invalid course ID' });
     }
 
-    // Get current academic year and semester
+    // Get current academic year, semester, and default threshold
     const school = await School.findById(schoolId).select(
-      'currentAcademicYear currentSemester'
+      'currentAcademicYear currentSemester attendanceThreshold'
     );
 
     if (!school || !school.currentAcademicYear) {
-      return res
-        .status(404)
-        .json({ error: 'No current academic period found for this school' });
+      return res.status(404).json({ 
+        error: 'No current academic period found for this school' 
+      });
     }
 
-    // Get course details
+    const defaultThreshold = school.attendanceThreshold || 65;
+
+    // Get course details with lecturers
     const course = await Course.findById(courseId)
-      .select('courseCode courseTitle level')
+      .select('courseCode courseTitle level lecturers')
+      .populate('lecturers', 'attendanceThreshold')
       .lean();
 
     if (!course) {
       return res.status(404).json({ error: 'Course not found' });
+    }
+
+    // Determine threshold: lecturer override or school default
+    let threshold = defaultThreshold;
+    if (course.lecturers && course.lecturers.length > 0) {
+      const lecturerThreshold = course.lecturers[0].attendanceThreshold;
+      if (lecturerThreshold !== undefined && lecturerThreshold !== null) {
+        threshold = lecturerThreshold;
+      }
     }
 
     // Get student enrollment info
@@ -350,8 +398,7 @@ exports.getStudentSessionDetails = async (req, res) => {
       .lean();
 
     if (!sessions.length) {
-      return res.status(404).json({ 
-        error: 'No sessions found for this course',
+      return res.status(200).json({ 
         course: {
           courseCode: course.courseCode,
           courseTitle: course.courseTitle,
@@ -361,6 +408,7 @@ exports.getStudentSessionDetails = async (req, res) => {
           totalAbsent: 0,
           totalPending: 0,
           attendancePercentage: 100,
+          threshold: threshold,
           eligible: true,
           enrolledAt: enrollment?.createdAt || null,
         },
@@ -427,11 +475,11 @@ exports.getStudentSessionDetails = async (req, res) => {
       return {
         sessionId: s._id,
         sessionDate: s.createdAt,
-        sessionStartTime: s.createdAt, // When session started
+        sessionStartTime: s.createdAt,
         startedBy: s.startedBy?.fullName || 'Unknown',
         sessionStatus: s.status,
         studentStatus: finalStatus,
-        timeMarked, // When student marked attendance (null if not marked)
+        timeMarked,
       };
     });
 
@@ -441,7 +489,9 @@ exports.getStudentSessionDetails = async (req, res) => {
       endedSessionsCount > 0 
         ? Math.round((totalAttended / endedSessionsCount) * 100) 
         : 100;
-    const eligible = attendancePercentage >= 65;
+    
+    // Use the determined threshold 
+    const eligible = attendancePercentage >= threshold;
 
     return res.status(200).json({
       course: {
@@ -453,6 +503,7 @@ exports.getStudentSessionDetails = async (req, res) => {
         totalAbsent,
         totalPending,
         attendancePercentage,
+        threshold: threshold,
         eligible,
         enrolledAt: enrollment?.createdAt || null,
       },
@@ -463,3 +514,4 @@ exports.getStudentSessionDetails = async (req, res) => {
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
+

@@ -64,3 +64,30 @@ export const getUser = async () => {
     throw error.response.data;
   }
 };
+
+export const changePassword = async (data) => {
+  try {
+    const response = await axios.post('/api/auth/change-password', data);
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+export const setPassword = async (data) => {
+  try {
+    const response = await axios.post('/api/auth/set-password', data);
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+export const logout = async () => {
+  try {
+    const response = await axios.get('/api/auth/logout');
+    return response.data;
+  } catch (err) {
+    throw err.response.data;
+  }
+};

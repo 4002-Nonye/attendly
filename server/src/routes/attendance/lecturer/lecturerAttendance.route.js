@@ -9,6 +9,8 @@ const {
   getLecturerAttendanceReport,
 } = require('../../../controllers/attendance/lecturer/lecturerAttendance.controller');
 const requireLogin = require('../../../middlewares/requireLogin');
+const { downloadAttendanceReport } = require('../../../controllers/attendance/general/attendance.controller');
+const { setAttendanceThreshold } = require('../../../controllers/school/school.controller');
 
 const lecturerAttendanceRoute = express.Router();
 
@@ -44,6 +46,14 @@ lecturerAttendanceRoute.get(
   getLecturerAttendanceReport
 );
 
-lecturerAttendanceRoute.get('/overview',requireLogin)
+lecturerAttendanceRoute.get('/courses/:courseId/download',requireLogin,requireLecturerAccess,downloadAttendanceReport)
+
+lecturerAttendanceRoute.patch(
+  '/threshold',
+  requireLogin,
+  requireLecturerAccess,
+  setAttendanceThreshold
+);
+
 
 module.exports = lecturerAttendanceRoute;

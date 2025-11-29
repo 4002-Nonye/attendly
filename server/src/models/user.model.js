@@ -4,50 +4,25 @@ const { Schema } = mongoose;
 
 const userSchema = new Schema(
   {
-    fullName: {
-      type: String,
-      required: true,
-      trim: true,
+    fullName: { type: String, required: true, trim: true },
+    role: { type: String, enum: ['student', 'admin', 'lecturer'] },
+
+    attendanceThreshold: {
+      type: Number,
+      default: null,
+      min: 50,
+      max: 100,
     },
-    role: {
-      type: String,
-      enum: ['student', 'admin', 'lecturer'],
-    },
-    googleId: {
-      type: String,
-      trim: true,
-      sparse: true, // Allows multiple docs with null/undefined
-    },
-    matricNo: {
-      type: String,
-      trim: true,
-      sparse: true,
-      unique: true,
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      trim: true,
-      lowercase: true,
-    },
-    password: {
-      type: String,
-      required: false, // Set to false to allow Google sign-in users without password
-      select: false,
-    },
-    faculty: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Faculty',
-    },
-    department: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Department',
-    },
-    schoolId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'School',
-    },
+
+    googleId: { type: String, trim: true, sparse: true },
+    matricNo: { type: String, trim: true, sparse: true, unique: true },
+
+    email: { type: String, required: true, unique: true },
+    password: { type: String, select: false },
+
+    faculty: { type: mongoose.Schema.Types.ObjectId, ref: 'Faculty' },
+    department: { type: mongoose.Schema.Types.ObjectId, ref: 'Department' },
+    schoolId: { type: mongoose.Schema.Types.ObjectId, ref: 'School' },
     level: Number,
 
     resetPasswordToken: String,
@@ -56,10 +31,15 @@ const userSchema = new Schema(
   { timestamps: true }
 );
 
-// do not add level if user is not a student
 userSchema.pre('save', function (next) {
+  // remove level if user is not a student
   if (this.role !== 'student') {
     this.level = undefined;
+  }
+
+  // remove attendanceThreshold for students & admins
+  if (this.role !== 'lecturer') {
+    this.attendanceThreshold = null;
   }
   next();
 });

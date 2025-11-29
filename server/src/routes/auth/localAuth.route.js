@@ -9,6 +9,8 @@ const {
   forgotPassword,
   resetPassword,
    getUser,
+   changePassword,
+   setPassword,
   
 } = require('../../controllers/auth/localAuth.controller');
 
@@ -22,6 +24,8 @@ localAuthRoute.post('/link-account', linkAccount);
 localAuthRoute.post('/forgot-password', forgotPassword);
 localAuthRoute.post('/reset-password', resetPassword); 
 localAuthRoute.get('/user',requireLogin, getUser); // authenticated user (lightweight data)
+localAuthRoute.post('/change-password',requireLogin,changePassword)
+localAuthRoute.post('/set-password',requireLogin,setPassword)
 
 
 module.exports = localAuthRoute;

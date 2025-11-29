@@ -227,63 +227,57 @@ exports.buildStudentAttendanceAggregation = (
                       },
                     },
                     in: {
-                      studentId: '$$enrollment.studentId',
-                      matricNo: '$$enrollment.matricNo',
-                      fullName: '$$enrollment.fullName',
-                      enrolledAtSession: {
-                        $add: ['$$enrollment.enrolledAtSession', 1],
-                      },
-                      totalSessions: '$$enrollment.totalSessions',
-                      totalAttended: '$$attendedApplicable',
-                      totalAbsent: {
-                        $subtract: [
-                          '$$enrollment.totalSessions',
-                          '$$attendedApplicable',
-                        ],
-                      },
-                      attendancePercentage: {
-                        $cond: [
-                          { $eq: ['$$enrollment.totalSessions', 0] },
-                          100,
-                          {
-                            $round: [
+                      $let: {
+                        vars: {
+                          roundedPercentage: {
+                            $cond: [
+                              { $eq: ['$$enrollment.totalSessions', 0] },
+                              100,
                               {
-                                $multiply: [
+                                $round: [
                                   {
-                                    $divide: [
-                                      '$$attendedApplicable',
-                                      '$$enrollment.totalSessions',
+                                    $multiply: [
+                                      {
+                                        $divide: [
+                                          '$$attendedApplicable',
+                                          '$$enrollment.totalSessions',
+                                        ],
+                                      },
+                                      100,
                                     ],
                                   },
-                                  100,
+                                  0,
                                 ],
                               },
-                              0,
                             ],
                           },
-                        ],
-                      },
-                      eligible: {
-                        $cond: [
-                          { $eq: ['$$enrollment.totalSessions', 0] },
-                          true,
-                          {
-                            $gte: [
-                              {
-                                $multiply: [
-                                  {
-                                    $divide: [
-                                      '$$attendedApplicable',
-                                      '$$enrollment.totalSessions',
-                                    ],
-                                  },
-                                  100,
-                                ],
-                              },
-                              threshold,
+                        },
+                        in: {
+                          studentId: '$$enrollment.studentId',
+                          matricNo: '$$enrollment.matricNo',
+                          fullName: '$$enrollment.fullName',
+                          enrolledAtSession: {
+                            $add: ['$$enrollment.enrolledAtSession', 1],
+                          },
+                          totalSessions: '$$enrollment.totalSessions',
+                          totalAttended: '$$attendedApplicable',
+                          totalAbsent: {
+                            $subtract: [
+                              '$$enrollment.totalSessions',
+                              '$$attendedApplicable',
                             ],
                           },
-                        ],
+
+                          attendancePercentage: '$$roundedPercentage',
+
+                          eligible: {
+                            $cond: [
+                              { $eq: ['$$enrollment.totalSessions', 0] },
+                              true,
+                              { $gte: ['$$roundedPercentage', threshold] },
+                            ],
+                          },
+                        },
                       },
                     },
                   },
@@ -333,7 +327,7 @@ exports.buildStudentAttendanceAggregation = (
       },
     },
 
-    // 11. Project final structure
+    // 11. Project
     {
       $project: {
         courseInfo: {

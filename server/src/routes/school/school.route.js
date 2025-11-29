@@ -1,6 +1,6 @@
 const express = require('express');
 const requireLogin = require('../../middlewares/requireLogin');
-const { getSchools } = require('../../controllers/school/school.controller');
+const { getSchools, setAttendanceThreshold } = require('../../controllers/school/school.controller');
 const { requireAdminAccess } = require('../../middlewares/roleAccess');
 const {
   createNewAcademicYear,
@@ -30,6 +30,12 @@ schoolRoute.put(
   requireLogin,
   requireAdminAccess,
   closeAcademicYear
+);
+schoolRoute.patch(
+  '/attendance-threshold',
+  requireLogin,
+  requireAdminAccess,
+  setAttendanceThreshold
 );
 
 module.exports = schoolRoute;

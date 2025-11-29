@@ -25,6 +25,7 @@ import AttendancePage from './pages/attendance/AttendancePage';
 import AttendanceDetailsPage from './pages/attendance/AttendanceDetailsPage';
 import AttendanceStudentsDetailsPage from './pages/attendance/AttendanceStudentsDetailsPage';
 import AttendanceReport from './features/attendance/lecturer/AttendanceReport';
+import ProfilePage from './pages/profile/ProfilePage';
 
 function App() {
   return (
@@ -121,7 +122,7 @@ function App() {
               element={<AttendanceStudentsDetailsPage />}
             />
           </Route>
-          <Route path='profile' element='profile' />
+          <Route path='profile' element={<ProfilePage/>} />
           <Route path='sessions' element={<SessionPage />}>
             <Route
               index
