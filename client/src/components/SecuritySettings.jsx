@@ -2,7 +2,7 @@ import { Lock, Key } from 'lucide-react';
 import PropTypes from 'prop-types';
 import Button from './Button';
 
-function SecuritySettings({ studentData, onPasswordChange }) {
+function SecuritySettings({ data, onPasswordChange }) {
   return (
     <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-6'>
       <div className='flex items-center gap-3 mb-6'>
@@ -24,7 +24,7 @@ function SecuritySettings({ studentData, onPasswordChange }) {
           <div className='flex-1'>
             <h4 className='font-semibold text-gray-900 mb-1'>Password</h4>
             <p className='text-sm text-gray-600 mb-3'>
-              {studentData.hasPassword
+              {data.hasPassword
                 ? 'Keep your password secure and change it regularly.'
                 : 'No password set. Set a password to secure your account.'}
             </p>
@@ -35,7 +35,7 @@ function SecuritySettings({ studentData, onPasswordChange }) {
               variant='primary'
             >
               <Lock className='w-4 h-4' />
-              {studentData.hasPassword ? 'Change Password' : 'Set Password'}
+              {data.hasPassword ? 'Change Password' : 'Set Password'}
             </Button>
           </div>
         </div>
@@ -44,7 +44,7 @@ function SecuritySettings({ studentData, onPasswordChange }) {
   );
 }
 SecuritySettings.propTypes = {
-  studentData: PropTypes.object,
+  data: PropTypes.object,
   onPasswordChange: PropTypes.func,
 };
 

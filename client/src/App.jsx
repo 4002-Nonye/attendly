@@ -26,6 +26,7 @@ import AttendanceDetailsPage from './pages/attendance/AttendanceDetailsPage';
 import AttendanceStudentsDetailsPage from './pages/attendance/AttendanceStudentsDetailsPage';
 import AttendanceReport from './features/attendance/lecturer/AttendanceReport';
 import ProfilePage from './pages/profile/ProfilePage';
+import AdminSettingsPage from './pages/settings/AdminSettingsPage';
 
 function App() {
   return (
@@ -122,7 +123,7 @@ function App() {
               element={<AttendanceStudentsDetailsPage />}
             />
           </Route>
-          <Route path='profile' element={<ProfilePage/>} />
+
           <Route path='sessions' element={<SessionPage />}>
             <Route
               index
@@ -142,7 +143,19 @@ function App() {
               }
             />
           </Route>
+
+        <Route path='profile' element={<ProfilePage />} />
+
+        <Route
+          path='settings'
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminSettingsPage />
+            </ProtectedRoute>
+          }
+        />
         </Route>
+
         <Route path='*' element={<Navigate to='/' />} />
       </Routes>
     </BrowserRouter>

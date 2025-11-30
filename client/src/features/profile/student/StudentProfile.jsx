@@ -58,13 +58,13 @@ export default function StudentProfile() {
 
       <div className='grid grid-cols-1 xl:grid-cols-3 gap-6'>
         <div className='lg:col-span-1'>
-          <ProfileHeader studentData={studentData} />
+          <ProfileHeader data={studentData} />
         </div>
 
         <div className='lg:col-span-2 space-y-6'>
           <ProfileAcademicInfo studentData={studentData} />
           <SecuritySettings
-            studentData={studentData}
+            data={studentData}
             onPasswordChange={() => setShowModal(true)}
           />
         </div>

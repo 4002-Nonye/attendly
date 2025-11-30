@@ -1,21 +1,29 @@
 import { useState } from 'react';
-import { TrendingUp, RotateCcw } from 'lucide-react';
+import { TrendingUp } from 'lucide-react';
 import PropTypes from 'prop-types';
 import toast from 'react-hot-toast';
 import { useUpdateThresholdLect } from '../lecturer/useUpdateThresholdLect';
 import Button from '../../../components/Button';
 import Alert from '../../../components/Alert';
+import { useUpdateThresholdAdmin } from '../../settings/useUpdateThresholdAdmin';
 
-function AttendanceThresholdSettings({ lecturerData, schoolThreshold }) {
+function AttendanceThresholdSettings({
+  data,
+  schoolThreshold,
+  isAdmin = false,
+}) {
   const [threshold, setThreshold] = useState(
-    lecturerData.attendanceThreshold.toString()
+    data.attendanceThreshold.toString()
   );
   const [hasError, setHasError] = useState(false);
 
-  const { updateAttendanceThresholdLecturer, isPending } =
+  const { updateAttendanceThresholdLecturer, isPending: isUpdatingLect } =
     useUpdateThresholdLect();
+  const { updateAttendanceThresholdAdmin, isPending: isUpdatingAdmin } =
+    useUpdateThresholdAdmin();
 
-  const initialThreshold = lecturerData.attendanceThreshold;
+  const isPending = isUpdatingAdmin || isUpdatingLect;
+  const initialThreshold = data.attendanceThreshold;
   const isSchoolDefault = Number(threshold) === schoolThreshold;
 
   const handleInputChange = (e) => {
@@ -68,8 +76,11 @@ function AttendanceThresholdSettings({ lecturerData, schoolThreshold }) {
       toast.error('No changes to save');
       return;
     }
-
-    updateAttendanceThresholdLecturer({ threshold: numeric });
+    if (!isAdmin) {
+      updateAttendanceThresholdLecturer({ threshold: numeric });
+    } else {
+      updateAttendanceThresholdAdmin({ threshold: numeric });
+    }
   };
 
   const handleResetToSchool = () => {
@@ -93,22 +104,36 @@ function AttendanceThresholdSettings({ lecturerData, schoolThreshold }) {
               Attendance Settings
             </h3>
             <p className='text-sm text-gray-500'>
-              Set your default attendance threshold
+              Set {isAdmin ? 'school-wide' : 'your default'} attendance
+              threshold
             </p>
           </div>
         </div>
       </div>
 
       <div className='space-y-4'>
-        {/* School Default Info */}
-        <div className='bg-blue-50 border border-blue-100 rounded-lg p-3'>
-          <p className='text-xs text-blue-800'>
-            <span className='font-semibold'>School Default:</span> {schoolThreshold}%
-            {isSchoolDefault && (
-              <span className='ml-2 text-green-700'>✓ Currently using</span>
-            )}
-          </p>
-        </div>
+        {/* School Default Info - Only show for lecturers */}
+        {!isAdmin && schoolThreshold && (
+          <div className='bg-blue-50 border border-blue-100 rounded-lg p-3'>
+            <p className='text-xs text-blue-800'>
+              <span className='font-semibold'>School Default:</span>{' '}
+              {schoolThreshold}%
+              {isSchoolDefault && (
+                <span className='ml-2 text-green-700'>✓ Currently using</span>
+              )}
+            </p>
+          </div>
+        )}
+
+        {/* Admin School-Wide Info */}
+        {isAdmin && (
+          <Alert
+            type='info'
+            size='sm'
+            showBorder
+            message='This threshold applies to all lecturers and students across the school.'
+          />
+        )}
 
         {/* Threshold Input */}
         <div className='space-y-2'>
@@ -152,51 +177,56 @@ function AttendanceThresholdSettings({ lecturerData, schoolThreshold }) {
           )}
         </div>
 
-        {/* Quick Select Buttons */}
-        <div className='flex flex-wrap gap-2'>
-          <span className='text-sm text-gray-600 font-medium mr-2 self-center'>
+        {/* Quick Select Buttons - Responsive */}
+        <div>
+          <span className='text-sm text-gray-600 font-medium block mb-2'>
             Quick select:
           </span>
-          {[65, 70, 75, 80, 85, 90].map((value) => (
-            <Button
-              key={value}
-              variant='pill'
-              size='sm'
-              active={Number(threshold) === value}
-              disabled={isPending}
-              onClick={() => {
-                setThreshold(value.toString());
-                setHasError(false);
-              }}
-              className='px-3 py-1.5 text-sm'
-            >
-              {value}%
-            </Button>
-          ))}
+          <div className='flex flex-wrap gap-2'>
+            {[50, 65, 70, 75, 80, 85, 90].map((value) => (
+              <Button
+                key={value}
+                variant='pill'
+                size='sm'
+                active={Number(threshold) === value}
+                disabled={isPending}
+                onClick={() => {
+                  setThreshold(value.toString());
+                  setHasError(false);
+                }}
+                className='px-3 py-1.5 text-sm'
+              >
+                {value}%
+              </Button>
+            ))}
+          </div>
         </div>
 
-        {/* Info Box */}
-        <Alert
-          type='info'
-          size='sm'
-          showBorder
-          message='This threshold will apply to all your courses by default.'
-        />
+        {/* Info Box - Only for lecturers */}
+        {!isAdmin && (
+          <Alert
+            type='info'
+            size='sm'
+            showBorder
+            message='This threshold will apply to all your courses by default.'
+          />
+        )}
 
         {/* Action Buttons */}
-        <div className='flex gap-3'>
-          {/* Reset to School Default */}
-          <Button
-            onClick={handleResetToSchool}
-            disabled={isPending || isSchoolDefault}
-            variant='outline'
-            size='sm'
-            fullWidth
-            className='gap-2'
-          >
-            <RotateCcw className='w-4 h-4' />
-            Reset to School Default
-          </Button>
+        <div className='flex flex-col sm:flex-row gap-3'>
+          {/* Reset to School Default - Only show for lecturers */}
+          {!isAdmin && schoolThreshold && (
+            <Button
+              onClick={handleResetToSchool}
+              disabled={isPending || isSchoolDefault}
+              variant='outline'
+              size='sm'
+              fullWidth
+              className='gap-2 order-2 sm:order-1'
+            >
+              Reset to Default
+            </Button>
+          )}
 
           {/* Save Button */}
           <Button
@@ -205,10 +235,11 @@ function AttendanceThresholdSettings({ lecturerData, schoolThreshold }) {
               isPending || hasError || Number(threshold) === initialThreshold
             }
             variant='primary'
-
             size='sm'
             fullWidth
-            className='gap-2'
+            className={`gap-2 order-1 ${
+              !isAdmin && schoolThreshold ? 'sm:order-2' : ''
+            }`}
           >
             {isPending ? (
               <>
@@ -226,10 +257,11 @@ function AttendanceThresholdSettings({ lecturerData, schoolThreshold }) {
 }
 
 AttendanceThresholdSettings.propTypes = {
-  lecturerData: PropTypes.shape({
+  data: PropTypes.shape({
     attendanceThreshold: PropTypes.number.isRequired,
   }).isRequired,
   schoolThreshold: PropTypes.number,
+  isAdmin: PropTypes.bool,
 };
 
 export default AttendanceThresholdSettings;

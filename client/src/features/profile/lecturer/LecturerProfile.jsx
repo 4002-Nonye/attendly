@@ -4,7 +4,7 @@ import SecuritySettings from '../../../components/SecuritySettings';
 import ProfileAcademicInfo from '../../../components/ProfileAcademicInfo';
 
 import { useState } from 'react';
-import PasswordChangeModal from '../general/PasswordChangeForm';
+import PasswordChangeForm from '../general/PasswordChangeForm';
 import { useProfile } from '../general/useProfile';
 import EmptyCard from '../../../components/EmptyCard';
 import { UserX } from 'lucide-react';
@@ -62,23 +62,23 @@ export default function LecturerProfile() {
 
       <div className='grid grid-cols-1 xl:grid-cols-3 gap-6'>
         <div className='lg:col-span-1'>
-          <ProfileHeader studentData={lecturerData} isLecturer={true} />
+          <ProfileHeader data={lecturerData} isLecturer={true} />
         </div>
 
         <div className='lg:col-span-2 space-y-6'>
           <ProfileAcademicInfo studentData={lecturerData} isLecturer={true} />
           <AttendanceThresholdSettings
-            lecturerData={lecturerData}
+            data={lecturerData}
             schoolThreshold={schoolAttendanceThreshold}
           />
           <SecuritySettings
-            studentData={lecturerData}
+            data={lecturerData}
             onPasswordChange={() => setShowPasswordModal(true)}
           />
         </div>
       </div>
 
-      <PasswordChangeModal
+      <PasswordChangeForm
         isOpen={showPasswordModal}
         onClose={() => setShowPasswordModal(false)}
         hasPassword={lecturerData.hasPassword}
