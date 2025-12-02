@@ -97,7 +97,7 @@ function Modal({
           {(title || showCloseButton) && (
             <div className='flex items-center justify-between p-6 border-b border-gray-200'>
               {title && (
-                <h3 className='text-xl font-bold text-gray-900'>{title}</h3>
+                <h3 className='text-xl font-bold text-gray-900 uppercase'>{title}</h3>
               )}
               {showCloseButton && (
                 <Button

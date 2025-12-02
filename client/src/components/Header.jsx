@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Avatar from './Avatar';
 import Sidebar from './Sidebar';
 import MobileSidebar from './MobileSidebar';
+import { Link } from 'react-router-dom';
 
 function Header() {
   const { data } = useUser();
@@ -30,7 +31,7 @@ function Header() {
               <span className='hidden lg:block'>
                 {data?.user?.schoolId?.schoolName}
               </span>
-              <span className='lg:hidden'>attendly</span>
+              <Link to='/dashboard' className='lg:hidden'>attendly</Link>
             </p>
           </div>
 

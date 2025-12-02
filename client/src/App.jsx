@@ -27,11 +27,13 @@ import AttendanceStudentsDetailsPage from './pages/attendance/AttendanceStudents
 import AttendanceReport from './features/attendance/lecturer/AttendanceReport';
 import ProfilePage from './pages/profile/ProfilePage';
 import AdminSettingsPage from './pages/settings/AdminSettingsPage';
+import AttendanceQRScanPage from './pages/attendance/AttendanceQRScanPage';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+        
         <Route
           path='/'
           element={
@@ -66,6 +68,8 @@ function App() {
             </CompleteProfileProtected>
           }
         />
+        <Route path="/mark-attendance" element={<AttendanceQRScanPage />} />
+
         <Route
           element={
             <ProtectedRoute>
@@ -155,9 +159,12 @@ function App() {
           }
         />
         </Route>
+        
 
         <Route path='*' element={<Navigate to='/' />} />
       </Routes>
+
+
     </BrowserRouter>
   );
 }

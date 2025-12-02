@@ -26,19 +26,13 @@ export default function MobileSidebar({ isOpen, onClose }) {
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title=""
+      title={user?.schoolId?.schoolName || 'Attendly'}
       size='md'
       closeOnOutsideClick={true}
       closeOnEscape={true}
-      showCloseButton={false}
+      showCloseButton={true}
     >
       <div className=' py-4 flex flex-col'>
-        {/* School Name */}
-        <div className='px-3 mb-6'>
-          <h1 className='text-lg font-bold text-blue-900 uppercase tracking-wide'>
-            {user?.schoolId?.schoolName || 'Attendly'}
-          </h1>
-        </div>
 
         {/* Nav links */}
         <nav className='flex-1 mb-6'>

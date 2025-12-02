@@ -1,16 +1,19 @@
 import { useMutation } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { login as loginApi } from '../../../apis/auth/apiAuth';
 import toast from 'react-hot-toast';
 
 export function useLogin() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const mutation = useMutation({
     mutationFn: loginApi,
     onSuccess: (data) => {
       toast.success(data.message);
-      navigate(`/dashboard`, { replace: true });
+      // Check if there's a returnTo URL from the QR scan redirect
+      const returnTo = location.state?.returnTo || '/dashboard';
+      navigate(returnTo, { replace: true });
     },
     onError: (err) => {
       toast.error(err.error);

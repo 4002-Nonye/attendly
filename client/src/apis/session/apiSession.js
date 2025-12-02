@@ -64,10 +64,11 @@ export const getActiveSessionsStudent = async () => {
 };
 
 // student mark attendance session
-export const markAttendance = async (sessionId) => {
+export const markAttendance = async ({ sessionId, token }) => {
   try {
     const response = await axios.post(
-      `/api/student/sessions/${sessionId}/attendance/mark`
+      `/api/student/sessions/${sessionId}/attendance/mark`,
+      { token }
     );
     return response.data;
   } catch (error) {

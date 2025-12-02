@@ -9,9 +9,16 @@ export function useMarkAttendance() {
     onSuccess: (data) => {
       toast.success(data.message);
       queryClient.invalidateQueries(['sessions']);
+      queryClient.invalidateQueries(['attendance']);
     },
-    onError: (err) => toast.error(err.error),
+    onError: (err) => toast.error(err.error || 'Failed to mark attendance'),
   });
 
-  return { markAttendance: mutation.mutate, isPending: mutation.isPending };
+  return { 
+    markAttendance: mutation.mutate, 
+    isPending: mutation.isPending,
+    isSuccess: mutation.isSuccess,
+    isError: mutation.isError,
+    error: mutation.error
+  };
 }

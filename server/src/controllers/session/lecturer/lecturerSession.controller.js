@@ -92,7 +92,7 @@ exports.createSession = async (req, res) => {
     }).save();
 
     // build QR data for frontend
-    const qrData = `${process.env.CLIENT_URL}/attendance?sessionId=${session._id}&token=${sessionToken}`;
+    const qrData = `${process.env.CLIENT_URL}/mark-attendance?sessionId=${session._id}&token=${sessionToken}`;
     const qrCode = await QRCode.toDataURL(qrData);
 
     // populate session with essential info
