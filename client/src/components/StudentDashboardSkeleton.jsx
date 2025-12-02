@@ -7,7 +7,7 @@ function StudentDashboardSkeleton() {
       <AcademicInfoSkeleton />
 
       {/* Stats cards  */}
-      <div className='grid grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8'>
+      <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8'>
         {[...Array(5)].map((_, i) => (
           <div
             key={i}
@@ -15,8 +15,8 @@ function StudentDashboardSkeleton() {
           >
             <div className='flex md:items-center flex-col-reverse md:flex-row gap-3 md:gap-0 justify-between'>
               <div className='flex-1'>
-                <div className='h-4 w-20 bg-gray-200 rounded mb-2'></div>
-                <div className='h-7 w-12 bg-gray-200 rounded'></div>
+                <div className='h-7 w-20 bg-gray-200 rounded mb-2'></div>
+                <div className='h-10 w-12 bg-gray-200 rounded'></div>
               </div>
               <div className='w-10 h-10 lg:w-12 lg:h-12 bg-gray-200 rounded-lg'></div>
             </div>

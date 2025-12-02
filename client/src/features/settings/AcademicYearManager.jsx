@@ -41,11 +41,9 @@ function AcademicYearManager({
             <p className='text-xs font-medium text-blue-600 mb-1'>
               Academic Year
             </p>
-            <p className='text-2xl font-bold text-blue-900'>{currentYear}</p>
+            <p className='text-lg font-bold text-blue-900'>{currentYear}</p>
           </div>
-          <span className='px-3 py-1 rounded-full text-xs font-semibold bg-green-500 text-white shadow-sm'>
-            ACTIVE
-          </span>
+
         </div>
 
         {/* Semester Selector */}
@@ -64,7 +62,7 @@ function AcademicYearManager({
           <div className='grid grid-cols-2 gap-3'>
             {['First', 'Second'].map((semester) => {
               const isSelected = selectedSemester === semester;
-              const isCurrent = semester === currentSemester;
+              
 
               return (
                 <button
@@ -82,15 +80,7 @@ function AcademicYearManager({
                     <span className='text-xs text-gray-500'>Semester</span>
                   </div>
 
-                  {/* Current Badge */}
-                  {isCurrent && (
-                    <div className='absolute top-2 right-2'>
-                      <div className='flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-medium'>
-                        <Check className='w-3 h-3' />
-                        Current
-                      </div>
-                    </div>
-                  )}
+                 
                 </button>
               );
             })}
@@ -134,6 +124,7 @@ function AcademicYearManager({
           <Button
             variant='primary'
             fullWidth
+            size='sm'
             onClick={onCreateNewYear}
             disabled={isPending}
           >

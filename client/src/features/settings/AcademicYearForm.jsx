@@ -133,6 +133,7 @@ export default function AcademicYearForm({ isOpen, onClose }) {
           <Button
             type='button'
             className='w-32'
+            size='sm'
             variant='secondary'
             onClick={handleCancel}
             disabled={isPending}
@@ -144,6 +145,7 @@ export default function AcademicYearForm({ isOpen, onClose }) {
             variant='primary'
             disabled={isPending}
             className='w-32'
+                        size='sm'
           >
             {isPending ? <ClipLoader size={16} color='white' /> : 'Create Year'}
           </Button>
