@@ -30,7 +30,7 @@ function ActiveSessionsStudent() {
   const handleMarkAttendance = (sessionId) => {
     setActiveSessionId(sessionId);
 
-    markAttendance(sessionId, {
+    markAttendance({sessionId}, {
       onSettled: () => setActiveSessionId(null),
     });
   };
