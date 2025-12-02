@@ -5,9 +5,14 @@ import logo from '../assets/logo-black.svg';
 import Button from '../components/Button';
 import { useSchoolInfo } from '../hooks/useSchoolInfo';
 import { useLogout } from '../features/auth/hooks/useLogout';
-function Sidebar({ options }) {
+import { sidebarConfig } from '../config/sidebarConfig';
+
+
+function Sidebar() {
   const { user } = useSchoolInfo();
-  const {logout}=useLogout()
+  const { logout } = useLogout();
+
+  const sidebarOptions = sidebarConfig[user?.role] || sidebarConfig.student;
 
   return (
     <aside className='w-60 xl:w-72 min-h-screen py-5 lg:flex flex-col  border-r border-gray-200 hidden'>
@@ -20,7 +25,7 @@ function Sidebar({ options }) {
       {/* Nav links */}
       <nav className='flex-1 mt-5'>
         <ul className='space-y-3.5 px-4'>
-          {options.map(({ name, icon: Icon, to }) => (
+          {sidebarOptions.map(({ name, icon: Icon, to }) => (
             <li key={name}>
               <NavLink
                 to={to}
@@ -73,15 +78,5 @@ function Sidebar({ options }) {
     </aside>
   );
 }
-
-Sidebar.propTypes = {
-  options: PropTypes.arrayOf(
-    PropTypes.shape({
-      name: PropTypes.string.isRequired,
-      icon: PropTypes.elementType.isRequired,
-      to: PropTypes.string.isRequired,
-    })
-  ).isRequired,
-};
 
 export default Sidebar;

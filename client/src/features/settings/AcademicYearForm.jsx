@@ -3,31 +3,30 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { ClipLoader } from 'react-spinners';
 
-//import { useCreateAcademicYear } from './useCreateAcademicYear';
 import PropTypes from 'prop-types';
 import Modal from '../../components/Modal';
 import Box from '../../components/Box';
 import InputField from '../../components/InputField';
 import Button from '../../components/Button';
 import Err from '../../components/Err';
+import Alert from '../../components/Alert';
+import { useCreateAcademicYear } from './useCreateAcademicYear';
+
 
 export default function AcademicYearForm({ isOpen, onClose }) {
-//  const { createAcademicYear, isPending } = useCreateAcademicYear();
-const isPending =false
+  const { createAcademicYear, isPending } = useCreateAcademicYear();
 
+ 
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
-
   } = useForm({
     defaultValues: {
       year: '',
     },
   });
-
-  
 
   useEffect(() => {
     if (isOpen) {
@@ -38,14 +37,14 @@ const isPending =false
   // Validate academic year format (YYYY/YYYY)
   const validateAcademicYear = (value) => {
     if (!value) return 'Academic year is required';
-    
+
     const regex = /^\d{4}\/\d{4}$/;
     if (!regex.test(value)) {
       return 'Format must be YYYY/YYYY (e.g., 2025/2026)';
     }
 
     const [startYear, endYear] = value.split('/').map(Number);
-    
+
     if (endYear !== startYear + 1) {
       return 'End year must be exactly one year after start year';
     }
@@ -59,16 +58,16 @@ const isPending =false
   };
 
   const onSubmit = (data) => {
-    console.log(data)
-    // createAcademicYear(
-    //   { year: data.year },
-    //   {
-    //     onSuccess: () => {
-    //       reset();
-    //       onClose();
-    //     },
-    //   }
-    // );
+    console.log(data);
+    createAcademicYear(
+      { year: data.year },
+      {
+        onSuccess: () => {
+          reset();
+          onClose();
+        },
+      }
+    );
   };
 
   const handleCancel = () => {
@@ -79,17 +78,17 @@ const isPending =false
   // Auto-format input as user types
   const handleYearInput = (e) => {
     let value = e.target.value.replace(/[^\d/]/g, ''); // Only allow digits and /
-    
+
     // Auto-add slash after 4 digits
     if (value.length === 4 && !value.includes('/')) {
       value = value + '/';
     }
-    
+
     // Limit to 9 characters (YYYY/YYYY)
     if (value.length > 9) {
       value = value.slice(0, 9);
     }
-    
+
     e.target.value = value;
   };
 
@@ -97,19 +96,29 @@ const isPending =false
     <Modal
       isOpen={isOpen}
       onClose={handleCancel}
-      title="Create New Academic Year"
+      title='Create New Academic Year'
       closeOnOutsideClick={!isPending}
       closeOnEscape={!isPending}
-      size="lg"
+      size='lg'
     >
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Box className="mb-4">
+        {/* Warning Alert */}
+        <Alert
+          type='warning'
+          size='md'
+          showBorder
+          className='mb-4'
+          title='Warning: This action cannot be undone'
+          message='Creating a new academic year will automatically promote all students by one level and set this as the active year. You cannot switch back to previous academic years once this is created.'
+        />
+
+        <Box className='mb-4'>
           <InputField
-            htmlFor="year"
-            label="Academic Year"
+            htmlFor='year'
+            label='Academic Year'
             icon={Calendar}
-            type="text"
-            placeholder="YYYY/YYYY (e.g., 2025/2026)"
+            type='text'
+            placeholder='YYYY/YYYY (e.g., 2025/2026)'
             disabled={isPending}
             onInput={handleYearInput}
             {...register('year', {
@@ -117,30 +126,26 @@ const isPending =false
             })}
           />
           <Err msg={errors.year?.message || ' '} />
-          
-
         </Box>
 
-
-
         {/* Action Buttons */}
-        <div className="flex gap-3 justify-end pt-2">
+        <div className='flex gap-3 justify-end pt-2'>
           <Button
-            type="button"
-            className="w-32"
-            variant="secondary"
+            type='button'
+            className='w-32'
+            variant='secondary'
             onClick={handleCancel}
             disabled={isPending}
           >
             Cancel
           </Button>
           <Button
-            type="submit"
-            variant="primary"
+            type='submit'
+            variant='primary'
             disabled={isPending}
-            className="w-32"
+            className='w-32'
           >
-            {isPending ? <ClipLoader size={16} color="white" /> : 'Create Year'}
+            {isPending ? <ClipLoader size={16} color='white' /> : 'Create Year'}
           </Button>
         </div>
       </form>

@@ -113,7 +113,7 @@ function Modal({
           )}
 
           {/* Content - Scrollable */}
-          <div className='flex-1 overflow-y-auto p-6'>{children}</div>
+          <div className='flex-1 overflow-y-auto lg:p-6 p-3' >{children}</div>
         </div>
       </div>
     );
@@ -153,7 +153,7 @@ function Modal({
         )}
 
         {/* Content */}
-        <div className='p-6'>{children}</div>
+        <div className='p-6 '>{children}</div>
       </div>
     </div>
   );

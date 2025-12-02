@@ -2,22 +2,21 @@ import { useState } from 'react';
 import { Calendar, Check } from 'lucide-react';
 import PropTypes from 'prop-types';
 import Button from '../../components/Button';
+import { useSwitchSemester } from './useSwitchSemester';
 
 function AcademicYearManager({
   currentYear,
   currentSemester,
-  onSemesterChange,
   onCreateNewYear,
-  isPending = false,
 }) {
   const [selectedSemester, setSelectedSemester] = useState(currentSemester);
   const hasChanged = selectedSemester !== currentSemester;
-  
+  const { switchSemester, isPending } = useSwitchSemester();
 
   const handleSemesterSwitch = () => {
-    if (onSemesterChange) {
-      onSemesterChange(selectedSemester);
-    }
+    switchSemester({
+      semester: selectedSemester,
+    });
   };
 
   return (
@@ -149,9 +148,7 @@ function AcademicYearManager({
 AcademicYearManager.propTypes = {
   currentYear: PropTypes.string.isRequired,
   currentSemester: PropTypes.oneOf(['First', 'Second']).isRequired,
-  onSemesterChange: PropTypes.func,
-  onCreateNewYear: PropTypes.func,
-  isPending: PropTypes.bool,
+  onCreateNewYear: PropTypes.bool,
 };
 
 export default AcademicYearManager;

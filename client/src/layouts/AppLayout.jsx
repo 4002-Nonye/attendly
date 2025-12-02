@@ -1,7 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import { useUser } from '../features/auth/hooks/useUser';
-import { sidebarConfig } from '../config/sidebarConfig';
+
 import Header from '../components/Header';
 import AcademicSetupAlert from '../components/AcademicSetupAlert';
 
@@ -11,14 +11,13 @@ function AppLayout() {
   const { role, schoolId: { currentAcademicYear, currentSemester } = {} } =
     data?.user || {};
 
-  const sidebarOptions = sidebarConfig[role] || sidebarConfig.student;
 
   const showWarning = !currentAcademicYear || !currentSemester;
 
   return (
     <div className='flex h-screen overflow-hidden bg-gray-50'>
       {/* Sidebar */}
-      <Sidebar options={sidebarOptions} />
+      <Sidebar  />
 
       {/* Main Content - Scrollable */}
       <main className='flex-1 flex flex-col overflow-hidden'>

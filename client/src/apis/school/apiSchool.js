@@ -20,3 +20,22 @@ export const updateAttendanceThresholdAdmin = async (data) => {
 };
 
 
+export const createAcademicYear = async (data) => {
+    try {
+    const response = await axios.post('/api/schools/academic-year',data);
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+
+
+export const switchSemester = async (data) => {
+    try {
+    const response = await axios.put('/api/schools/academic-year/semester/switch',data);
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
