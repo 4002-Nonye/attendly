@@ -26,7 +26,8 @@
     "start": "node index.js",
     "server": "nodemon index.js",
     "client": "npm run dev --prefix ../client",
-    "dev": "concurrently \"npm run server\" \"npm run client\""
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "build": "cd client && npm install && npm run build"
   },
   "keywords": [],
   "author": "",

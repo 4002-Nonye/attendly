@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 
 require('./src/models/user.model');
 require('./src/models/course.model');
@@ -73,6 +74,26 @@ app.use('/api/users', userRoute);
 app.use('/api/lecturer/attendance', lecturerAttendanceRoute);
 app.use('/api/student/attendance', studentAttendanceRoute);
 app.use('/api/admin/attendance', adminAttendanceRoute);
+
+
+
+
+
+
+// HANDLING ROUTES IN PRODUCTION
+if (process.env.NODE_ENV === 'production') {
+  // express will serve up production assets like main.js or main.css
+  app.use(express.static(path.join(__dirname, 'client/dist')));
+
+  //express will serve up index.html when it does not recognize a route
+  app.get('/{*any}', (_, res) => {
+    res.sendFile(path.join(__dirname, 'client/dist', 'index.html'));
+  });
+}
+
+const PORT = process.env.PORT || 8000;
+
+
 
 app.listen(process.env.PORT, () => {
   // Connect to the database after server starts
