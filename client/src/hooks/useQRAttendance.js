@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useMarkAttendance } from './useMarkAttendance';
 import { useUser } from '../features/auth/hooks/useUser';
+import {useMarkAttendance}from '../features/session/student/useMarkAttendance'
+
 
 export function useQRAttendance() {
   const location = useLocation();
