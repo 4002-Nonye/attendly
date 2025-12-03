@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types';
+import { ClipLoader } from 'react-spinners';
 
 
 function QRScanLoadingScreen({ message = 'Processing...' }) {
