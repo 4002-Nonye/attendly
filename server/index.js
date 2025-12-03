@@ -76,6 +76,10 @@ app.use('/api/student/attendance', studentAttendanceRoute);
 app.use('/api/admin/attendance', adminAttendanceRoute);
 
 
+// UPTIMEROBOT - KEEP APP ALIVE
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date() });
+});
 
 
 
