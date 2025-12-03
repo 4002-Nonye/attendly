@@ -61,8 +61,6 @@ exports.markAttendance = async (req, res) => {
   }
 };
 
-
-
 exports.getStudentAttendanceReport = async (req, res) => {
   try {
     const { id, schoolId } = req.user;
@@ -74,12 +72,13 @@ exports.getStudentAttendanceReport = async (req, res) => {
 
     if (!schoolDoc) return res.status(404).json({ error: 'School not found' });
 
-    const { currentAcademicYear, currentSemester, attendanceThreshold } = schoolDoc;
+    const { currentAcademicYear, currentSemester, attendanceThreshold } =
+      schoolDoc;
     const defaultThreshold = attendanceThreshold || 65;
-    
+
     if (!currentAcademicYear || !currentSemester) {
-      return res.status(400).json({ 
-        error: 'No active academic period for this school' 
+      return res.status(400).json({
+        error: 'No active academic period for this school',
       });
     }
 
@@ -192,7 +191,36 @@ exports.getStudentAttendanceReport = async (req, res) => {
         },
       },
 
-      // 8. Lookup attendances for this student
+      // 8. NEW: Lookup ACTIVE sessions only
+      {
+        $lookup: {
+          from: 'sessions',
+          let: {
+            courseId: '$course._id',
+            enrollmentDate: '$createdAt',
+          },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$course', '$$courseId'] },
+                    { $gte: ['$createdAt', '$$enrollmentDate'] },
+                  ],
+                },
+                status: 'active',
+                academicYear: mongoose.Types.ObjectId.createFromHexString(
+                  currentAcademicYear.toString()
+                ),
+                semester: currentSemester,
+              },
+            },
+          ],
+          as: 'activeSessions',
+        },
+      },
+
+      // 9. Lookup attendances for this student (with session info)
       {
         $lookup: {
           from: 'attendances',
@@ -217,40 +245,106 @@ exports.getStudentAttendanceReport = async (req, res) => {
                 semester: currentSemester,
               },
             },
+            {
+              $project: {
+                session: 1,
+                status: 1,
+              },
+            },
           ],
           as: 'attendances',
         },
       },
 
-      // 9. Compute totals
+      // 10. Compute totals
       {
         $addFields: {
           totalSessions: { $size: '$allSessions' },
           endedSessionsCount: { $size: '$endedSessions' },
-          
+          activeSessionsCount: { $size: '$activeSessions' },
+
+          // Get array of ended session IDs
+          endedSessionIds: {
+            $map: {
+              input: '$endedSessions',
+              as: 'session',
+              in: '$$session._id',
+            },
+          },
+
+          // Get array of active session IDs
+          activeSessionIds: {
+            $map: {
+              input: '$activeSessions',
+              as: 'session',
+              in: '$$session._id',
+            },
+          },
+
+          // Get array of marked session IDs
+          markedSessionIds: {
+            $map: {
+              input: '$attendances',
+              as: 'att',
+              in: '$$att.session',
+            },
+          },
+        },
+      },
+
+      // 11. Count attended and missed ONLY from ended sessions
+      {
+        $addFields: {
           totalAttended: {
             $size: {
               $filter: {
                 input: '$attendances',
                 as: 'att',
-                cond: { $eq: ['$$att.status', 'Present'] },
+                cond: {
+                  $and: [
+                    { $eq: ['$$att.status', 'Present'] },
+                    { $in: ['$$att.session', '$endedSessionIds'] },
+                  ],
+                },
               },
             },
           },
-          
+
           totalMissed: {
             $size: {
               $filter: {
                 input: '$attendances',
                 as: 'att',
-                cond: { $eq: ['$$att.status', 'Absent'] },
+                cond: {
+                  $and: [
+                    { $eq: ['$$att.status', 'Absent'] },
+                    { $in: ['$$att.session', '$endedSessionIds'] },
+                  ],
+                },
               },
             },
           },
         },
       },
 
-      // 10. Calculate rounded percentage 
+      // 12. Calculate PENDING: active sessions where student hasn't marked attendance
+      {
+        $addFields: {
+          totalPending: {
+            $size: {
+              $filter: {
+                input: '$activeSessionIds',
+                as: 'activeSession',
+                cond: {
+                  $not: { $in: ['$$activeSession', '$markedSessionIds'] },
+                },
+              },
+            },
+          },
+        },
+      },
+
+      // 13. Calculate rounded percentage
       {
         $addFields: {
           roundedPercentage: {
@@ -273,10 +367,9 @@ exports.getStudentAttendanceReport = async (req, res) => {
         },
       },
 
-      // 11. Determine threshold (lecturer override or school default)
+      // 14. Determine threshold (lecturer override or school default)
       {
         $addFields: {
-          // Get first lecturer's threshold if exists, otherwise use school default
           courseThreshold: {
             $ifNull: [
               { $arrayElemAt: ['$lecturers.attendanceThreshold', 0] },
@@ -286,7 +379,7 @@ exports.getStudentAttendanceReport = async (req, res) => {
         },
       },
 
-      // 12. Eligibility based on rounded percentage and course specific threshold
+      // 15. Eligibility based on rounded percentage and course specific threshold
       {
         $addFields: {
           eligible: {
@@ -299,7 +392,7 @@ exports.getStudentAttendanceReport = async (req, res) => {
         },
       },
 
-      // 13. Final projection
+      // 16. Final projection
       {
         $project: {
           _id: 0,
@@ -310,6 +403,7 @@ exports.getStudentAttendanceReport = async (req, res) => {
           endedSessions: '$endedSessionsCount',
           totalAttended: 1,
           totalMissed: 1,
+          totalPending: 1, // Now calculated in aggregation
           attendancePercentage: '$roundedPercentage',
           threshold: '$courseThreshold',
           eligible: 1,
@@ -318,19 +412,12 @@ exports.getStudentAttendanceReport = async (req, res) => {
       },
     ]);
 
-    // Calculate pending after aggregation
-    const report = rawReport.map(course => ({
-      ...course,
-      totalPending: course.totalSessions - (course.totalAttended + course.totalMissed)
-    }));
-
-    return res.status(200).json({ report });
+    return res.status(200).json({ report: rawReport });
   } catch (error) {
     console.error('Attendance report error:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
-
 
 exports.getStudentSessionDetails = async (req, res) => {
   try {
@@ -348,8 +435,8 @@ exports.getStudentSessionDetails = async (req, res) => {
     );
 
     if (!school || !school.currentAcademicYear) {
-      return res.status(404).json({ 
-        error: 'No current academic period found for this school' 
+      return res.status(404).json({
+        error: 'No current academic period found for this school',
       });
     }
 
@@ -367,7 +454,7 @@ exports.getStudentSessionDetails = async (req, res) => {
 
     // Determine threshold: lecturer override or school default
     let threshold = defaultThreshold;
-    if (course.lecturers && course.lecturers.length > 0) {
+    if (course.lecturers?.length > 0) {
       const lecturerThreshold = course.lecturers[0].attendanceThreshold;
       if (lecturerThreshold !== undefined && lecturerThreshold !== null) {
         threshold = lecturerThreshold;
@@ -397,8 +484,9 @@ exports.getStudentSessionDetails = async (req, res) => {
       .sort({ createdAt: -1 })
       .lean();
 
+    // If no sessions, return default
     if (!sessions.length) {
-      return res.status(200).json({ 
+      return res.status(200).json({
         course: {
           courseCode: course.courseCode,
           courseTitle: course.courseTitle,
@@ -407,8 +495,9 @@ exports.getStudentSessionDetails = async (req, res) => {
           totalAttended: 0,
           totalAbsent: 0,
           totalPending: 0,
+              activeSessions: 0, 
           attendancePercentage: 100,
-          threshold: threshold,
+          threshold,
           eligible: true,
           enrolledAt: enrollment?.createdAt || null,
         },
@@ -416,17 +505,18 @@ exports.getStudentSessionDetails = async (req, res) => {
       });
     }
 
-    // Get session IDs
+    // Get session IDs and attendance records
     const sessionIds = sessions.map((s) => s._id);
 
-    // Get attendance records for this student with timestamps
     const attendanceRecords = await Attendance.find({
       course: courseId,
       session: { $in: sessionIds },
       student: studentId,
-    }).select('session status createdAt').lean();
+    })
+      .select('session status createdAt')
+      .lean();
 
-    // Create attendance map with status AND timestamp
+    // Create attendance map for quick lookup
     const attendanceMap = attendanceRecords.reduce((acc, record) => {
       acc[record.session.toString()] = {
         status: record.status,
@@ -435,47 +525,56 @@ exports.getStudentSessionDetails = async (req, res) => {
       return acc;
     }, {});
 
-    // Build session details and calculate stats
+    // Build session details & calculate totals
     let totalAttended = 0;
     let totalAbsent = 0;
     let totalPending = 0;
     let endedSessionsCount = 0;
 
     const sessionDetails = sessions.map((s) => {
-      const attendance = attendanceMap[s._id.toString()];
+      const sessionIdStr = s._id.toString();
+      const attendance = attendanceMap[sessionIdStr];
       let finalStatus;
       let timeMarked = null;
-
-      if (attendance) {
-        finalStatus = attendance.status;
-        timeMarked = attendance.markedAt;
-        
-        if (attendance.status === 'Present') {
-          totalAttended++;
-        } else if (attendance.status === 'Absent') {
-          totalAbsent++;
-        }
-      } else {
-        if (s.status === 'ended') {
-          finalStatus = 'Absent';
-          totalAbsent++;
-        } else if (s.status === 'active') {
-          finalStatus = 'Not yet taken';
-          totalPending++;
-        } else {
-          finalStatus = 'Unknown';
-        }
-      }
 
       // Count ended sessions
       if (s.status === 'ended') {
         endedSessionsCount++;
       }
 
+      if (attendance) {
+        // Student HAS marked attendance
+        finalStatus = attendance.status;
+        timeMarked = attendance.markedAt;
+
+        // ONLY count in summary if session is ENDED
+        if (s.status === 'ended') {
+          if (finalStatus === 'Present') {
+            totalAttended++;
+          } else if (finalStatus === 'Absent') {
+            totalAbsent++;
+          }
+        }
+        // If active session is marked, don't count it in summary yet
+      } else {
+        // Student HASN'T marked attendance
+        if (s.status === 'ended') {
+          // Session ended without marking = Auto Absent
+          finalStatus = 'Absent';
+          totalAbsent++;
+        } else if (s.status === 'active') {
+          // Session active and not marked = Pending
+          finalStatus = 'Pending';
+          totalPending++;
+        } else {
+          // Other status (shouldn't happen)
+          finalStatus = 'Unknown';
+        }
+      }
+
       return {
         sessionId: s._id,
         sessionDate: s.createdAt,
-        sessionStartTime: s.createdAt,
         startedBy: s.startedBy?.fullName || 'Unknown',
         sessionStatus: s.status,
         studentStatus: finalStatus,
@@ -483,15 +582,14 @@ exports.getStudentSessionDetails = async (req, res) => {
       };
     });
 
-    // Calculate stats based on ENDED sessions only
-    const totalSessions = sessions.length;
-    const attendancePercentage = 
-      endedSessionsCount > 0 
-        ? Math.round((totalAttended / endedSessionsCount) * 100) 
-        : 100;
-    
-    // Use the determined threshold 
+    // Calculate summary statistics
+    const totalSessions = endedSessionsCount; // ✅ Only count ended sessions
+    const attendancePercentage = endedSessionsCount
+      ? Math.round((totalAttended / endedSessionsCount) * 100)
+      : 100;
+
     const eligible = attendancePercentage >= threshold;
+    const activeSessions = sessions.filter((s) => s.status === 'active').length;
 
     return res.status(200).json({
       course: {
@@ -503,7 +601,8 @@ exports.getStudentSessionDetails = async (req, res) => {
         totalAbsent,
         totalPending,
         attendancePercentage,
-        threshold: threshold,
+        threshold,
+        activeSessions,
         eligible,
         enrolledAt: enrollment?.createdAt || null,
       },
@@ -514,4 +613,3 @@ exports.getStudentSessionDetails = async (req, res) => {
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
-

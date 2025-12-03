@@ -10,6 +10,9 @@ function StudentAttendanceCard({ course, attendanceView = true }) {
   const { level } = user;
   const badgeColor = getBadgeColor(level);
   const navigate = useNavigate();
+  
+  const activeSessions = course.totalSessions - course.endedSessions;
+
 
   return (
     <div className='group relative bg-white rounded-xl border border-gray-200 p-5 hover:shadow-lg hover:border-gray-300 transition-all duration-200 flex flex-col justify-between h-full'>
@@ -24,6 +27,19 @@ function StudentAttendanceCard({ course, attendanceView = true }) {
             className={`text-xs font-medium px-2.5 py-1 rounded-md border whitespace-nowrap ${badgeColor}`}
           >
             {course.courseCode}
+          </span>
+        </div>
+
+        {/* Total Sessions Info */}
+        <div className='flex items-center gap-1.5 mb-3 text-xs text-gray-600'>
+          <Clock className='w-3.5 h-3.5' />
+          <span>
+            {course.totalSessions} total session{course.totalSessions !== 1 ? 's' : ''}
+            {activeSessions > 0 && (
+              <span className='text-yellow-600 font-medium ml-1'>
+                ({activeSessions} active)
+              </span>
+            )}
           </span>
         </div>
 
@@ -90,6 +106,10 @@ function StudentAttendanceCard({ course, attendanceView = true }) {
               style={{ width: `${course.attendancePercentage}%` }}
             />
           </div>
+          {/* Clarification text */}
+          <p className='text-[10px] text-gray-500 mt-1.5 text-center'>
+            Based on {course.endedSessions} completed session{course.endedSessions !== 1 ? 's' : ''}
+          </p>
         </div>
 
         {/* View Details Button */}

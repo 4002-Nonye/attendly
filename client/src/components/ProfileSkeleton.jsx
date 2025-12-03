@@ -1,12 +1,11 @@
-import PageHeader from "./PageHeader";
+import AcademicInfoSkeleton from "./AcademicInfoSkeleton";
+
 
 function ProfileSkeleton() {
   return (
-    <div className='w-full'>
-      <PageHeader
-        showGreeting={false}
-        title='My Profile'
-        subtitle='View and manage your profile information'
+    <div className='w-full animate-pulse'>
+      <AcademicInfoSkeleton
+
       />
       
       <div className='grid grid-cols-1 xl:grid-cols-3 gap-6'>
