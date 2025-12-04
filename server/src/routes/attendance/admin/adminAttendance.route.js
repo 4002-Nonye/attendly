@@ -5,7 +5,7 @@ const {
   getAdminAttendanceReport,
   getAdminCourseAttendanceDetails,
 
-} = require('../../../controllers/attendance/admin/adminAttendance.controller');
+} = require('../../../controllers/attendance/admin/index');
 const { downloadAttendanceReport } = require('../../../controllers/attendance/general/attendance.controller');
 
 const adminAttendanceRoute = express.Router();

@@ -2,7 +2,7 @@ const express = require('express');
 const requireLogin = require('../../../middlewares/requireLogin');
 const { requireStudentAccess } = require('../../../middlewares/roleAccess');
 const { getActiveSessionsForStudent } = require('../../../controllers/session/student/studentSession.controller');
-const { markAttendance } = require('../../../controllers/attendance/student/studentAttendance.controller');
+const { markAttendance } = require('../../../controllers/attendance/student/index');
 
 
 const studentSessionRoute = express.Router();

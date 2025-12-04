@@ -1,8 +1,22 @@
-import { Mail, CreditCard, User, Building2 } from 'lucide-react';
+import { Mail, CreditCard, User, Building2, Shield, GraduationCap } from 'lucide-react';
 import PropTypes from 'prop-types';
 import Avatar from './Avatar';
 
 function ProfileHeader({ data, isLecturer = false, isAdmin = false }) {
+  // Determine role display
+  const getRoleInfo = () => {
+    if (isAdmin) {
+      return { label: 'Administrator', color: 'purple', icon: Shield };
+    }
+    if (isLecturer) {
+      return { label: 'Lecturer', color: 'blue', icon: GraduationCap };
+    }
+    return { label: 'Student', color: 'green', icon: User };
+  };
+
+  const roleInfo = getRoleInfo();
+  const RoleIcon = roleInfo.icon;
+
   return (
     <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-6'>
       <div className='flex flex-col items-center text-center'>
@@ -14,30 +28,29 @@ function ProfileHeader({ data, isLecturer = false, isAdmin = false }) {
           {data.fullName}
         </h2>
 
-        {/* Admin Badge */}
-        {isAdmin && (
-          <span className='inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 mb-2'>
-            <User className='w-3 h-3 mr-1' />
-            Administrator
-          </span>
-        )}
+        {/* Role Badge */}
+        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-${roleInfo.color}-100 text-${roleInfo.color}-800 mb-3`}>
+          <RoleIcon className='w-3 h-3 mr-1' />
+          {roleInfo.label}
+        </span>
 
         {/* Matric/Staff Number */}
         {!isAdmin && (
-          <div className='flex items-center gap-2 text-gray-600 mb-2'>
-            {isLecturer ? (
-              <User className='w-4 h-4' />
-            ) : (
-              <CreditCard className='w-4 h-4' />
-            )}
-            <span className='font-mono text-sm'>
-              {isLecturer ? data.staffId : data.matricNo}
-            </span>
-          </div>
-        )}
-        
-        {isLecturer && !isAdmin && (
-          <p className='text-xs text-gray-500 mb-2'>Staff ID</p>
+          <>
+            <div className='flex items-center gap-2 text-gray-600 mb-1'>
+              {isLecturer ? (
+                <User className='w-4 h-4' />
+              ) : (
+                <CreditCard className='w-4 h-4' />
+              )}
+              <span className='font-mono text-sm'>
+                {isLecturer ? data.staffId : data.matricNo}
+              </span>
+            </div>
+            <p className='text-xs text-gray-500 mb-3'>
+              {isLecturer ? 'Staff ID' : 'Matric Number'}
+            </p>
+          </>
         )}
 
         {/* Email */}

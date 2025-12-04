@@ -22,14 +22,29 @@ function CourseAssignmentCard({
     <div className='relative capitalize'>
       {/* Checkbox for bulk selection */}
       {showCheckbox && (
-        <div className='absolute left-2 top-4'>
-          <input
-            type='checkbox'
-            checked={isSelected}
-            disabled={isActionCompleted}
-            onChange={() => onToggleSelect(course._id)}
-            className={`w-4 h-4 rounded border-gray-300 focus:ring-0`}
-          />
+        <div className='absolute left-1 top-4 z-10'>
+          <label className='flex items-center justify-center cursor-pointer'>
+            <input
+              type='checkbox'
+              checked={isSelected}
+              disabled={isActionCompleted}
+              onChange={() => onToggleSelect(course._id)}
+              className='sr-only peer'
+            />
+            <div
+              className={`w-5 h-5 border-2 rounded flex items-center justify-center transition-all
+                ${
+                  isActionCompleted
+                    ? 'border-gray-300 bg-gray-100 cursor-not-allowed'
+                    : isSelected
+                    ? 'border-blue-600 bg-blue-600'
+                    : 'border-gray-400 bg-white hover:border-blue-500'
+                }
+              `}
+            >
+              {isSelected && <Check className='w-3.5 h-3.5 text-gray-300' />}
+            </div>
+          </label>
         </div>
       )}
 
@@ -117,7 +132,7 @@ CourseAssignmentCard.propTypes = {
   onToggleSelect: PropTypes.func,
   primaryActionText: PropTypes.string,
   secondaryActionText: PropTypes.string,
-  isActionCompleted: PropTypes.bool.isRequired,
+
 };
 
 export default CourseAssignmentCard;

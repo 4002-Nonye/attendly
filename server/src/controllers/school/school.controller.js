@@ -68,7 +68,7 @@ exports.getSchools = async (req, res) => {
   }
 };
 
-// Admin: sets school-wide threshold
+// Admin: sets school threshold
 // Lecturer: sets own threshold
 
 exports.setAttendanceThreshold = async (req, res) => {

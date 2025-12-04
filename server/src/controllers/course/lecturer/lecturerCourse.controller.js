@@ -8,7 +8,7 @@ exports.getAssignedCoursesForLecturer = async (req, res) => {
   try {
     const { id: lecturerId, schoolId } = req.user;
 
-    // Find the lecturer's school and check if it has an active academic year
+    // get the lecturer school and check if it has an active academic year
     const school = await School.findById(schoolId)
       .select('currentAcademicYear currentSemester')
       .lean();
@@ -16,7 +16,7 @@ exports.getAssignedCoursesForLecturer = async (req, res) => {
       return res.status(400).json({ error: 'No active academic year found' });
     }
 
-    // Filter courses by lecturer and current academic year
+    // filter courses by lecturer and current academic year
     const courses = await Course.find({
       lecturers: lecturerId,
       schoolId,
@@ -33,15 +33,15 @@ exports.getAssignedCoursesForLecturer = async (req, res) => {
       return res.status(200).json({ courses: [] });
     }
 
-    // Get total students and total sessions for each course
+    // get total students and total sessions for each course
     const [studentCounts, sessionCounts] = await Promise.all([
-      // Count how many students are enrolled in each course
+      // count how many students are enrolled in each course
       StudentEnrollment.aggregate([
         { $match: { course: { $in: courses.map((c) => c._id) } } },
         { $group: { _id: '$course', count: { $sum: 1 } } },
       ]),
 
-      // Count how many sessions each course has in the current academic year and semester
+      // count how many sessions each course has in the current academic year and semester
       Session.aggregate([
         {
           $match: {
@@ -54,7 +54,7 @@ exports.getAssignedCoursesForLecturer = async (req, res) => {
       ]),
     ]);
 
-    // Create quick lookup objects for students and sessions
+    // easy lookup objects for students and sessions
     const studentMap = Object.fromEntries(
       studentCounts.map((i) => [i._id.toString(), i.count])
     );
@@ -62,7 +62,7 @@ exports.getAssignedCoursesForLecturer = async (req, res) => {
       sessionCounts.map((i) => [i._id.toString(), i.count])
     );
 
-    // Attach the totals to each course
+    // join the totals to each course
     const data = courses.map((course) => ({
       ...course,
       totalStudents: studentMap[course._id.toString()] || 0,

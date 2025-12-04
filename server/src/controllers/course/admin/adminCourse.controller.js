@@ -30,7 +30,7 @@ exports.createCourse = async (req, res) => {
         .json({ error: 'No active academic year found for this school' });
     }
 
-    // Validate department and faculty belong to the school
+    // chek if department and faculty belong to the school
     const [departmentExists, facultyExists] = await Promise.all([
       Department.findOne({ _id: department, schoolId }),
       Faculty.findOne({ _id: faculty, schoolId }),
@@ -56,20 +56,20 @@ exports.createCourse = async (req, res) => {
     });
 
     if (existingCourse) {
-      // If the title matches, send a title error
+      // if the title matches, send a title error
       if (existingCourse.courseTitle === courseTitle.toLowerCase()) {
         return res
           .status(409)
           .json({ error: 'Course title already exists in this department' });
       }
-      // If the code matches, send a code error
+      // if the code matches, send a code error
       if (existingCourse.courseCode === courseCode) {
         return res
           .status(409)
           .json({ error: 'Course code already exists in this department' });
       }
     }
-
+// create course
     const newCourse = await new Course({
       courseCode,
       courseTitle,

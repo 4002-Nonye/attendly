@@ -15,7 +15,7 @@ function AppLayout() {
   const showWarning = !currentAcademicYear || !currentSemester;
 
   return (
-    <div className='flex bg-gray-50'>
+    <div className='flex h-screen overflow-hidden bg-gray-50'>
       {/* Sidebar */}
       <Sidebar  />
 

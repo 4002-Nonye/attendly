@@ -18,6 +18,15 @@ import { useFilteredCourses } from '../../../hooks/filters/useFilteredCourses';
 import { useSelection } from '../../../hooks/useSelection';
 import { getStatusStyle } from '../../../utils/courseHelpers';
 
+// Constants
+const ACTION_TEXTS = {
+  ASSIGN: 'Assign',
+  UNASSIGN: 'Unenroll',
+  ENROLL_SELECTED: 'Enroll Selected',
+};
+
+ const COLUMNS = ['', 'Course', 'Level', 'Unit', 'Status', 'Actions'];
+
 function LecturerAllCourses() {
   const { disableButton } = useButtonState();
   const { data: courseData, isPending } = useAllCourses({
@@ -43,6 +52,8 @@ function LecturerAllCourses() {
   // handle single assign
   const handleAssignSingle = (courseId) => {
     setActiveCourseId(courseId); // tract which course is assigning
+    if (isSelected(courseId)) toggle(courseId);
+
     assignToCourse(
       {
         courseIds: [courseId],
@@ -55,11 +66,12 @@ function LecturerAllCourses() {
 
   // handle unassign
   const handleUnassign = (courseId) => {
-    setActiveCourseId(courseId); // track which course is unassigning
-
-    if (isSelected(courseId)) toggle(courseId); // remove from selection if selected
+    setActiveCourseId(courseId);
 
     unassignFromCourse(courseId, {
+      onSuccess: () => {
+        if (isSelected(courseId)) toggle(courseId);
+      },
       onSettled: () => setActiveCourseId(null),
     });
   };
@@ -144,7 +156,7 @@ function LecturerAllCourses() {
     );
   };
 
-  const columns = ['', 'Course', 'Level', 'Unit', 'Status', 'Actions'];
+ 
 
   return (
     <div className='w-full'>
@@ -181,7 +193,7 @@ function LecturerAllCourses() {
           {/* Desktop */}
           <div className='hidden lg:block'>
             <DataTable
-              columns={columns}
+              columns={COLUMNS}
               renderRow={renderRow}
               data={filteredCourses}
               isPending={isLoading}
@@ -205,8 +217,8 @@ function LecturerAllCourses() {
                     showCheckbox
                     isSelected={isSelected(course._id) || course.status}
                     onToggleSelect={toggle}
-                    primaryActionText='Assign'
-                    secondaryActionText='Unassign'
+                    primaryActionText={ACTION_TEXTS.ASSIGN}
+                    secondaryActionText={ACTION_TEXTS.UNASSIGN}
                   />
                 ))}
               </div>

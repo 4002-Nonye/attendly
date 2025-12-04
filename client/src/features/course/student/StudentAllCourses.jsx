@@ -18,6 +18,15 @@ import Button from '../../../components/Button';
 import { ClipLoader } from 'react-spinners';
 import { getStatusStyle } from '../../../utils/courseHelpers';
 
+// Constants
+const ACTION_TEXTS = {
+  ENROLL: 'Enroll',
+  UNENROLL: 'Unenroll',
+  ENROLL_SELECTED: 'Enroll Selected',
+};
+
+const COLUMNS = ['', 'Course', 'Level', 'Unit', 'Status', 'Actions'];
+
 function StudentAllCourses() {
   const { disableButton } = useButtonState();
   const { data: courseData, isPending } = useAllCourses({
@@ -42,6 +51,8 @@ function StudentAllCourses() {
 
   const handleSingleEnroll = (courseId) => {
     setActiveCourseId(courseId);
+    if (isSelected(courseId)) toggle(courseId);
+
     enrollCourse(
       {
         courseIds: [courseId],
@@ -55,8 +66,10 @@ function StudentAllCourses() {
   const handleUnenroll = (courseId) => {
     setActiveCourseId(courseId);
 
-    if (isSelected(courseId)) toggle(courseId);
     unenrollCourse(courseId, {
+      onSuccess: () => {
+        if (isSelected(courseId)) toggle(courseId);
+      },
       onSettled: () => setActiveCourseId(null),
     });
   };
@@ -142,8 +155,6 @@ function StudentAllCourses() {
     );
   };
 
-  const columns = ['', 'Course', 'Level', 'Unit', 'Status', 'Actions'];
-
   return (
     <div className='w-full'>
       {/* Search Bar */}
@@ -179,7 +190,7 @@ function StudentAllCourses() {
           {/* Desktop Table */}
           <div className='hidden lg:block'>
             <DataTable
-              columns={columns}
+              columns={COLUMNS}
               renderRow={renderRow}
               data={filteredCourses}
               isPending={isLoading}
@@ -203,8 +214,8 @@ function StudentAllCourses() {
                     showCheckbox
                     isSelected={isSelected(course._id) || course.status}
                     onToggleSelect={toggle}
-                    primaryActionText='Enroll'
-                    secondaryActionText='Unenroll'
+                    primaryActionText={ACTION_TEXTS.ENROLL}
+                    secondaryActionText={ACTION_TEXTS.UNENROLL}
                   />
                 ))}
               </div>

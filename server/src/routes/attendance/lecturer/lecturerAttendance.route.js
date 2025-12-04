@@ -1,16 +1,19 @@
 const express = require('express');
 
 const { requireLecturerAccess } = require('../../../middlewares/roleAccess');
-
 const {
   getLecturerAttendanceOverview,
   getLecturerSessionDetails,
   getLecturerSessionStudentDetails,
   getLecturerAttendanceReport,
-} = require('../../../controllers/attendance/lecturer/lecturerAttendance.controller');
+} = require('../../../controllers/attendance/lecturer');
 const requireLogin = require('../../../middlewares/requireLogin');
-const { downloadAttendanceReport } = require('../../../controllers/attendance/general/attendance.controller');
-const { setAttendanceThreshold } = require('../../../controllers/school/school.controller');
+const {
+  downloadAttendanceReport,
+} = require('../../../controllers/attendance/general/attendance.controller');
+const {
+  setAttendanceThreshold,
+} = require('../../../controllers/school/school.controller');
 
 const lecturerAttendanceRoute = express.Router();
 
@@ -46,7 +49,12 @@ lecturerAttendanceRoute.get(
   getLecturerAttendanceReport
 );
 
-lecturerAttendanceRoute.get('/courses/:courseId/download',requireLogin,requireLecturerAccess,downloadAttendanceReport)
+lecturerAttendanceRoute.get(
+  '/courses/:courseId/download',
+  requireLogin,
+  requireLecturerAccess,
+  downloadAttendanceReport
+);
 
 lecturerAttendanceRoute.patch(
   '/threshold',
@@ -54,6 +62,5 @@ lecturerAttendanceRoute.patch(
   requireLecturerAccess,
   setAttendanceThreshold
 );
-
 
 module.exports = lecturerAttendanceRoute;

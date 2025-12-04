@@ -20,12 +20,12 @@ function AttendanceDetailsStudent() {
   const sessions = data?.sessions || [];
 
   const columns = [
-    'Date', 
-    'Lecturer', 
-    'Started At', 
-    'Marked At', 
-    'Status', 
-    'Session Status'
+    'Date',
+    'Lecturer',
+    'Started At',
+    'Marked At',
+    'Status',
+    'Session Status',
   ];
 
   const renderRow = (session) => (
@@ -80,7 +80,7 @@ function AttendanceDetailsStudent() {
         )}
       </td>
 
-{/* TODO: USE RESUABLE UTILS */}
+      {/* TODO: USE RESUABLE UTILS */}
       {/* Session Status */}
       <td className='px-6 py-4'>
         {session.sessionStatus === 'ended' ? (
@@ -135,13 +135,20 @@ function AttendanceDetailsStudent() {
               <StudentSessionSummary course={course} />
 
               {/* Info Alert */}
-              <Alert
-                type='info'
-                size='sm'
-                showBorder
-                className='mb-6'
-                message='Your attendance rate and eligibility are calculated based on completed sessions only. Active sessions are not yet counted.'
-              />
+              <Alert type='info' size='sm' showBorder className='mb-6'>
+                <div className='space-y-2 text-sm'>
+                  <p>
+                    Your attendance rate and eligibility are calculated based on
+                    completed sessions only. Active sessions are not yet
+                    counted.
+                  </p>
+                  <p>
+                    Eligibility is determined using your school's attendance
+                    threshold, though lecturers may adjust this for individual
+                    course reports.
+                  </p>
+                </div>
+              </Alert>
 
               <DataTable
                 columns={columns}
