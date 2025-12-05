@@ -1,21 +1,22 @@
+import { useState } from 'react';
 import { Edit, Filter, Layers, Plus, Search, Trash2 } from 'lucide-react';
-import Button from '../../../components/Button';
-import PageHeader from '../../../components/PageHeader';
-import DepartmentForm from './DepartmentForm';
-import SearchBar from '../../../components/SearchBar';
-import ConfirmDeleteDialog from '../../../components/ConfirmDeleteDialog';
 
-import EmptyCard from '../../../components/EmptyCard';
+import Button from '../../../components/Button';
+import ConfirmDeleteDialog from '../../../components/ConfirmDeleteDialog';
 import DataTable from '../../../components/DataTable';
-import { useDepartmentStats } from './useDepartmentStats';
-import { useDeleteDepartment } from './useDeleteDepartment';
+import EmptyCard from '../../../components/EmptyCard';
+import FilterBar from '../../../components/FilterBar';
+import PageHeader from '../../../components/PageHeader';
+import SearchBar from '../../../components/SearchBar';
+import { useFilteredDepartments } from '../../../hooks/filters/useFilteredDepartments';
+import { useFilters } from '../../../hooks/filters/useFilters';
 import { useButtonState } from '../../../hooks/useButtonState';
 import { useOpenModalFromActions } from '../../../hooks/useOpenModalFromActions';
-import { useState } from 'react';
-import { useFilters } from '../../../hooks/filters/useFilters';
-import FilterBar from '../../../components/FilterBar';
 import { useAllFaculties } from '../../faculty/admin/useAllFaculties';
-import { useFilteredDepartments } from '../../../hooks/filters/useFilteredDepartments';
+
+import DepartmentForm from './DepartmentForm';
+import { useDeleteDepartment } from './useDeleteDepartment';
+import { useDepartmentStats } from './useDepartmentStats';
 
 function AdminDepartment() {
   const { disableButton } = useButtonState();

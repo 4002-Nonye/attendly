@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types';
+
 import TableSkeleton from './TableSkeleton';
 
 function SessionStudentsSkeleton({ showSearchbar = true }) {

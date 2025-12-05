@@ -1,18 +1,19 @@
+import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
-import { Lock, Eye, EyeOff, Mail } from 'lucide-react';
-
-import googleIcon from '../../assets/icons8-google.svg';
+import { ClipLoader } from 'react-spinners';
 
 import Box from '../../components/Box';
-import Err from '../../components/Err';
-import InputField from '../../components/InputField';
-import Divider from '../../components/Divider';
 import Button from '../../components/Button';
+import Divider from '../../components/Divider';
+import Err from '../../components/Err';
 import FormHeader from '../../components/FormHeader';
+import InputField from '../../components/InputField';
 import Logo from '../../components/Logo';
+
 import { useLogin } from './hooks/useLogin';
-import { ClipLoader } from 'react-spinners';
+
+import googleIcon from '../../assets/icons8-google.svg';
 
 function Login() {
   const {

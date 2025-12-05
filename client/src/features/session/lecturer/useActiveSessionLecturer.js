@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+
 import { getActiveSessionsLecturer } from '../../../apis/session/apiSession';
 
 export function useActiveSessionLecturer() {

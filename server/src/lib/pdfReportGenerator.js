@@ -1,6 +1,4 @@
 const PDFDocument = require('pdfkit');
-const fs = require('fs');
-const path = require('path');
 
 async function generateAttendancePDF(data, options = {}) {
   return new Promise((resolve, reject) => {

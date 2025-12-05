@@ -1,28 +1,20 @@
-import axios from 'axios';
+import { apiClient, handleRequest } from '../../services/apiClient';
 
-export const getLecturers = async () => {
-  try {
-    const response = await axios.get('/api/users/lecturers');
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// ==================== GENERAL ====================
+
+// get current user's profile
+export const getUserProfile = () => {
+  return handleRequest(() => apiClient.get('/users/me'));
 };
 
-export const getStudents = async () => {
-  try {
-    const response = await axios.get('/api/users/students');
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// ==================== ADMIN ====================
+
+// get all lecturers
+export const getLecturers = () => {
+  return handleRequest(() => apiClient.get('/users/lecturers'));
 };
 
-export const getUserProfile = async () => {
-  try {
-    const response = await axios.get('/api/users/me');
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// get all students
+export const getStudents = () => {
+  return handleRequest(() => apiClient.get('/users/students'));
 };

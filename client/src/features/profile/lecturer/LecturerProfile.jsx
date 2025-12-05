@@ -1,15 +1,15 @@
+import { useState } from 'react';
+import { UserX } from 'lucide-react';
+
+import EmptyCard from '../../../components/EmptyCard';
 import PageHeader from '../../../components/PageHeader';
+import ProfileAcademicInfo from '../../../components/ProfileAcademicInfo';
 import ProfileHeader from '../../../components/ProfileHeader';
 import SecuritySettings from '../../../components/SecuritySettings';
-import ProfileAcademicInfo from '../../../components/ProfileAcademicInfo';
-
-import { useState } from 'react';
+import ProfileSkeleton from '../../../components/skeletons/ProfileSkeleton';
+import AttendanceThresholdSettings from '../general/AttendanceThresholdSettings';
 import PasswordChangeForm from '../general/PasswordChangeForm';
 import { useProfile } from '../general/useProfile';
-import EmptyCard from '../../../components/EmptyCard';
-import { UserX } from 'lucide-react';
-import ProfileSkeleton from '../../../components/ProfileSkeleton';
-import AttendanceThresholdSettings from '../general/AttendanceThresholdSettings';
 
 export default function LecturerProfile() {
   const [showPasswordModal, setShowPasswordModal] = useState(false);

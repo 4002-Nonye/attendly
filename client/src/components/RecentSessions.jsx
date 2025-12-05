@@ -1,11 +1,13 @@
-import { Calendar, Clock, CheckCircle2 } from 'lucide-react';
+import { Calendar, CheckCircle2,Clock } from 'lucide-react';
+
 import { useRecentSession } from '../features/dashboard/general/useRecentSession';
-import TableSkeleton from './TableSkeleton';
-import DataTable from './DataTable';
-import SectionIntro from './SectionIntro';
-import EmptyChart from './EmptyChart';
-import {formatYear,formatTime} from '../utils/dateHelper'
 import { getStatusStyle } from '../utils/courseHelpers';
+import {formatTime,formatYear} from '../utils/dateHelper'
+
+import DataTable from './DataTable';
+import EmptyChart from './EmptyChart';
+import SectionIntro from './SectionIntro';
+import TableSkeleton from './skeletons/TableSkeleton';
 
 function RecentSessions() {
   const { data, isPending } = useRecentSession();

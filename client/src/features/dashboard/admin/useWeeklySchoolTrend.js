@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+
 import { getWeeklyAttendanceBySchool } from '../../../apis/dashboardStats/apiStats';
 
 export function useWeeklySchoolTrend() {

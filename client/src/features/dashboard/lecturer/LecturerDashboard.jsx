@@ -1,28 +1,25 @@
-import { BookOpen, Plus, Eye, AlertCircle } from 'lucide-react';
+import { AlertCircle,BookOpen, Eye, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { ClipLoader } from 'react-spinners';
+
 import Button from '../../../components/Button';
-
-import LecturerDashboardSkeleton from '../../../components/LecturerDashboardSkeleton';
-import PageHeader from '../../../components/PageHeader';
 import Card from '../../../components/Card';
-
+import CourseCard from '../../../components/CourseCard';
+import EmptyCard from '../../../components/EmptyCard';
+import PageHeader from '../../../components/PageHeader';
+import QuickActions from '../../../components/QuickActions';
+import RecentSessions from '../../../components/RecentSessions';
+import SectionIntro from '../../../components/SectionIntro';
+import LecturerDashboardSkeleton from '../../../components/skeletons/LecturerDashboardSkeleton';
 import { DASHBOARD_COURSE_LIMIT } from '../../../config/dashboard';
 import { useSchoolInfo } from '../../../hooks/useSchoolInfo';
-
-import EmptyCard from '../../../components/EmptyCard';
-import { useLecturerDashboardStats } from './useLecturerDashboardStats';
-import SectionIntro from '../../../components/SectionIntro';
-
-import RecentSessions from '../../../components/RecentSessions';
-import CourseCard from '../../../components/CourseCard';
 import { getLecturerStats } from '../../../utils/dashboardStats';
-import QuickActions from '../../../components/QuickActions';
-
-import { useHandleCreateSession } from '../../session/lecturer/useHandleCreateSession';
-import { useAssignedCourses } from '../../course/lecturer/useAssignedCourses';
 import { useCourseSessionStatus } from '../../course/general/useCourseSessionStatus';
+import { useAssignedCourses } from '../../course/lecturer/useAssignedCourses';
 import { useActiveSessionLecturer } from '../../session/lecturer/useActiveSessionLecturer';
-import { ClipLoader } from 'react-spinners';
+import { useHandleCreateSession } from '../../session/lecturer/useHandleCreateSession';
+
+import { useLecturerDashboardStats } from './useLecturerDashboardStats';
 
 function LecturerDashboard() {
   const { data: courses, isPending: isAssignedCoursesPending } =

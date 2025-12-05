@@ -1,19 +1,20 @@
-import { useRegisteredCourses } from './useRegisteredCourses';
-import { useButtonState } from '../../../hooks/useButtonState';
+import { BookOpen } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
-import SearchBar from '../../../components/SearchBar';
-import { BookOpen } from 'lucide-react';
-import EmptyCard from '../../../components/EmptyCard';
-import LecturerCourseCardSkeleton from '../../../components/LecturerCourseCardSkeleton';
-import CourseCard from '../../../components/CourseCard';
 import Button from '../../../components/Button';
-import { useSearchQuery } from '../../../hooks/useSearchQuery';
-import { useFilteredCourses } from '../../../hooks/filters/useFilteredCourses';
-import { useCourseSessionStatus } from '../general/useCourseSessionStatus';
-import { useActiveSessionStudent } from '../../session/student/useActiveSessionStudent';
+import CourseCard from '../../../components/CourseCard';
 import DataTable from '../../../components/DataTable';
+import EmptyCard from '../../../components/EmptyCard';
+import SearchBar from '../../../components/SearchBar';
+import LecturerCourseCardSkeleton from '../../../components/skeletons/LecturerCourseCardSkeleton';
+import { useFilteredCourses } from '../../../hooks/filters/useFilteredCourses';
+import { useButtonState } from '../../../hooks/useButtonState';
+import { useSearchQuery } from '../../../hooks/useSearchQuery';
 import { getStatusStyle } from '../../../utils/courseHelpers';
+import { useActiveSessionStudent } from '../../session/student/useActiveSessionStudent';
+import { useCourseSessionStatus } from '../general/useCourseSessionStatus';
+
+import { useRegisteredCourses } from './useRegisteredCourses';
 
 function StudentEnrolledCourses() {
   const { disableButton } = useButtonState();

@@ -1,21 +1,23 @@
 import { useState } from 'react';
 import { FileText, Filter } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useAttendanceReport } from './useAttendanceReport';
-import PageHeader from '../../../components/PageHeader';
-import SearchBar from '../../../components/SearchBar';
-import FilterBar from '../../../components/FilterBar';
+
+import Button from '../../../components/Button';
 import DataTable from '../../../components/DataTable';
 import EmptyCard from '../../../components/EmptyCard';
-import Button from '../../../components/Button';
+import FilterBar from '../../../components/FilterBar';
+import PageHeader from '../../../components/PageHeader';
+import SearchBar from '../../../components/SearchBar';
+import { MAX_LEVEL } from '../../../config/level';
+import { useFilteredCourses } from '../../../hooks/filters/useFilteredCourses';
 import { useFilters } from '../../../hooks/filters/useFilters';
 import { useButtonState } from '../../../hooks/useButtonState';
-import { useFilteredCourses } from '../../../hooks/filters/useFilteredCourses';
 import {
   generateLevel,
   getAttendanceColor,
 } from '../../../utils/courseHelpers';
-import { MAX_LEVEL } from '../../../config/level';
+
+import { useAttendanceReport } from './useAttendanceReport';
 
 function AttendanceOverviewAdmin() {
   const navigate = useNavigate();

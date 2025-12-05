@@ -1,41 +1,25 @@
-import axios from 'axios';
-axios.defaults.withCredentials = true;
-// for dropdown (general)
-export const getSchools = async () => {
-  try {
-    const response = await axios.get('/api/schools');
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+import { apiClient, handleRequest } from '../../services/apiClient';
+
+// ==================== GENERAL ====================
+
+// get all schools (for signup dropdown)
+export const getSchools = () => {
+  return handleRequest(() => apiClient.get('/schools'));
 };
 
-export const updateAttendanceThresholdAdmin = async (data) => {
-    try {
-    const response = await axios.patch('/api/schools/attendance-threshold',data);
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// ==================== ADMIN ====================
+
+// update school-wide attendance threshold
+export const updateAttendanceThresholdAdmin = (data) => {
+  return handleRequest(() => apiClient.patch('/schools/attendance-threshold', data));
 };
 
-
-export const createAcademicYear = async (data) => {
-    try {
-    const response = await axios.post('/api/schools/academic-year',data);
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// create new academic year
+export const createAcademicYear = (data) => {
+  return handleRequest(() => apiClient.post('/schools/academic-year', data));
 };
 
-
-
-export const switchSemester = async (data) => {
-    try {
-    const response = await axios.put('/api/schools/academic-year/semester/switch',data);
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// switch between semesters
+export const switchSemester = (data) => {
+  return handleRequest(() => apiClient.put('/schools/academic-year/semester/switch', data));
 };

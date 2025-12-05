@@ -24,9 +24,9 @@ module.exports = passport.use(
       proxy: true,
     },
     async (accessToken, refreshToken, profile, done) => {
-      // console.log(profile);
-      // todo: optimize later
-      const { id, displayName, emails, photos } = profile;
+
+
+      const { id, displayName, emails } = profile;
 
       const userEmail = emails[0].value;
       const existingUser = await User.findOne({ email: userEmail });

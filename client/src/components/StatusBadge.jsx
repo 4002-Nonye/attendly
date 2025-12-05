@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types';
+
 import { getStatusBadge } from '../utils/courseHelpers';
 
 function StatusBadge({ status }) {

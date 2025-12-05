@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const sanitizeUser = require('../../../utils/sanitizeUser');
 const User = mongoose.model('User');
 const Course = mongoose.model('Course');
 const StudentEnrollment = mongoose.model('StudentEnrollment');

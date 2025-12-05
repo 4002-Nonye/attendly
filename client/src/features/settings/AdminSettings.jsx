@@ -1,15 +1,16 @@
 import { useState } from 'react';
+import { UserX } from 'lucide-react';
 
 import PageHeader from '../../components/PageHeader';
 import ProfileHeader from '../../components/ProfileHeader';
-import AttendanceThresholdSettings from '../profile/general/AttendanceThresholdSettings';
 import SecuritySettings from '../../components/SecuritySettings';
+import ProfileSkeleton from '../../components/skeletons/ProfileSkeleton';
+import AttendanceThresholdSettings from '../profile/general/AttendanceThresholdSettings';
 import PasswordChangeForm from '../profile/general/PasswordChangeForm';
-import AcademicYearManager from './AcademicYearManager';
-import AcademicYearForm from './AcademicYearForm';
 import { useProfile } from '../profile/general/useProfile';
-import ProfileSkeleton from '../../components/ProfileSkeleton';
-import { UserX } from 'lucide-react';
+
+import AcademicYearForm from './AcademicYearForm';
+import AcademicYearManager from './AcademicYearManager';
 
 function AdminSettings() {
   const [showPasswordModal, setShowPasswordModal] = useState(false);

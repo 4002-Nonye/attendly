@@ -2,7 +2,7 @@
 const mongoose = require('mongoose');
 
 require('dotenv').config();
-const hashPassword = require('../../utils/hashPassword');
+const hashPassword = require('../../../utils/hashPassword');
 
 const User = mongoose.model('User');
 

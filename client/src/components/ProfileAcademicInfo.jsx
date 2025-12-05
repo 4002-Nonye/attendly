@@ -1,5 +1,5 @@
 
-import { GraduationCap, Building2, BookOpen } from 'lucide-react';
+import { BookOpen,Building2, GraduationCap } from 'lucide-react';
 import PropTypes from 'prop-types';
 
 function ProfileAcademicInfo({ studentData, isLecturer = false }) {

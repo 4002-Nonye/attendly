@@ -1,7 +1,7 @@
-import { useUser } from '../../features/auth/hooks/useUser';
+import AttendanceDetailsAdmin from '../../features/attendance/admin/AttendanceDetailsAdmin';
 import AttendanceDetailsLecturer from '../../features/attendance/lecturer/AttendanceDetailsLecturer';
 import AttendanceDetailsStudent from '../../features/attendance/student/AttendanceDetailsStudent';
-import AttendanceDetailsAdmin from '../../features/attendance/admin/AttendanceDetailsAdmin';
+import { useUser } from '../../features/auth/hooks/useUser';
 
 function AttendanceDetailsPage() {
   const { data: user } = useUser();

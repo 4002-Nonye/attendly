@@ -1,9 +1,11 @@
 
-import PropTypes from 'prop-types';
 import { Calendar, Clock } from 'lucide-react';
+import PropTypes from 'prop-types';
+
+import { getStatusStyle } from '../utils/courseHelpers';
+
 import Alert from './Alert';
 import SessionStatsGrid from './SessionStatsGrid';
-import { getStatusStyle } from '../utils/courseHelpers';
 
 function SessionInfoCard({
   course,

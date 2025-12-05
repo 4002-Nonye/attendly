@@ -1,8 +1,9 @@
 import { Calendar, Clock, PlayCircle, User } from 'lucide-react';
+import PropTypes from 'prop-types';
+
+import { formatTime, formatYear } from '../utils/dateHelper';
 
 import InfoBox from './InfoBox';
-import PropTypes from 'prop-types';
-import { formatTime, formatYear } from '../utils/dateHelper';
 
 export default function SessionInfo({ session }) {
   return (

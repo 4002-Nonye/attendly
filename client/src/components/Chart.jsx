@@ -1,8 +1,9 @@
-import { useWeeklySchoolTrend } from '../features/dashboard/admin/useWeeklySchoolTrend';
-import ChartSkeleton from './ChartSkeleton';
 import { useWeeklyFacultyTrend } from '../features/dashboard/admin/useWeeklyFacultyTrend';
-import SchoolAttendanceChart from './SchoolAttendanceChart';
+import { useWeeklySchoolTrend } from '../features/dashboard/admin/useWeeklySchoolTrend';
+
 import FacultyAttendanceChart from './FacultyAttendanceChart';
+import SchoolAttendanceChart from './SchoolAttendanceChart';
+import ChartSkeleton from './skeletons/ChartSkeleton';
 
 function Chart() {
   const { data: schoolTrend, isPending: isWeeklySchoolPending } =

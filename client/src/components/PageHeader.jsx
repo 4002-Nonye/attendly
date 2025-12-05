@@ -1,5 +1,7 @@
 import PropTypes from 'prop-types';
+
 import { useSchoolInfo } from '../hooks/useSchoolInfo';
+
 import AcademicYear from './AcademicYear';
 
 function PageHeader({ title, subtitle, showGreeting = true }) {

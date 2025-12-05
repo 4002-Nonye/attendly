@@ -1,16 +1,17 @@
-import { Link, useNavigate } from 'react-router-dom';
 import { Calendar, Search } from 'lucide-react';
-import { useButtonState } from '../../../hooks/useButtonState';
-import DataTable from '../../../components/DataTable';
+import { Link, useNavigate } from 'react-router-dom';
 
+import DataTable from '../../../components/DataTable';
 import EmptyCard from '../../../components/EmptyCard';
 import PageHeader from '../../../components/PageHeader';
-import SearchBar from '../../../components/SearchBar';
-import { useAttendanceOverview } from './useAttendanceOverview';
-import { useSearchQuery } from '../../../hooks/useSearchQuery';
-import { useFilteredCourses } from '../../../hooks/filters/useFilteredCourses';
-
 import ReportButton from '../../../components/ReportButton';
+import SearchBar from '../../../components/SearchBar';
+import { useFilteredCourses } from '../../../hooks/filters/useFilteredCourses';
+import { useButtonState } from '../../../hooks/useButtonState';
+import { useSearchQuery } from '../../../hooks/useSearchQuery';
+
+import { useAttendanceOverview } from './useAttendanceOverview';
+
 
 function AttendanceOverviewLecturer() {
   const { disableButton } = useButtonState();
@@ -18,17 +19,11 @@ function AttendanceOverviewLecturer() {
   const [searchQuery, setSearchQuery] = useSearchQuery();
 
   const { data, isPending } = useAttendanceOverview();
- 
 
   // filter courses
   const filteredCourses = useFilteredCourses(data?.overview, searchQuery);
 
-  const columns = [
-    'ID',
-    'Course',
-    'Total Sessions',
-    'Actions',
-  ];
+  const columns = ['ID', 'Course', 'Total Sessions', 'Actions'];
 
   const renderRow = (course) => (
     <tr key={course._id} className='hover:bg-gray-50 transition-colors'>
@@ -52,7 +47,7 @@ function AttendanceOverviewLecturer() {
       <td className='px-6 py-4 text-sm text-gray-700'>
         {course.totalSessions || 0}
       </td>
-     
+
       <td className='px-6 py-4 whitespace-nowrap'>
         <ReportButton courseId={course._id} navigate={navigate} />
       </td>

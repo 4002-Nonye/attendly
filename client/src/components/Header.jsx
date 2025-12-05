@@ -1,10 +1,12 @@
-import { useUser } from '../features/auth/hooks/useUser';
-import { Menu } from 'lucide-react';
 import { useState } from 'react';
-import Avatar from './Avatar';
-import Sidebar from './Sidebar';
-import MobileSidebar from './MobileSidebar';
+import { Menu } from 'lucide-react';
 import { Link } from 'react-router-dom';
+
+import { useUser } from '../features/auth/hooks/useUser';
+
+import Avatar from './Avatar';
+import MobileSidebar from './MobileSidebar';
+import Sidebar from './Sidebar';
 
 function Header() {
   const { data } = useUser();

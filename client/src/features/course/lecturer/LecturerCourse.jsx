@@ -1,8 +1,10 @@
 import { useSearchParams } from 'react-router-dom';
+
 import Button from '../../../components/Button';
+import PageHeader from '../../../components/PageHeader';
+
 import LecturerAllCourses from './LecturerAllCourses';
 import LecturerAssignedCourses from './LecturerAssignedCourses';
-import PageHeader from '../../../components/PageHeader';
 
 function LecturerCourse() {
   const [searchParams, setSearchParams] = useSearchParams();

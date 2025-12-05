@@ -1,6 +1,7 @@
-import TableSkeleton from './TableSkeleton';
-import TableSkeletonRows from './TableSkeletonRows';
 import PropTypes from 'prop-types';
+
+import TableSkeleton from './skeletons/TableSkeleton';
+import TableSkeletonRows from './skeletons/TableSkeletonRows';
 
 function DataTable({
   columns,

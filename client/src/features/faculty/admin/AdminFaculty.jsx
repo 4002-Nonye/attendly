@@ -1,19 +1,20 @@
 import { useState } from 'react';
 import { Building2, Edit, Plus, Search, Trash2 } from 'lucide-react';
-import PageHeader from '../../../components/PageHeader';
-import Button from '../../../components/Button';
-import EmptyCard from '../../../components/EmptyCard';
-import SearchBar from '../../../components/SearchBar';
-import DataTable from '../../../components/DataTable';
-import FacultyForm from './FacultyForm';
-import { useFacultyStats } from './useFacultyStats';
 
-import { useDeleteFaculty } from './useDeleteFaculty';
+import Button from '../../../components/Button';
 import ConfirmDeleteDialog from '../../../components/ConfirmDeleteDialog';
-import { useButtonState } from '../../../hooks/useButtonState';
-import { useSearchQuery } from '../../../hooks/useSearchQuery';
-import { useOpenModalFromActions } from '../../../hooks/useOpenModalFromActions';
+import DataTable from '../../../components/DataTable';
+import EmptyCard from '../../../components/EmptyCard';
+import PageHeader from '../../../components/PageHeader';
+import SearchBar from '../../../components/SearchBar';
 import { useFilteredFaculties } from '../../../hooks/filters/useFilteredFaculties';
+import { useButtonState } from '../../../hooks/useButtonState';
+import { useOpenModalFromActions } from '../../../hooks/useOpenModalFromActions';
+import { useSearchQuery } from '../../../hooks/useSearchQuery';
+
+import FacultyForm from './FacultyForm';
+import { useDeleteFaculty } from './useDeleteFaculty';
+import { useFacultyStats } from './useFacultyStats';
 
 function AdminFaculty() {
   const { disableButton } = useButtonState();

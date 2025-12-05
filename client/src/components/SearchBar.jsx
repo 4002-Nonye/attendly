@@ -1,5 +1,6 @@
 import { Search } from 'lucide-react';
 import PropTypes from 'prop-types';
+
 import InputField from './InputField';
 
 function SearchBar({

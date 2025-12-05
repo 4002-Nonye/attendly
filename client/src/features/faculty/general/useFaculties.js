@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+
 import { getFacultyOptions } from '../../../apis/faculty/apiFaculty';
 
 export function useFaculties({ id }) {

@@ -1,5 +1,5 @@
-import PropTypes from 'prop-types';
 import { createContext, useCallback, useReducer } from 'react';
+import PropTypes from 'prop-types';
 
 const FormStepContext = createContext(null);
 const initialState = {

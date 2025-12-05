@@ -1,5 +1,6 @@
 import { Clock, Eye, XCircle } from 'lucide-react';
 import PropTypes from 'prop-types';
+
 import { formatTime } from '../utils/dateHelper';
 
 function SessionsCard({ session, children }) {

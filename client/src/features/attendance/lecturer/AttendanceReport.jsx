@@ -1,25 +1,26 @@
-import { AlertCircle, Calendar, Download, Search } from 'lucide-react';
-import { useAttendanceReport } from './useAttendanceReport';
+import { AlertCircle, Calendar, Search } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useSearchQuery } from '../../../hooks/useSearchQuery';
+
+import Alert from '../../../components/Alert';
+import AttendanceReportHeader from '../../../components/AttendanceReportHeader';
+import BackButton from '../../../components/BackButton';
+import DataTable from '../../../components/DataTable';
+import DownloadReportButton from '../../../components/DownloadReportButton';
+import EmptyCard from '../../../components/EmptyCard';
+import PageHeader from '../../../components/PageHeader';
+import SearchBar from '../../../components/SearchBar';
+import ReportSkeleton from '../../../components/skeletons/ReportSkeleton';
 import { useFilteredUsers } from '../../../hooks/filters/useFilteredUsers';
+import { useSchoolInfo } from '../../../hooks/useSchoolInfo';
+import { useSearchQuery } from '../../../hooks/useSearchQuery';
 import {
   getAttendanceColor,
   getEligibilityStyle,
 } from '../../../utils/courseHelpers';
-import ReportSkeleton from '../../../components/ReportSkeleton';
-import PageHeader from '../../../components/PageHeader';
-import Alert from '../../../components/Alert';
-import SearchBar from '../../../components/SearchBar';
-
-import DataTable from '../../../components/DataTable';
-import BackButton from '../../../components/BackButton';
-import AttendanceReportHeader from '../../../components/AttendanceReportHeader';
-import EmptyCard from '../../../components/EmptyCard';
-import DownloadReportButton from '../../../components/DownloadReportButton';
-import toast from 'react-hot-toast';
 import { useDownloadReport } from '../admin/useDownloadReport';
-import { useSchoolInfo } from '../../../hooks/useSchoolInfo';
+
+import { useAttendanceReport } from './useAttendanceReport';
 
 function AttendanceReport() {
   const navigate = useNavigate();

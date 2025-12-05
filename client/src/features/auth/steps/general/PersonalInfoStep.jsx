@@ -1,9 +1,10 @@
 
+import { Mail,User } from 'lucide-react';
 import { useFormContext } from 'react-hook-form';
+
 import Box from '../../../../components/Box';
-import InputField from '../../../../components/InputField';
-import { User, Mail } from 'lucide-react';
 import Err from '../../../../components/Err';
+import InputField from '../../../../components/InputField';
 
 function PersonalInfoStep() {
     const {

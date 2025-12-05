@@ -1,14 +1,16 @@
-import Box from '../../components/Box';
-import InputField from '../../components/InputField';
-import Button from '../../components/Button';
-import FormHeader from '../../components/FormHeader';
-import Logo from '../../components/Logo';
-import Err from '../../components/Err';
-import { Lock, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff,Lock } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useSearchParams } from 'react-router-dom';
-import { useResetPassword } from './hooks/useResetPassword';
 import { ClipLoader } from 'react-spinners';
+
+import Box from '../../components/Box';
+import Button from '../../components/Button';
+import Err from '../../components/Err';
+import FormHeader from '../../components/FormHeader';
+import InputField from '../../components/InputField';
+import Logo from '../../components/Logo';
+
+import { useResetPassword } from './hooks/useResetPassword';
 
 function ResetPassword() {
   const {

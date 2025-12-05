@@ -1,15 +1,15 @@
+import { useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
+import { ClipLoader } from 'react-spinners';
 
+import Button from '../../components/Button';
+import ChangeRole from '../../components/ChangeRole';
+import Logo from '../../components/Logo';
+import SelectRole from '../../components/SelectRole';
+
+import { useCompleteProfile } from './hooks/useCompleteProfile';
 import AdminStepTwo from './steps/admin/AdminStepTwo';
 import SchoolInfo from './steps/general/SchoolInfo';
-import SelectRole from '../../components/SelectRole';
-import Button from '../../components/Button';
-import Logo from '../../components/Logo';
-
-import { ClipLoader } from 'react-spinners';
-import ChangeRole from '../../components/ChangeRole';
-import { useCompleteProfile } from './hooks/useCompleteProfile';
-import { useState } from 'react';
 
 function CompleteProfile() {
   const methods = useForm();

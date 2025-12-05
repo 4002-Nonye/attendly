@@ -1,16 +1,17 @@
-import EmptyChart from './EmptyChart';
 import { BarChart3 } from 'lucide-react';
 import PropTypes from 'prop-types';
 import {
-  BarChart,
   Bar,
-  XAxis,
-  YAxis,
+  BarChart,
   CartesianGrid,
-  Tooltip,
   Legend,
   ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
 } from 'recharts';
+
+import EmptyChart from './EmptyChart';
 import SectionIntro from './SectionIntro';
 
 function FacultyAttendanceChart({ hasData, data, faculties }) {

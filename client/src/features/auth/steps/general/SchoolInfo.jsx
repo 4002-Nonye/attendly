@@ -1,18 +1,16 @@
-import PropTypes from 'prop-types';
-import Box from '../../../../components/Box';
-import { useFormContext } from 'react-hook-form';
 import { useEffect, useRef } from 'react';
-
-import Err from '../../../../components/Err';
-import Select from '../../../../components/Select';
-
-import { useSchools } from '../../../school/useSchools';
-import { useFaculties } from '../../../faculty/general/useFaculties';
-import { useDepartments } from '../../../department/general/useDeparments';
-
+import PropTypes from 'prop-types';
+import { useFormContext } from 'react-hook-form';
 import toast from 'react-hot-toast';
+
+import Box from '../../../../components/Box';
+import Err from '../../../../components/Err';
 import InputField from '../../../../components/InputField';
+import Select from '../../../../components/Select';
 import { generateLevel } from '../../../../utils/courseHelpers';
+import { useDepartments } from '../../../department/general/useDeparments';
+import { useFaculties } from '../../../faculty/general/useFaculties';
+import { useSchools } from '../../../school/useSchools';
 
 function SchoolInfo({ showLevel = false, showMatric = false }) {
   const {

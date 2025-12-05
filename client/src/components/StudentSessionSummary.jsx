@@ -1,5 +1,5 @@
+import { CheckCircle, Target,XCircle } from 'lucide-react';
 import PropTypes from 'prop-types';
-import { CheckCircle, XCircle, Target } from 'lucide-react';
 
 function StudentSessionSummary({ course }) {
   const activeSessions = course.activeSessions || 0;

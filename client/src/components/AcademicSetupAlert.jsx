@@ -1,5 +1,6 @@
 import { AlertCircle } from 'lucide-react';
 import PropTypes from 'prop-types';
+
 import Alert from './Alert';
 
 const messages = {

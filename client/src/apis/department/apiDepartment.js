@@ -1,59 +1,32 @@
-import axios from 'axios';
-axios.defaults.withCredentials = true;
-// for dropdown (general)
-export const getDepartmentsOptions = async (facultyId) => {
-  try {
-    if (!facultyId) return;
-    const response = await axios.get(`/api/departments/${facultyId}`);
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+import { apiClient, handleRequest } from '../../services/apiClient';
+
+// Dropdown - get departments by faculty
+export const getDepartmentsOptions = (facultyId) => {
+  if (!facultyId) return;
+  return handleRequest(() => apiClient.get(`/departments/${facultyId}`));
 };
 
-// for dropdown (filtering in-app )
-export const getAllDepartments = async () => {
-  try {
-    const response = await axios.get(`/api/departments/all`);
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// get all departments (for filtering)
+export const getAllDepartments = () => {
+  return handleRequest(() => apiClient.get('/departments/all'));
 };
 
-export const getDepartmentStats = async () => {
-  try {
-    const response = await axios.get(`/api/departments`);
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// get department stats
+export const getDepartmentStats = () => {
+  return handleRequest(() => apiClient.get('/departments'));
 };
 
-export const createDepartment = async (data) => {
-  try {
-    const response = await axios.post('/api/departments', data);
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// crate department
+export const createDepartment = (data) => {
+  return handleRequest(() => apiClient.post('/departments', data));
 };
 
-export const editDepartment = async (data) => {
-  const { id, ...updateData } = data;
-  try {
-    const response = await axios.put(`/api/departments/${id}`, updateData);
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// edit department
+export const editDepartment = ({ id, ...updateData }) => {
+  return handleRequest(() => apiClient.put(`/departments/${id}`, updateData));
 };
 
-export const deleteDepartment = async (id) => {
-  try {
-    const response = await axios.delete(`/api/departments/${id}`);
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// delete department
+export const deleteDepartment = (id) => {
+  return handleRequest(() => apiClient.delete(`/departments/${id}`));
 };

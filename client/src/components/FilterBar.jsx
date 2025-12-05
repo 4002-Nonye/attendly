@@ -1,5 +1,7 @@
 import PropTypes from 'prop-types';
+
 import { useButtonState } from '../hooks/useButtonState';
+
 import Select from './Select';
 
 function FilterBar({

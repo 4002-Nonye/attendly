@@ -1,80 +1,44 @@
-import axios from 'axios';
-axios.defaults.withCredentials = true;
-/* ----------------------- ADMIN -----------------------------*/
+import { apiClient, handleRequest } from '../../services/apiClient';
 
-export const getAdminDashboardStats = async () => {
-  try {
-    const response = await axios.get('/api/admin/dashboard/stats');
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// ==================== ADMIN ====================
+
+// get admin dashboard stats
+export const getAdminDashboardStats = () => {
+  return handleRequest(() => apiClient.get('/admin/dashboard/stats'));
 };
 
-export const getWeeklyAttendanceBySchool = async () => {
-  try {
-    const response = await axios.get(
-      '/api/admin/dashboard/trends/school-weekly'
-    );
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// get school-wide weekly attendance trends
+export const getWeeklyAttendanceBySchool = () => {
+  return handleRequest(() => apiClient.get('/admin/dashboard/trends/school-weekly'));
 };
 
-export const getWeeklyAttendanceByFaculty = async () => {
-  try {
-    const response = await axios.get(
-      '/api/admin/dashboard/trends/faculty-weekly'
-    );
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// get faculty-level weekly attendance trends
+export const getWeeklyAttendanceByFaculty = () => {
+  return handleRequest(() => apiClient.get('/admin/dashboard/trends/faculty-weekly'));
 };
 
-/* ----------------------- GENERAL -----------------------------*/
+// ==================== LECTURER ====================
 
-export const getRecentSessions = async () => {
-  try {
-    const response = await axios.get('/api/dashboard/recent-sessions');
-    return response.data;
-  } catch (error) {
-
-    throw error.response.data;
-  }
+// get lecturer dashboard stats
+export const getLecturerDashboardStats = () => {
+  return handleRequest(() => apiClient.get('/lecturer/dashboard/stats'));
 };
 
-/* ----------------------- LECTURER -----------------------------*/
+// ==================== STUDENT ====================
 
-export const getLecturerDashboardStats = async () => {
-  try {
-    const response = await axios.get('/api/lecturer/dashboard/stats');
-
-    return response.data;
-  } catch (error) {
-    console.log(error)
-    throw error.response.data;
-  }
+// get student dashboard stats
+export const getStudentDashboardStats = () => {
+  return handleRequest(() => apiClient.get('/student/dashboard/stats'));
 };
 
-/* ----------------------- STUDENT -----------------------------*/
-
-export const getStudentDashboardStats = async () => {
-  try {
-    const response = await axios.get('/api/student/dashboard/stats');
-    return response.data;
-  } catch (error) {
-    console.log(error)
-    throw error.response.data;
-  }
+// get student's recent sessions
+export const getStudentRecentSessions = () => {
+  return handleRequest(() => apiClient.get('/student/dashboard/recent-sessions'));
 };
 
-export const getStudentRecentSessions = async () => {
-  try {
-    const response = await axios.get('/api/student/dashboard/recent-sessions');
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// ==================== GENERAL ====================
+
+// get recent sessions
+export const getRecentSessions = () => {
+  return handleRequest(() => apiClient.get('/dashboard/recent-sessions'));
 };

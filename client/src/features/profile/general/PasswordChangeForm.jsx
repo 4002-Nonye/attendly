@@ -1,15 +1,17 @@
-import { Lock, Eye, EyeOff } from 'lucide-react';
 import { useEffect } from 'react';
+import { Eye, EyeOff,Lock } from 'lucide-react';
+import PropTypes from 'prop-types';
 import { useForm } from 'react-hook-form';
 import { ClipLoader } from 'react-spinners';
-import Modal from '../../../components/Modal';
+
 import Box from '../../../components/Box';
-import InputField from '../../../components/InputField';
-import Err from '../../../components/Err';
 import Button from '../../../components/Button';
+import Err from '../../../components/Err';
+import InputField from '../../../components/InputField';
+import Modal from '../../../components/Modal';
+
 import { useChangePassword } from './useChangePassword';
 import { useSetPassword } from './useSetPassword';
-import PropTypes from 'prop-types';
 
 export default function PasswordChangeForm({ isOpen, onClose, hasPassword = true }) {
   const { changePassword, isPending: isChangingPassword } = useChangePassword();

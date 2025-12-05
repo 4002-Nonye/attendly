@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+
 import { editCourse as editCourseApi } from '../../../apis/course/apiCourse';
 
 export function useEditCourse() {

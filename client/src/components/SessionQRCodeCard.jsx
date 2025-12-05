@@ -1,7 +1,8 @@
 import { Download, Printer } from 'lucide-react';
-
 import PropTypes from 'prop-types';
+
 import { handleDownloadQR, handlePrintQR } from '../utils/SessionHelpers';
+
 import Button from './Button';
 
 export default function SessionQRCodeCard({ session }) {

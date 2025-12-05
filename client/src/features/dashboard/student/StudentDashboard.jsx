@@ -1,32 +1,32 @@
 import {
+  AlertCircle,
   BookOpen,
   Calendar,
   Clock,
-  AlertCircle,
   Eye,
   Plus,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { formatTime, formatYear } from '../../../utils/dateHelper';
+
+import Button from '../../../components/Button';
+import Card from '../../../components/Card';
+import DataTable from '../../../components/DataTable';
+import EmptyCard from '../../../components/EmptyCard';
+import EmptyChart from '../../../components/EmptyChart';
 import PageHeader from '../../../components/PageHeader';
-import { useStudentDashboardStats } from './useStudentDashboardStats';
+import QuickActions from '../../../components/QuickActions';
+import SectionIntro from '../../../components/SectionIntro';
+import StudentDashboardSkeleton from '../../../components/skeletons/StudentDashboardSkeleton';
+import StatusBadge from '../../../components/StatusBadge';
+import StudentAttendanceCard from '../../../components/StudentAttendanceCard';
+import { DASHBOARD_COURSE_LIMIT } from '../../../config/dashboard';
+import { useSchoolInfo } from '../../../hooks/useSchoolInfo';
+import { getStudentStats } from '../../../utils/dashboardStats';
+import { formatTime, formatYear } from '../../../utils/dateHelper';
 import { useStudentAttReport } from '../../attendance/student/useStudentAttReport';
 
-import StudentDashboardSkeleton from '../../../components/StudentDashboardSkeleton';
-import Card from '../../../components/Card';
 import { useStudentRecentSession } from './useRecentSession';
-import StatusBadge from '../../../components/StatusBadge';
-import { DASHBOARD_COURSE_LIMIT } from '../../../config/dashboard';
-import EmptyCard from '../../../components/EmptyCard';
-import { useSchoolInfo } from '../../../hooks/useSchoolInfo';
-import Button from '../../../components/Button';
-import SectionIntro from '../../../components/SectionIntro';
-
-import DataTable from '../../../components/DataTable';
-import EmptyChart from '../../../components/EmptyChart';
-import { getStudentStats } from '../../../utils/dashboardStats';
-import QuickActions from '../../../components/QuickActions';
-import StudentAttendanceCard from '../../../components/StudentAttendanceCard';
+import { useStudentDashboardStats } from './useStudentDashboardStats';
 
 function StudentDashboard() {
   const { data: stats, isPending: isStatPending } = useStudentDashboardStats();

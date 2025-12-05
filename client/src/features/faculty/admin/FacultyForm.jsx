@@ -1,14 +1,15 @@
-import { useForm } from 'react-hook-form';
-import Modal from '../../../components/Modal';
-import InputField from '../../../components/InputField';
-import Err from '../../../components/Err';
-import Button from '../../../components/Button';
-import { useCreateFaculty } from './useCreateFaculty';
-import PropTypes from 'prop-types';
-import { useEditFaculty } from './useEditFaculty';
-
-import { ClipLoader } from 'react-spinners';
 import { useEffect } from 'react';
+import PropTypes from 'prop-types';
+import { useForm } from 'react-hook-form';
+import { ClipLoader } from 'react-spinners';
+
+import Button from '../../../components/Button';
+import Err from '../../../components/Err';
+import InputField from '../../../components/InputField';
+import Modal from '../../../components/Modal';
+
+import { useCreateFaculty } from './useCreateFaculty';
+import { useEditFaculty } from './useEditFaculty';
 
 function FacultyForm({ isOpen, onClose, initialData }) {
   const { _id: editId, name } = initialData || {};

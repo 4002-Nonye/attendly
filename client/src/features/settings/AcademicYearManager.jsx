@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { Calendar, Check } from 'lucide-react';
 import PropTypes from 'prop-types';
+
 import Button from '../../components/Button';
+
 import { useSwitchSemester } from './useSwitchSemester';
 
 function AcademicYearManager({

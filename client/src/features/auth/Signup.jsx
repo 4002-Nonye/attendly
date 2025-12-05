@@ -1,22 +1,24 @@
+import { useState } from 'react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
-import { useState } from 'react';
 import { ClipLoader } from 'react-spinners';
 
-import googleIcon from '../../assets/icons8-google.svg';
-import Divider from '../../components/Divider';
 import Button from '../../components/Button';
+import ChangeRole from '../../components/ChangeRole';
+import Divider from '../../components/Divider';
 import FormHeader from '../../components/FormHeader';
-import AdminFormField from './formFields/AdminFormField';
-import LecturerFormField from './formFields/LecturerFormField';
-import { useFormStep } from '../../contexts/hooks/useFormStep';
-import { formStepFields } from '../../config/formStepFields';
 import Logo from '../../components/Logo';
 import SelectRole from '../../components/SelectRole';
+import { formStepFields } from '../../config/formStepFields';
+import { useFormStep } from '../../contexts/hooks/useFormStep';
+
+import AdminFormField from './formFields/AdminFormField';
+import LecturerFormField from './formFields/LecturerFormField';
 import StudentFormField from './formFields/StudentFormField';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useSignup } from './hooks/useSignup';
-import ChangeRole from '../../components/ChangeRole';
+
+import googleIcon from '../../assets/icons8-google.svg';
 
 function Signup() {
   const methods = useForm({

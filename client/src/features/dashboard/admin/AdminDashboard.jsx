@@ -1,19 +1,18 @@
-import { Plus, Calendar } from 'lucide-react';
+import { Calendar,Plus } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 import Button from '../../../components/Button';
-
 import Card from '../../../components/Card';
 import Chart from '../../../components/Chart';
-
-import { useSchoolInfo } from '../../../hooks/useSchoolInfo';
-import PageHeader from '../../../components/PageHeader';
-import { Link } from 'react-router-dom';
 import EmptyCard from '../../../components/EmptyCard';
-import { useAdminDashboardStats } from './useAdminDashboardStats';
-import AdminDashboardSkeleton from '../../../components/AdminDashboardSkeleton';
-import RecentSessions from '../../../components/RecentSessions';
-import { getAdminStats } from '../../../utils/dashboardStats';
+import PageHeader from '../../../components/PageHeader';
 import QuickActions from '../../../components/QuickActions';
+import RecentSessions from '../../../components/RecentSessions';
+import AdminDashboardSkeleton from '../../../components/skeletons/AdminDashboardSkeleton';
+import { useSchoolInfo } from '../../../hooks/useSchoolInfo';
+import { getAdminStats } from '../../../utils/dashboardStats';
+
+import { useAdminDashboardStats } from './useAdminDashboardStats';
 
 function AdminDashboard() {
   const { data: stat, isPending: isStatPending } = useAdminDashboardStats();

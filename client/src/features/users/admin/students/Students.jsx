@@ -1,19 +1,21 @@
 import { useState } from 'react';
-import { Users, Filter, Search } from 'lucide-react';
-import { useButtonState } from '../../../../hooks/useButtonState';
-import PageHeader from '../../../../components/PageHeader';
-import SearchBar from '../../../../components/SearchBar';
+import { Filter, Search,Users } from 'lucide-react';
+
 import Button from '../../../../components/Button';
 import DataTable from '../../../../components/DataTable';
 import EmptyCard from '../../../../components/EmptyCard';
 import FilterBar from '../../../../components/FilterBar';
-import { useFilters } from '../../../../hooks/filters/useFilters';
-import { useStudents } from './useStudents';
-import { useAllFaculties } from '../../../faculty/admin/useAllFaculties';
-import { useAllDepartments } from '../../../department/admin/useAllDepartments';
-import { generateLevel } from '../../../../utils/courseHelpers';
+import PageHeader from '../../../../components/PageHeader';
+import SearchBar from '../../../../components/SearchBar';
 import { MAX_LEVEL } from '../../../../config/level';
 import { useFilteredUsers } from '../../../../hooks/filters/useFilteredUsers';
+import { useFilters } from '../../../../hooks/filters/useFilters';
+import { useButtonState } from '../../../../hooks/useButtonState';
+import { generateLevel } from '../../../../utils/courseHelpers';
+import { useAllDepartments } from '../../../department/admin/useAllDepartments';
+import { useAllFaculties } from '../../../faculty/admin/useAllFaculties';
+
+import { useStudents } from './useStudents';
 
 function Students() {
   const { disableButton } = useButtonState();

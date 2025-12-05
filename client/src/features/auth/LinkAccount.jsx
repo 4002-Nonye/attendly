@@ -1,10 +1,12 @@
-import { MailCheck, AlertCircle } from 'lucide-react';
+import { useEffect } from 'react';
+import { AlertCircle,MailCheck } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { ClipLoader } from 'react-spinners';
+
 import Button from '../../components/Button';
 import Logo from '../../components/Logo';
+
 import { useLinkAccount } from './hooks/useLinkAccount';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useEffect } from 'react';
-import { ClipLoader } from 'react-spinners';
 
 function LinkAccount() {
   const { linkAccount, isPending } = useLinkAccount();

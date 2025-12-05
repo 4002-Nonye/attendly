@@ -1,5 +1,6 @@
-import PropTypes from 'prop-types';
 import { ArrowLeft } from 'lucide-react';
+import PropTypes from 'prop-types';
+
 import Button from './Button';
 
 function BackButton({ navigate, text, className }) {

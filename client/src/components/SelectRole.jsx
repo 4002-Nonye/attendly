@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
+import { BookOpenText,GraduationCap, UserStar } from 'lucide-react';
 import PropTypes from 'prop-types';
-import { GraduationCap, UserStar, BookOpenText } from 'lucide-react';
-import Button from './Button';
+
 import { useFormStep } from '../contexts/hooks/useFormStep';
+
+import Button from './Button';
 
 const roles = [
   {

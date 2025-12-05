@@ -1,19 +1,21 @@
-import { BookOpen, Search, Calendar, AlertCircle } from 'lucide-react';
+import { AlertCircle, BookOpen, Calendar, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+
+import Button from '../../../components/Button';
+import DataTable from '../../../components/DataTable';
+import EmptyCard from '../../../components/EmptyCard';
 import PageHeader from '../../../components/PageHeader';
 import SearchBar from '../../../components/SearchBar';
-import EmptyCard from '../../../components/EmptyCard';
-import DataTable from '../../../components/DataTable';
+import StudentAttendanceCardSkeleton from '../../../components/skeletons/StudentCardSkeleton';
 import StudentAttendanceCard from '../../../components/StudentAttendanceCard';
+import { useFilteredCourses } from '../../../hooks/filters/useFilteredCourses';
+import { useSearchQuery } from '../../../hooks/useSearchQuery';
 import {
   getAttendanceColor,
   getEligibilityStyle,
 } from '../../../utils/courseHelpers';
-import { useFilteredCourses } from '../../../hooks/filters/useFilteredCourses';
-import { useSearchQuery } from '../../../hooks/useSearchQuery';
+
 import { useStudentAttReport } from './useStudentAttReport';
-import Button from '../../../components/Button';
-import StudentAttendanceCardSkeleton from '../../../components/StudentCardSkeleton';
 
 function AttendanceOverviewStudent() {
   const navigate = useNavigate();

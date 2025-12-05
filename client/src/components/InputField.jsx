@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types';
+
 import { usePasswordToggle } from '../hooks/usePasswordToggle';
 
 function InputField({

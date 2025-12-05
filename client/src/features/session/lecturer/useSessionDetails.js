@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+
 import { getSessionDetails } from '../../../apis/session/apiSession';
 
 export function useSessionDetail(id, options = {}) {

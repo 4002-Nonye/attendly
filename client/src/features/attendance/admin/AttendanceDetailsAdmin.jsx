@@ -1,28 +1,29 @@
 import {
-  Download,
   CheckCircle,
-  XCircle,
+  Download,
   FileText,
   Loader2,
+  XCircle,
 } from 'lucide-react';
-import PageHeader from '../../../components/PageHeader';
-import { useNavigate, useParams } from 'react-router-dom';
-import BackButton from '../../../components/BackButton';
-import AttendanceReportHeader from '../../../components/AttendanceReportHeader';
-import { getAttendanceColor } from '../../../utils/courseHelpers';
-import SearchBar from '../../../components/SearchBar';
-import { useSearchQuery } from '../../../hooks/useSearchQuery';
-import Button from '../../../components/Button';
-import EmptyCard from '../../../components/EmptyCard';
-import DataTable from '../../../components/DataTable';
-import { useFilteredUsers } from '../../../hooks/filters/useFilteredUsers';
-import { useAttendanceDetails } from './useAttendanceDetails';
-import ReportSkeleton from '../../../components/ReportSkeleton';
-import Alert from '../../../components/Alert';
-import { useDownloadReport } from './useDownloadReport';
 import toast from 'react-hot-toast';
+import { useNavigate, useParams } from 'react-router-dom';
+
+import Alert from '../../../components/Alert';
+import AttendanceReportHeader from '../../../components/AttendanceReportHeader';
+import BackButton from '../../../components/BackButton';
+import DataTable from '../../../components/DataTable';
 import DownloadReportButton from '../../../components/DownloadReportButton';
+import EmptyCard from '../../../components/EmptyCard';
+import PageHeader from '../../../components/PageHeader';
+import SearchBar from '../../../components/SearchBar';
+import ReportSkeleton from '../../../components/skeletons/ReportSkeleton';
+import { useFilteredUsers } from '../../../hooks/filters/useFilteredUsers';
 import { useSchoolInfo } from '../../../hooks/useSchoolInfo';
+import { useSearchQuery } from '../../../hooks/useSearchQuery';
+import { getAttendanceColor } from '../../../utils/courseHelpers';
+
+import { useAttendanceDetails } from './useAttendanceDetails';
+import { useDownloadReport } from './useDownloadReport';
 
 function AttendanceDetailsAdmin() {
   const { courseId } = useParams();

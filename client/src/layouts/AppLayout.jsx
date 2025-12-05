@@ -1,9 +1,9 @@
 import { Outlet } from 'react-router-dom';
+
+import AcademicSetupAlert from '../components/AcademicSetupAlert';
+import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import { useUser } from '../features/auth/hooks/useUser';
-
-import Header from '../components/Header';
-import AcademicSetupAlert from '../components/AcademicSetupAlert';
 
 function AppLayout() {
   const { data } = useUser();

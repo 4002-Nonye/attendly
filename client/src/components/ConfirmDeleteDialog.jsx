@@ -1,6 +1,7 @@
-import PropTypes from 'prop-types';
 import { AlertTriangle } from 'lucide-react';
+import PropTypes from 'prop-types';
 import { ClipLoader } from 'react-spinners';
+
 import Button from './Button';
 import Modal from './Modal';
 

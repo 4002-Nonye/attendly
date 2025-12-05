@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+
 import { enrollCourse as enrollCourseApi } from '../../../apis/course/apiCourse';
 
 export function useEnrollCourse() {

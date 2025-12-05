@@ -1,93 +1,51 @@
-import axios from 'axios';
-axios.defaults.withCredentials = true;
+import { apiClient, handleRequest } from '../../services/apiClient';
 
-export const signUp = async (data) => {
-  try {
-    const response = await axios.post('/api/auth/signup', data);
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// signup new user
+export const signUp = (data) => {
+  return handleRequest(() => apiClient.post('/auth/signup', data));
 };
 
-export const login = async (data) => {
-  try {
-    const response = await axios.post('/api/auth/login', data);
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// login existing user
+export const login = (data) => {
+  return handleRequest(() => apiClient.post('/auth/login', data));
 };
 
-export const forgotPassword = async (data) => {
-  try {
-    const response = await axios.post('/api/auth/forgot-password', data);
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// send password reset email
+export const forgotPassword = (data) => {
+  return handleRequest(() => apiClient.post('/auth/forgot-password', data));
 };
 
-export const resetPassword = async (data) => {
-  try {
-    const response = await axios.post('/api/auth/reset-password', data);
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// reset password with token
+export const resetPassword = (data) => {
+  return handleRequest(() => apiClient.post('/auth/reset-password', data));
 };
 
-export const linkAccount = async (data) => {
-  try {
-    const response = await axios.post('/api/auth/link-account', data);
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// link google account
+export const linkAccount = (data) => {
+  return handleRequest(() => apiClient.post('/auth/link-account', data));
 };
 
-export const completeProfile = async (data) => {
-  try {
-    const response = await axios.put('/api/auth/complete-profile', data);
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// complete user profile after signup
+export const completeProfile = (data) => {
+  return handleRequest(() => apiClient.put('/auth/complete-profile', data));
 };
 
-export const getUser = async () => {
-  try {
-    const response = await axios.get('/api/auth/user');
-
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// get current logged in user
+export const getUser = () => {
+  return handleRequest(() => apiClient.get('/auth/user'));
 };
 
-export const changePassword = async (data) => {
-  try {
-    const response = await axios.post('/api/auth/change-password', data);
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// change existing password
+export const changePassword = (data) => {
+  return handleRequest(() => apiClient.post('/auth/change-password', data));
 };
 
-export const setPassword = async (data) => {
-  try {
-    const response = await axios.post('/api/auth/set-password', data);
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// set password google-sign in accounts
+export const setPassword = (data) => {
+  return handleRequest(() => apiClient.post('/auth/set-password', data));
 };
 
-export const logout = async () => {
-  try {
-    const response = await axios.get('/api/auth/logout');
-    return response.data;
-  } catch (err) {
-    throw err.response.data;
-  }
+// logout current user
+export const logout = () => {
+  return handleRequest(() => apiClient.get('/auth/logout'));
 };

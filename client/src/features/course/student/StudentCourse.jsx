@@ -1,8 +1,10 @@
-import PageHeader from '../../../components/PageHeader';
-import Button from '../../../components/Button';
 import { useSearchParams } from 'react-router-dom';
-import StudentEnrolledCourses from './StudentEnrolledCourses';
+
+import Button from '../../../components/Button';
+import PageHeader from '../../../components/PageHeader';
+
 import StudentAllCourses from './StudentAllCourses';
+import StudentEnrolledCourses from './StudentEnrolledCourses';
 
 function StudentCourse() {
   const [searchParams, setSearchParams] = useSearchParams();

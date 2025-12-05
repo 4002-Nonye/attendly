@@ -1,6 +1,6 @@
 
+import { AlertCircle, CheckCircle, Info,XCircle } from 'lucide-react';
 import PropTypes from 'prop-types';
-import { AlertCircle, CheckCircle, XCircle, Info } from 'lucide-react';
 
 function Alert({ 
   type = 'warning', 

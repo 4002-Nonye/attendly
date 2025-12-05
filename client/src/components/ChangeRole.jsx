@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types';
+
 import Button from './Button';
 
 function ChangeRole({ role, onClick }) {

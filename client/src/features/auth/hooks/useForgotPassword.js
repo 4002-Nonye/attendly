@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
-import { forgotPassword as forgotPasswordApi } from '../../../apis/auth/apiAuth';
 import toast from 'react-hot-toast';
+
+import { forgotPassword as forgotPasswordApi } from '../../../apis/auth/apiAuth';
 
 export function useForgotPassword() {
   const mutation = useMutation({

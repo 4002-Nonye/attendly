@@ -1,5 +1,6 @@
-import { Lock, Key } from 'lucide-react';
+import { Key,Lock } from 'lucide-react';
 import PropTypes from 'prop-types';
+
 import Button from './Button';
 
 function SecuritySettings({ data, onPasswordChange }) {

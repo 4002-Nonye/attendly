@@ -1,6 +1,6 @@
 import { ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
 
 function Card({ color, link, label, value, icon: Icon, isLink = true }) {
   const content = (

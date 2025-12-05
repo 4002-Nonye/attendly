@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
-import { changePassword as changePasswordApi } from '../../../apis/auth/apiAuth';
 import toast from 'react-hot-toast';
+
+import { changePassword as changePasswordApi } from '../../../apis/auth/apiAuth';
 
 
 export function useChangePassword() {

@@ -1,5 +1,6 @@
-import { Mail, CreditCard, User, Building2, Shield, GraduationCap } from 'lucide-react';
+import { Building2, CreditCard, GraduationCap,Mail, Shield, User } from 'lucide-react';
 import PropTypes from 'prop-types';
+
 import Avatar from './Avatar';
 
 function ProfileHeader({ data, isLecturer = false, isAdmin = false }) {

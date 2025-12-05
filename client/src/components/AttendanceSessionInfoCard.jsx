@@ -1,6 +1,6 @@
 
-import PropTypes from 'prop-types';
 import { Calendar } from 'lucide-react';
+import PropTypes from 'prop-types';
 
 const AttendanceSessionInfoCard = ({ course, sessions }) => (
   <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6'>

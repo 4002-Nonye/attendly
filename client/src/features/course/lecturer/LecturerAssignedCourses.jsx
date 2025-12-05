@@ -1,19 +1,21 @@
-import SearchBar from '../../../components/SearchBar';
-import { useButtonState } from '../../../hooks/useButtonState';
-import { useAssignedCourses } from './useAssignedCourses';
 import { BookOpen } from 'lucide-react';
-import EmptyCard from '../../../components/EmptyCard';
-import DataTable from '../../../components/DataTable';
-import Button from '../../../components/Button';
-import LecturerCourseCardSkeleton from '../../../components/LecturerCourseCardSkeleton';
-import CourseCard from '../../../components/CourseCard';
-import { useFilteredCourses } from '../../../hooks/filters/useFilteredCourses';
-import { useCourseSessionStatus } from '../general/useCourseSessionStatus';
 import ClipLoader from 'react-spinners/ClipLoader';
-import { useHandleCreateSession } from '../../session/lecturer/useHandleCreateSession';
+
+import Button from '../../../components/Button';
+import CourseCard from '../../../components/CourseCard';
+import DataTable from '../../../components/DataTable';
+import EmptyCard from '../../../components/EmptyCard';
+import SearchBar from '../../../components/SearchBar';
+import LecturerCourseCardSkeleton from '../../../components/skeletons/LecturerCourseCardSkeleton';
+import { useFilteredCourses } from '../../../hooks/filters/useFilteredCourses';
+import { useButtonState } from '../../../hooks/useButtonState';
 import { useSearchQuery } from '../../../hooks/useSearchQuery';
-import { useActiveSessionLecturer } from '../../session/lecturer/useActiveSessionLecturer';
 import { getStatusStyle } from '../../../utils/courseHelpers';
+import { useActiveSessionLecturer } from '../../session/lecturer/useActiveSessionLecturer';
+import { useHandleCreateSession } from '../../session/lecturer/useHandleCreateSession';
+import { useCourseSessionStatus } from '../general/useCourseSessionStatus';
+
+import { useAssignedCourses } from './useAssignedCourses';
 
 function LecturerAssignedCourses() {
   const { disableButton } = useButtonState();

@@ -1,8 +1,10 @@
-import { useNavigate } from 'react-router-dom';
-import { Calendar, AlertCircle, Clock } from 'lucide-react';
+import { AlertCircle, Calendar, Clock } from 'lucide-react';
 import PropTypes from 'prop-types';
-import { getBadgeColor, getProgressBarColor } from '../utils/courseHelpers';
+import { useNavigate } from 'react-router-dom';
+
 import { useSchoolInfo } from '../hooks/useSchoolInfo';
+import { getBadgeColor, getProgressBarColor } from '../utils/courseHelpers';
+
 import Button from './Button';
 
 function StudentAttendanceCard({ course, attendanceView = true }) {

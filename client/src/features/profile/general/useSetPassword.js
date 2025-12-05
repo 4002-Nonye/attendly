@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { setPassword as setPasswordApi } from '../../../apis/auth/apiAuth';
 import toast from 'react-hot-toast';
+
+import { setPassword as setPasswordApi } from '../../../apis/auth/apiAuth';
 
 export function useSetPassword() {
   const queryClient = useQueryClient();

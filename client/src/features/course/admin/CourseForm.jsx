@@ -1,17 +1,19 @@
 import { useEffect, useMemo } from 'react';
-import { useForm } from 'react-hook-form';
-import Modal from '../../../components/Modal';
 import PropTypes from 'prop-types';
+import { useForm } from 'react-hook-form';
 import { ClipLoader } from 'react-spinners';
+
+import Box from '../../../components/Box';
 import Button from '../../../components/Button';
 import Err from '../../../components/Err';
 import InputField from '../../../components/InputField';
+import Modal from '../../../components/Modal';
 import Select from '../../../components/Select';
-import Box from '../../../components/Box';
 import { useSchoolInfo } from '../../../hooks/useSchoolInfo';
-import { useAllFaculties } from '../../faculty/admin/useAllFaculties';
-import { useDepartments } from '../../department/general/useDeparments';
 import { generateLevel } from '../../../utils/courseHelpers';
+import { useDepartments } from '../../department/general/useDeparments';
+import { useAllFaculties } from '../../faculty/admin/useAllFaculties';
+
 import { useCreateCourse } from './useCreateCourse';
 import { useEditCourse } from './useEditCourse';
 

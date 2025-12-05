@@ -1,33 +1,32 @@
-import { Routes, Route, BrowserRouter, Navigate } from 'react-router-dom';
+import { BrowserRouter, Navigate,Route, Routes } from 'react-router-dom';
 
-import LoginPage from './pages/auth/LoginPage';
-import SignupPage from './pages/auth/SignupPage';
-import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
-import ResetPasswordPage from './pages/auth/ResetPasswordPage';
-import LinkAccountPage from './pages/auth/LinkAccountPage';
-
-import CompleteProfile from './pages/auth/CompleteProfilePage';
-import ProtectedRoute from './components/ProtectedRoute';
-import AppLayout from './layouts/AppLayout';
 import CompleteProfileProtected from './components/CompleteProfileProtected';
-import DashboardPage from './pages/dashboard/DashboardPage';
+import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
-import CoursePage from './pages/course/CoursePage';
-import FacultyPage from './pages/faculty/FacultyPage';
-import DepartmentPage from './pages/department/DepartmentPage';
-import SessionPage from './pages/session/SessionPage';
-import SessionDetailsPage from './pages/session/SessionDetailsPage';
-import ActiveSessions from './pages/session/ActiveSessions';
-import LecturerPage from './pages/users/LecturerPage';
-import StudentPage from './pages/users/StudentPage';
+import AttendanceReport from './features/attendance/lecturer/AttendanceReport';
+import AppLayout from './layouts/AppLayout';
+import AttendanceDetailsPage from './pages/attendance/AttendanceDetailsPage';
 import AttendanceOverviewPage from './pages/attendance/AttendanceOverviewPage';
 import AttendancePage from './pages/attendance/AttendancePage';
-import AttendanceDetailsPage from './pages/attendance/AttendanceDetailsPage';
-import AttendanceStudentsDetailsPage from './pages/attendance/AttendanceStudentsDetailsPage';
-import AttendanceReport from './features/attendance/lecturer/AttendanceReport';
-import ProfilePage from './pages/profile/ProfilePage';
-import AdminSettingsPage from './pages/settings/AdminSettingsPage';
 import AttendanceQRScanPage from './pages/attendance/AttendanceQRScanPage';
+import AttendanceStudentsDetailsPage from './pages/attendance/AttendanceStudentsDetailsPage';
+import CompleteProfile from './pages/auth/CompleteProfilePage';
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
+import LinkAccountPage from './pages/auth/LinkAccountPage';
+import LoginPage from './pages/auth/LoginPage';
+import ResetPasswordPage from './pages/auth/ResetPasswordPage';
+import SignupPage from './pages/auth/SignupPage';
+import CoursePage from './pages/course/CoursePage';
+import DashboardPage from './pages/dashboard/DashboardPage';
+import DepartmentPage from './pages/department/DepartmentPage';
+import FacultyPage from './pages/faculty/FacultyPage';
+import ProfilePage from './pages/profile/ProfilePage';
+import ActiveSessions from './pages/session/ActiveSessions';
+import SessionDetailsPage from './pages/session/SessionDetailsPage';
+import SessionPage from './pages/session/SessionPage';
+import AdminSettingsPage from './pages/settings/AdminSettingsPage';
+import LecturerPage from './pages/users/LecturerPage';
+import StudentPage from './pages/users/StudentPage';
 
 function App() {
   return (

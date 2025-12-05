@@ -1,7 +1,8 @@
-import { Navigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import { useUser } from '../features/auth/hooks/useUser';
+import { Navigate } from 'react-router-dom';
 import { ClipLoader } from 'react-spinners';
+
+import { useUser } from '../features/auth/hooks/useUser';
 
 function CompleteProfileProtected({ children }) {
   const { data, isPending } = useUser();

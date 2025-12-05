@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import { Link, useNavigate } from 'react-router-dom';
+
 import Button from './Button';
 
 function QuickActions({ title = 'Quick Actions', actions = [] }) {

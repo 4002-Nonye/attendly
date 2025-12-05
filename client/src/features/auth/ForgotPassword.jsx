@@ -1,14 +1,16 @@
-import Box from '../../components/Box';
-import InputField from '../../components/InputField';
-import Button from '../../components/Button';
-import { Link } from 'react-router-dom';
-import FormHeader from '../../components/FormHeader';
 import { Mail } from 'lucide-react';
 import { useForm } from 'react-hook-form';
-import Err from '../../components/Err';
-import Logo from '../../components/Logo';
-import { useForgotPassword } from './hooks/useForgotPassword';
+import { Link } from 'react-router-dom';
 import { ClipLoader } from 'react-spinners';
+
+import Box from '../../components/Box';
+import Button from '../../components/Button';
+import Err from '../../components/Err';
+import FormHeader from '../../components/FormHeader';
+import InputField from '../../components/InputField';
+import Logo from '../../components/Logo';
+
+import { useForgotPassword } from './hooks/useForgotPassword';
 
 function ForgotPassword() {
   const {

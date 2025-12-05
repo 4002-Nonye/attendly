@@ -1,8 +1,9 @@
-import { Lock, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff,Lock } from 'lucide-react';
 import { useFormContext } from 'react-hook-form';
+
 import Box from '../../../../components/Box';
-import InputField from '../../../../components/InputField';
 import Err from '../../../../components/Err';
+import InputField from '../../../../components/InputField';
 
 function SecurityStep() {
   const {

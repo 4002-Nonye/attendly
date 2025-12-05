@@ -1,63 +1,36 @@
-import axios from 'axios';
-axios.defaults.withCredentials = true;
-// for dropdown (signup)
-export const getFacultyOptions = async (schoolId) => {
-  try {
-    if (!schoolId) return;
-    const response = await axios.get(`/api/faculties/${schoolId}`);
+import { apiClient, handleRequest } from '../../services/apiClient';
 
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// ==================== GENERAL ====================
+
+// get faculties by school id (for signup dropdown)
+export const getFacultyOptions = (schoolId) => {
+  if (!schoolId) return;
+  return handleRequest(() => apiClient.get(`/faculties/${schoolId}`));
 };
 
-// for dropdown (creating a department in-app || filtering )
-export const getAllFaculties = async () => {
-  try {
-    const response = await axios.get(`/api/faculties/all`);
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// get all faculties (for dropdowns/filtering in-app)
+export const getAllFaculties = () => {
+  return handleRequest(() => apiClient.get('/faculties/all'));
 };
 
-// admin
-export const getFacultyStats = async () => {
-  try {
-    const response = await axios.get(`/api/faculties`);
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// ==================== ADMIN ====================
+
+// get faculty stats
+export const getFacultyStats = () => {
+  return handleRequest(() => apiClient.get('/faculties'));
 };
 
-// admin create faculty
-export const createFaculty = async (data) => {
-  try {
-    const response = await axios.post('/api/faculties', data);
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// create new faculty
+export const createFaculty = (data) => {
+  return handleRequest(() => apiClient.post('/faculties', data));
 };
 
-// admin edit faculty
-export const editFaculty = async (data) => {
-  try {
-    const { id, ...updateData } = data;
-    const response = await axios.put(`/api/faculties/${id}`, updateData);
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// edit faculty
+export const editFaculty = ({ id, ...updateData }) => {
+  return handleRequest(() => apiClient.put(`/faculties/${id}`, updateData));
 };
 
-export const deleteFaculty = async (id) => {
-  try {
-    const response = await axios.delete(`/api/faculties/${id}`);
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// delete faculty
+export const deleteFaculty = (id) => {
+  return handleRequest(() => apiClient.delete(`/faculties/${id}`));
 };

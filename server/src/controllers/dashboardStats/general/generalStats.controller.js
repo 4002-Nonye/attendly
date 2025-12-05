@@ -10,7 +10,7 @@ exports.getRecentSessions = async (req, res) => {
   try {
     const { schoolId, role, id: userId } = req.user;
 
-    // get current academic year + semester
+    // get current academic year and semester
     const school = await School.findById(schoolId)
       .select('currentAcademicYear currentSemester')
       .lean();

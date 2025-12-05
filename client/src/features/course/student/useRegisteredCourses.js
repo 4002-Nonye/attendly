@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+
 import { getStudentRegisteredCourses } from '../../../apis/course/apiCourse';
 
 export function useRegisteredCourses() {

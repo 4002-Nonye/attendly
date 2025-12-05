@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 import { createSession as createSessionApi } from '../../../apis/session/apiSession';
-import { useNavigate } from 'react-router-dom';
 
 export function useCreateSession() {
   const queryClient = useQueryClient();

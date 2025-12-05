@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
-import Button from './Button';
 import { ClipLoader } from 'react-spinners';
+
+import Button from './Button';
 
 function BulkActionBar({
   count,

@@ -1,15 +1,16 @@
 import { BarChart3 } from 'lucide-react';
+import PropTypes from 'prop-types';
 import {
-  LineChart,
+  CartesianGrid,
   Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
 } from 'recharts';
+
 import EmptyChart from './EmptyChart';
-import PropTypes from 'prop-types';
 import SectionIntro from './SectionIntro';
 
 function SchoolAttendanceChart({ hasData, data, averageRate }) {

@@ -1,22 +1,24 @@
 import { useState } from 'react';
 import { BookOpen, Check } from 'lucide-react';
-import Button from '../../../components/Button';
-import EmptyCard from '../../../components/EmptyCard';
-import DataTable from '../../../components/DataTable';
-import SearchBar from '../../../components/SearchBar';
-import { useButtonState } from '../../../hooks/useButtonState';
-import { useAllCourses } from '../general/useAllCourses';
-import BulkActionBar from '../../../components/BulkActionBar';
-import SelectionInfoBar from '../../../components/SelectionInfoBar';
-import { useAssignCourse } from './useAssignCourse';
-import { useUnassignCourse } from './useUnassignCourse';
 import { ClipLoader } from 'react-spinners';
+
+import BulkActionBar from '../../../components/BulkActionBar';
+import Button from '../../../components/Button';
 import CourseAssignmentCard from '../../../components/CourseAssignmentCard';
-import LecturerCourseCardSkeleton from '../../../components/LecturerCourseCardSkeleton';
-import { useSearchQuery } from '../../../hooks/useSearchQuery';
+import DataTable from '../../../components/DataTable';
+import EmptyCard from '../../../components/EmptyCard';
+import SearchBar from '../../../components/SearchBar';
+import SelectionInfoBar from '../../../components/SelectionInfoBar';
+import LecturerCourseCardSkeleton from '../../../components/skeletons/LecturerCourseCardSkeleton';
 import { useFilteredCourses } from '../../../hooks/filters/useFilteredCourses';
+import { useButtonState } from '../../../hooks/useButtonState';
+import { useSearchQuery } from '../../../hooks/useSearchQuery';
 import { useSelection } from '../../../hooks/useSelection';
 import { getStatusStyle } from '../../../utils/courseHelpers';
+import { useAllCourses } from '../general/useAllCourses';
+
+import { useAssignCourse } from './useAssignCourse';
+import { useUnassignCourse } from './useUnassignCourse';
 
 // Constants
 const ACTION_TEXTS = {

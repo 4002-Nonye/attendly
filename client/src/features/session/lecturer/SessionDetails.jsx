@@ -1,14 +1,15 @@
-import { ArrowLeft, AlertCircle } from 'lucide-react';
+import { AlertCircle,ArrowLeft } from 'lucide-react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
+
+import BackButton from '../../../components/BackButton';
 import Button from '../../../components/Button';
-import { useSessionDetail } from './useSessionDetails';
+import EmptyCard from '../../../components/EmptyCard';
 import SessionCourseInfo from '../../../components/SessionCourseInfo';
 import SessionInfo from '../../../components/SessionInfo';
 import SessionQRCodeCard from '../../../components/SessionQRCodeCard';
-import EmptyCard from '../../../components/EmptyCard';
+import SessionDetailSkeleton from '../../../components/skeletons/SessionDetailSkeleton';
 
-import SessionDetailSkeleton from '../../../components/SessionDetailSkeleton';
-import BackButton from '../../../components/BackButton';
+import { useSessionDetail } from './useSessionDetails';
 
 function SessionDetailsPage() {
   const { id: sessionId } = useParams();

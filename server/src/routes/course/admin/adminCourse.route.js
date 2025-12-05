@@ -7,16 +7,10 @@ const {
   deleteCourse,
 } = require('../../../controllers/course/admin/adminCourse.controller');
 
-const {
-  getTotalCourses,
-} = require('../../../controllers/course/course.controller');
-
 const adminCourseRoute = express.Router();
 
 // Create a new course
 adminCourseRoute.post('/', requireLogin, requireAdminAccess, createCourse);
-
-
 
 // Edit a course
 adminCourseRoute.put('/:id', requireLogin, requireAdminAccess, editCourse);

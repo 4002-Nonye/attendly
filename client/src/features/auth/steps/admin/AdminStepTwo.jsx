@@ -1,8 +1,9 @@
-import InputField from '../../../../components/InputField';
-import Box from '../../../../components/Box';
+import { MapPin,School } from 'lucide-react';
 import { useFormContext } from 'react-hook-form';
-import { School, MapPin } from 'lucide-react';
+
+import Box from '../../../../components/Box';
 import Err from '../../../../components/Err';
+import InputField from '../../../../components/InputField';
 
 function AdminStepTwo() {
   const {

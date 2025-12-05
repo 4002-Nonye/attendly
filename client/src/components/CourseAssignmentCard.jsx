@@ -1,8 +1,10 @@
 import { Check, X } from 'lucide-react';
-import { getBadgeColor } from '../utils/courseHelpers';
-import Button from './Button';
-import ClipLoader from 'react-spinners/ClipLoader';
 import PropTypes from 'prop-types';
+import ClipLoader from 'react-spinners/ClipLoader';
+
+import { getBadgeColor } from '../utils/courseHelpers';
+
+import Button from './Button';
 
 function CourseAssignmentCard({
   course,

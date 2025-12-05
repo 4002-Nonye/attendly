@@ -1,14 +1,16 @@
-import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { ArrowLeft, Calendar, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
+
+import Alert from '../../../components/Alert';
 import Button from '../../../components/Button';
 import DataTable from '../../../components/DataTable';
 import EmptyCard from '../../../components/EmptyCard';
 import PageHeader from '../../../components/PageHeader';
-import Alert from '../../../components/Alert';
-import { formatYear, formatTime } from '../../../utils/dateHelper';
-import { useStudentSessionDetails } from './useStudentSessionDetails';
-import SessionStudentsSkeleton from '../../../components/SessionStudentSkeleton';
+import SessionStudentsSkeleton from '../../../components/skeletons/SessionStudentSkeleton';
 import StudentSessionSummary from '../../../components/StudentSessionSummary';
+import { formatTime, formatYear } from '../../../utils/dateHelper';
+
+import { useStudentSessionDetails } from './useStudentSessionDetails';
 
 function AttendanceDetailsStudent() {
   const { courseId } = useParams();

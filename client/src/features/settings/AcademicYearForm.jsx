@@ -1,15 +1,16 @@
-import { Calendar } from 'lucide-react';
 import { useEffect } from 'react';
+import { Calendar } from 'lucide-react';
+import PropTypes from 'prop-types';
 import { useForm } from 'react-hook-form';
 import { ClipLoader } from 'react-spinners';
 
-import PropTypes from 'prop-types';
-import Modal from '../../components/Modal';
+import Alert from '../../components/Alert';
 import Box from '../../components/Box';
-import InputField from '../../components/InputField';
 import Button from '../../components/Button';
 import Err from '../../components/Err';
-import Alert from '../../components/Alert';
+import InputField from '../../components/InputField';
+import Modal from '../../components/Modal';
+
 import { useCreateAcademicYear } from './useCreateAcademicYear';
 
 
@@ -77,14 +78,14 @@ export default function AcademicYearForm({ isOpen, onClose }) {
 
   // Auto-format input as user types
   const handleYearInput = (e) => {
-    let value = e.target.value.replace(/[^\d/]/g, ''); // Only allow digits and /
+    let value = e.target.value.replace(/[^\d/]/g, ''); // only allow digits and /
 
     // Auto-add slash after 4 digits
     if (value.length === 4 && !value.includes('/')) {
       value = value + '/';
     }
 
-    // Limit to 9 characters (YYYY/YYYY)
+    // limit to 9 characters (YYYY/YYYY)
     if (value.length > 9) {
       value = value.slice(0, 9);
     }

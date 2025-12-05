@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-
 import toast from 'react-hot-toast';
 
 import { updateAttendanceThresholdAdmin as updateAttendanceThresholdAdminApi } from '../../apis/school/apiSchool';

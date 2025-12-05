@@ -1,128 +1,87 @@
-import axios from 'axios';
-axios.defaults.withCredentials = true;
+import { apiClient, handleRequest } from '../../services/apiClient';
 
-export const getStudentAttendanceReport = async () => {
-  try {
-    const response = await axios.get('/api/student/attendance/report');
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// ==================== STUDENT ====================
+
+export const getStudentAttendanceReport = () => {
+  return handleRequest(() => apiClient.get('/student/attendance/report'));
 };
 
-export const getStudentSessionDetails = async (courseId) => {
-  try {
-    const response = await axios.get(
-      `/api/student/attendance/courses/${courseId}/details`
-    );
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+export const getStudentSessionDetails = (courseId) => {
+  return handleRequest(() => 
+    apiClient.get(`/student/attendance/courses/${courseId}/details`)
+  );
 };
 
-export const getLecturerAttendanceOverview = async () => {
-  try {
-    const response = await axios.get('/api/lecturer/attendance/overview');
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// ==================== LECTURER ====================
+
+export const getLecturerAttendanceOverview = () => {
+  return handleRequest(() => apiClient.get('/lecturer/attendance/overview'));
 };
 
-export const getLecturerSessionDetails = async (courseId) => {
-  try {
-    const response = await axios.get(
-      `/api/lecturer/attendance/courses/${courseId}/sessions`
-    );
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+export const getLecturerSessionDetails = (courseId) => {
+  return handleRequest(() => 
+    apiClient.get(`/lecturer/attendance/courses/${courseId}/sessions`)
+  );
 };
 
-export const getLecturerSessionStudentDetails = async (ids) => {
-  const { courseId, sessionId } = ids;
-  try {
-    const response = await axios.get(
-      `/api/lecturer/attendance/courses/${courseId}/sessions/${sessionId}/students`
-    );
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+export const getLecturerSessionStudentDetails = ({ courseId, sessionId }) => {
+  return handleRequest(() => 
+    apiClient.get(`/lecturer/attendance/courses/${courseId}/sessions/${sessionId}/students`)
+  );
 };
 
-export const getLecturerAttendanceReport = async (courseId) => {
-  try {
-    const response = await axios.get(
-      `/api/lecturer/attendance/courses/${courseId}/report`
-    );
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+export const getLecturerAttendanceReport = (courseId) => {
+  return handleRequest(() => 
+    apiClient.get(`/lecturer/attendance/courses/${courseId}/report`)
+  );
 };
 
-export const updateAttendanceThresholdLecturer = async (data) => {
-    try {
-    const response = await axios.patch('/api/lecturer/attendance/threshold',data);
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+export const updateAttendanceThresholdLecturer = (data) => {
+  return handleRequest(() => 
+    apiClient.patch('/lecturer/attendance/threshold', data)
+  );
 };
 
+// ==================== ADMIN ====================
 
-export const getAdminAttendanceReport = async () => {
-  try {
-    const response = await axios.get('/api/admin/attendance/report');
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+export const getAdminAttendanceReport = () => {
+  return handleRequest(() => apiClient.get('/admin/attendance/report'));
 };
 
-export const getAdminCourseAttendanceDetails = async (courseId) => {
-  try {
-    const response = await axios.get(
-      `/api/admin/attendance/courses/${courseId}/details`
-    );
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+export const getAdminCourseAttendanceDetails = (courseId) => {
+  return handleRequest(() => 
+    apiClient.get(`/admin/attendance/courses/${courseId}/details`)
+  );
 };
+
+// ==================== DOWNLOAD ====================
 
 export const downloadAttendanceReport = async ({ courseId, role }) => {
   try {
-    const basePath = role === 'lecturer' ? '/api/lecturer' : '/api/admin';
+    const basePath = role === 'lecturer' ? '/lecturer' : '/admin';
 
-    const response = await axios.get(
+    const response = await apiClient.get(
       `${basePath}/attendance/courses/${courseId}/download`,
-      {
-        responseType: 'blob',
-      }
+      { responseType: 'blob' }
     );
 
-    // Extract filename from Content-Disposition header
+    // extract filename from Content-Disposition header
     const contentDisposition = response.headers['content-disposition'];
-    let filename = `attendance-report-${courseId}-${Date.now()}.pdf`; // Fallback
+    let filename = `attendance-report-${courseId}-${Date.now()}.pdf`;
 
     if (contentDisposition) {
       const filenameMatch = contentDisposition.match(/filename="(.+?)"/);
-      if (filenameMatch && filenameMatch[1]) {
+      if (filenameMatch?.[1]) {
         filename = filenameMatch[1];
       }
     }
 
-    // Return both blob and filename
     return {
       blob: response.data,
-      filename: filename,
-      courseId: courseId,
+      filename,
+      courseId,
     };
   } catch (error) {
-    error.response.data;
+    throw error.response?.data || { error: 'Download failed' };
   }
 };

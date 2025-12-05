@@ -1,16 +1,18 @@
-import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Calendar, Eye } from 'lucide-react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+
+import AttendanceSessionInfoCard from '../../../components/AttendanceSessionInfoCard';
+import BackButton from '../../../components/BackButton';
 import Button from '../../../components/Button';
 import DataTable from '../../../components/DataTable';
 import EmptyCard from '../../../components/EmptyCard';
 import PageHeader from '../../../components/PageHeader';
-import { useSessionDetails } from './useSessionDetails';
-import { getAttendanceColor } from '../../../utils/courseHelpers';
-import { formatYear, formatTime } from '../../../utils/dateHelper';
-import BackButton from '../../../components/BackButton';
 import ReportButton from '../../../components/ReportButton';
-import AttendanceSessionInfoCard from '../../../components/AttendanceSessionInfoCard';
-import AttendanceDetailsSkeleton from '../../../components/AttendanceDetailsSkeleton';
+import AttendanceDetailsSkeleton from '../../../components/skeletons/AttendanceDetailsSkeleton';
+import { getAttendanceColor } from '../../../utils/courseHelpers';
+import { formatTime, formatYear } from '../../../utils/dateHelper';
+
+import { useSessionDetails } from './useSessionDetails';
 
 function AttendanceDetailsLecturer() {
   const { courseId } = useParams();
@@ -20,8 +22,6 @@ function AttendanceDetailsLecturer() {
 
   const sessions = data?.sessionDetails || [];
   const course = data?.course || {};
-
-
 
   const columns = [
     'Date',
@@ -135,7 +135,6 @@ function AttendanceDetailsLecturer() {
           iconBg='bg-gray-100'
           iconColor='text-gray-400'
         />
-        
       ) : (
         <DataTable
           columns={columns}

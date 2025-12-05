@@ -340,7 +340,7 @@ exports.getDepartmentsByFaculty = async (req, res) => {
 // for in-app filtering (GET ALL DEPARTMENTS)
 exports.getAllDepartments = async (req, res) => {
   try {
-    const { schoolId } = req.params; // or from req.user.school
+    const { schoolId } = req.user;
 
     const departments = await Department.find({ school: schoolId })
       .select('name maxLevel faculty')

@@ -1,11 +1,13 @@
-import { NavLink } from 'react-router-dom';
-import { Settings, LogOut } from 'lucide-react';
+import { LogOut,Settings } from 'lucide-react';
 import PropTypes from 'prop-types';
-import logo from '../assets/logo-black.svg';
+import { NavLink } from 'react-router-dom';
+
 import Button from '../components/Button';
-import { useSchoolInfo } from '../hooks/useSchoolInfo';
-import { useLogout } from '../features/auth/hooks/useLogout';
 import { sidebarConfig } from '../config/sidebarConfig';
+import { useLogout } from '../features/auth/hooks/useLogout';
+import { useSchoolInfo } from '../hooks/useSchoolInfo';
+
+import logo from '../assets/logo-black.svg';
 
 
 function Sidebar() {

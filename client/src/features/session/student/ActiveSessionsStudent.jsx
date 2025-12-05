@@ -1,19 +1,21 @@
-import { Activity, Clock } from 'lucide-react';
-import { useButtonState } from '../../../hooks/useButtonState';
-import PageHeader from '../../../components/PageHeader';
-import EmptyCard from '../../../components/EmptyCard';
-import Button from '../../../components/Button';
-import SearchBar from '../../../components/SearchBar';
-import { useSearchQuery } from '../../../hooks/useSearchQuery';
-import DataTable from '../../../components/DataTable';
-import SessionsCard from '../../../components/SessionsCard';
-import { useActiveSessionStudent } from './useActiveSessionStudent';
-import { formatTime } from '../../../utils/dateHelper';
-import { useFilteredSessions } from '../../../hooks/filters/useFilteredSessions';
-import SessionsCardSkeleton from '../../../components/SessionCardSkeleton';
-import { useMarkAttendance } from './useMarkAttendance';
 import { useState } from 'react';
+import { Activity, Clock } from 'lucide-react';
 import { ClipLoader } from 'react-spinners';
+
+import Button from '../../../components/Button';
+import DataTable from '../../../components/DataTable';
+import EmptyCard from '../../../components/EmptyCard';
+import PageHeader from '../../../components/PageHeader';
+import SearchBar from '../../../components/SearchBar';
+import SessionsCard from '../../../components/SessionsCard';
+import SessionsCardSkeleton from '../../../components/skeletons/SessionCardSkeleton';
+import { useFilteredSessions } from '../../../hooks/filters/useFilteredSessions';
+import { useButtonState } from '../../../hooks/useButtonState';
+import { useSearchQuery } from '../../../hooks/useSearchQuery';
+import { formatTime } from '../../../utils/dateHelper';
+
+import { useActiveSessionStudent } from './useActiveSessionStudent';
+import { useMarkAttendance } from './useMarkAttendance';
 
 function ActiveSessionsStudent() {
   const { disableButton } = useButtonState();

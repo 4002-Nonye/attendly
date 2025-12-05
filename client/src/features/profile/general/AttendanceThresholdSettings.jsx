@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { TrendingUp } from 'lucide-react';
 import PropTypes from 'prop-types';
 import toast from 'react-hot-toast';
-import { useUpdateThresholdLect } from '../lecturer/useUpdateThresholdLect';
-import Button from '../../../components/Button';
+
 import Alert from '../../../components/Alert';
+import Button from '../../../components/Button';
 import { useUpdateThresholdAdmin } from '../../settings/useUpdateThresholdAdmin';
+import { useUpdateThresholdLect } from '../lecturer/useUpdateThresholdLect';
 
 function AttendanceThresholdSettings({
   data,

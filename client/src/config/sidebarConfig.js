@@ -1,14 +1,14 @@
 import {
-  LayoutDashboard,
-  GraduationCap,
-  Building2,
   BookOpen,
+  Building2,
   CalendarClock,
-  Users2,
-  ClipboardList,
-  Layers,
-  UserCircle,
   CalendarDays,
+  ClipboardList,
+  GraduationCap,
+  Layers,
+  LayoutDashboard,
+  UserCircle,
+  Users2,
 } from 'lucide-react';
 
 export const sidebarConfig = {

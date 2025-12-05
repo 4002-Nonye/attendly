@@ -1,18 +1,19 @@
-import { useForm } from 'react-hook-form';
-
-import Modal from '../../../components/Modal';
+import { useEffect } from 'react';
 import PropTypes from 'prop-types';
+import { useForm } from 'react-hook-form';
 import { ClipLoader } from 'react-spinners';
+
+import Box from '../../../components/Box';
 import Button from '../../../components/Button';
 import Err from '../../../components/Err';
 import InputField from '../../../components/InputField';
+import Modal from '../../../components/Modal';
 import Select from '../../../components/Select';
-import Box from '../../../components/Box';
 import { useSchoolInfo } from '../../../hooks/useSchoolInfo';
 import { useAllFaculties } from '../../faculty/admin/useAllFaculties';
+
 import { useCreateDepartment } from './useCreateDepartment';
 import { useEditDepartment } from './useEditDepartment';
-import { useEffect } from 'react';
 
 function DepartmentForm({ isOpen, onClose, initialData }) {
   const { _id: editId, name, maxLevel, faculty } = initialData || {};

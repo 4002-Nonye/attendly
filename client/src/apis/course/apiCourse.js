@@ -1,103 +1,59 @@
-import axios from 'axios';
-axios.defaults.withCredentials = true;
+import { apiClient, handleRequest } from '../../services/apiClient';
 
-export const getLecturerAssignedCourses = async () => {
-  try {
-    const response = await axios.get('/api/lecturer/courses');
+// ==================== GENERAL ====================
 
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// get all courses (for enrollment/assignment)
+export const getAllCourses = () => {
+  return handleRequest(() => apiClient.get('/courses'));
 };
 
-export const getStudentRegisteredCourses = async () => {
-  try {
-    const response = await axios.get('/api/student/courses');
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// ==================== ADMIN ====================
+
+// create new course
+export const createCourse = (data) => {
+  return handleRequest(() => apiClient.post('/admin/courses', data));
 };
 
-export const getAllCourses = async () => {
-  try {
-    const response = await axios.get(`/api/courses`);
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// edit course
+export const editCourse = ({ id, ...updateData }) => {
+  return handleRequest(() => apiClient.put(`/admin/courses/${id}`, updateData));
 };
 
-// create course (admin)
-export const createCourse = async (data) => {
-  try {
-    const response = await axios.post('/api/admin/courses', data);
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// delete course
+export const deleteCourse = (id) => {
+  return handleRequest(() => apiClient.delete(`/admin/courses/${id}`));
 };
 
-// edit course (admin)
-export const editCourse = async (data) => {
-  try {
-    const { id, ...updateData } = data;
-    const response = await axios.put(`/api/admin/courses/${id}`, updateData);
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// ==================== LECTURER ====================
+
+// get lecturer assigned courses  
+export const getLecturerAssignedCourses = () => {
+  return handleRequest(() => apiClient.get('/lecturer/courses'));
 };
 
-// delete course (admin)
-export const deleteCourse = async (id) => {
-  try {
-    const response = await axios.delete(`/api/admin/courses/${id}`);
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// assign self to a course
+export const assignToCourse = (data) => {
+  return handleRequest(() => apiClient.post('/lecturer/courses/assign', data));
 };
 
-// lecturer assign self to course
-export const assignToCourse = async (data) => {
-  try {
-    const response = await axios.post(`/api/lecturer/courses/assign`, data);
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// unassign self from a course
+export const unassignFromCourse = (id) => {
+  return handleRequest(() => apiClient.delete(`/lecturer/courses/${id}/unassign`));
 };
 
-// lecturer unassign self to course
-export const unassignFromCourse = async (id) => {
-  try {
-    const response = await axios.delete(`/api/lecturer/courses/${id}/unassign`);
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// ==================== STUDENT ====================
+
+// get courses student is registered for
+export const getStudentRegisteredCourses = () => {
+  return handleRequest(() => apiClient.get('/student/courses'));
 };
 
-// student enroll in course
-export const enrollCourse = async (data) => {
-  try {
-    const response = await axios.post(`/api/student/courses/register`, data);
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// enroll in a course
+export const enrollCourse = (data) => {
+  return handleRequest(() => apiClient.post('/student/courses/register', data));
 };
 
-// student enroll from course
-export const unenrollCourse = async (id) => {
-  try {
-    const response = await axios.delete(
-      `/api/student/courses/${id}/unregister`
-    );
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// unenroll from a course
+export const unenrollCourse = (id) => {
+  return handleRequest(() => apiClient.delete(`/student/courses/${id}/unregister`));
 };

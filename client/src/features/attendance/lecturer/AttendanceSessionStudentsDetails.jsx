@@ -1,19 +1,20 @@
 import { useMemo } from 'react';
 import { Clock, Search } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
 
+import BackButton from '../../../components/BackButton';
 import DataTable from '../../../components/DataTable';
+import EmptyCard from '../../../components/EmptyCard';
 import PageHeader from '../../../components/PageHeader';
 import SearchBar from '../../../components/SearchBar';
-import EmptyCard from '../../../components/EmptyCard';
-import StatusBadge from '../../../components/StatusBadge';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useSessionStudentDetails } from './useSessionStudentDetails';
-import { formatTime, formatYear } from '../../../utils/dateHelper';
-import BackButton from '../../../components/BackButton';
-import { useSearchQuery } from '../../../hooks/useSearchQuery';
-import { useFilteredUsers } from '../../../hooks/filters/useFilteredUsers';
 import SessionInfoCard from '../../../components/SessionInfoCard';
-import SessionStudentsSkeleton from '../../../components/SessionStudentSkeleton';
+import SessionStudentsSkeleton from '../../../components/skeletons/SessionStudentSkeleton';
+import StatusBadge from '../../../components/StatusBadge';
+import { useFilteredUsers } from '../../../hooks/filters/useFilteredUsers';
+import { useSearchQuery } from '../../../hooks/useSearchQuery';
+import { formatTime, formatYear } from '../../../utils/dateHelper';
+
+import { useSessionStudentDetails } from './useSessionStudentDetails';
 
 function AttendanceSessionStudentsDetails() {
   const { courseId, sessionId } = useParams();

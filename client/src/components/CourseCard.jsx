@@ -1,8 +1,10 @@
-import PropTypes from 'prop-types';
-import { getBadgeColor, getStatusStyle } from '../utils/courseHelpers';
-import Button from './Button';
-import { ClipLoader } from 'react-spinners';
 import { Children } from 'react';
+import PropTypes from 'prop-types';
+import { ClipLoader } from 'react-spinners';
+
+import { getBadgeColor, getStatusStyle } from '../utils/courseHelpers';
+
+import Button from './Button';
 
 function CourseCard({
   course,

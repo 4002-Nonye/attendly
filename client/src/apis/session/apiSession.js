@@ -1,77 +1,38 @@
-import axios from 'axios';
-axios.defaults.withCredentials = true;
+import { apiClient, handleRequest } from '../../services/apiClient';
 
-export const getRecentSessions = async () => {
-  try {
-    const response = await axios.get('/api/sessions/recent');
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+
+// ==================== LECTURER ====================
+
+// get active sessions for lecturer
+export const getActiveSessionsLecturer = () => {
+  return handleRequest(() => apiClient.get('/lecturer/sessions/active'));
 };
 
-export const getActiveSessionsLecturer = async () => {
-  try {
-    const response = await axios.get('/api/lecturer/sessions/active');
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// start new session for a course
+export const createSession = (id) => {
+  return handleRequest(() => apiClient.post(`/lecturer/courses/${id}/session/start`));
 };
 
-// lecturer create session
-export const createSession = async (id) => {
-  try {
-    const response = await axios.post(
-      `/api/lecturer/courses/${id}/session/start`
-    );
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// get session details
+export const getSessionDetails = (sessionId) => {
+  return handleRequest(() => apiClient.get(`/lecturer/sessions/${sessionId}`));
 };
 
-// get session details for lecturer
-export const getSessionDetails = async (sessionId) => {
-  try {
-    const response = await axios.get(`/api/lecturer/sessions/${sessionId}`);
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// end ongoing session
+export const endSession = (sessionId) => {
+  return handleRequest(() => apiClient.patch(`/lecturer/sessions/${sessionId}/end`));
 };
 
-// end session lecture
-export const endSession = async (sessionId) => {
-  try {
-    const response = await axios.patch(
-      `/api/lecturer/sessions/${sessionId}/end`
-    );
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// ==================== STUDENT ====================
+
+// get active sessions for student
+export const getActiveSessionsStudent = () => {
+  return handleRequest(() => apiClient.get('/student/sessions/active'));
 };
 
-// STUDENT
-export const getActiveSessionsStudent = async () => {
-  try {
-    const response = await axios.get('/api/student/sessions/active');
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
-};
-
-// student mark attendance session
-export const markAttendance = async ({sessionId, token}) => {
-  try {
-    const response = await axios.post(
-      `/api/student/sessions/${sessionId}/attendance/mark`,
-      {token}
-    );
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
+// mark attendance for a session
+export const markAttendance = ({ sessionId, token }) => {
+  return handleRequest(() => 
+    apiClient.post(`/student/sessions/${sessionId}/attendance/mark`, { token })
+  );
 };

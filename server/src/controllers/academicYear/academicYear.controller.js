@@ -18,7 +18,7 @@ exports.createNewAcademicYear = async (req, res) => {
       year: year.trim(),
       school: schoolId,
     });
-    console.log(duplicateAcademicYear);
+   ;
     if (duplicateAcademicYear) {
       return res.status(400).json({ error: 'Academic year already exists' });
     }

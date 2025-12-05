@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
 import { X } from 'lucide-react';
+import PropTypes from 'prop-types';
+
 import Button from './Button';
 
 function Modal({

@@ -1,5 +1,6 @@
-import PropTypes from 'prop-types';
 import { BookOpen } from 'lucide-react';
+import PropTypes from 'prop-types';
+
 import InfoBox from './InfoBox';
 
 export default function SessionCourseInfo({ course }) {

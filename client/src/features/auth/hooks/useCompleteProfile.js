@@ -1,7 +1,8 @@
 import { useMutation } from '@tanstack/react-query';
-import { completeProfile as completeProfileApi } from '../../../apis/auth/apiAuth';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+
+import { completeProfile as completeProfileApi } from '../../../apis/auth/apiAuth';
 
 
 export function useCompleteProfile() {

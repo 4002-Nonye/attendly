@@ -1,22 +1,24 @@
+import { useState } from 'react';
+import { BookOpen, Check } from 'lucide-react';
+import { ClipLoader } from 'react-spinners';
+
+import BulkActionBar from '../../../components/BulkActionBar';
+import Button from '../../../components/Button';
+import CourseAssignmentCard from '../../../components/CourseAssignmentCard';
+import DataTable from '../../../components/DataTable';
+import EmptyCard from '../../../components/EmptyCard';
+import SearchBar from '../../../components/SearchBar';
+import SelectionInfoBar from '../../../components/SelectionInfoBar';
+import LecturerCourseCardSkeleton from '../../../components/skeletons/LecturerCourseCardSkeleton';
+import { useFilteredCourses } from '../../../hooks/filters/useFilteredCourses';
 import { useButtonState } from '../../../hooks/useButtonState';
+import { useSearchQuery } from '../../../hooks/useSearchQuery';
+import { useSelection } from '../../../hooks/useSelection';
+import { getStatusStyle } from '../../../utils/courseHelpers';
 import { useAllCourses } from '../general/useAllCourses';
+
 import { useEnrollCourse } from './useEnrollCourse';
 import { useUnenrollCourse } from './useUnenrollCourse';
-import { useState } from 'react';
-import SearchBar from '../../../components/SearchBar';
-import CourseAssignmentCard from '../../../components/CourseAssignmentCard';
-import LecturerCourseCardSkeleton from '../../../components/LecturerCourseCardSkeleton';
-import { BookOpen, Check } from 'lucide-react';
-import EmptyCard from '../../../components/EmptyCard';
-import BulkActionBar from '../../../components/BulkActionBar';
-import SelectionInfoBar from '../../../components/SelectionInfoBar';
-import { useSearchQuery } from '../../../hooks/useSearchQuery';
-import { useFilteredCourses } from '../../../hooks/filters/useFilteredCourses';
-import { useSelection } from '../../../hooks/useSelection';
-import DataTable from '../../../components/DataTable';
-import Button from '../../../components/Button';
-import { ClipLoader } from 'react-spinners';
-import { getStatusStyle } from '../../../utils/courseHelpers';
 
 // Constants
 const ACTION_TEXTS = {

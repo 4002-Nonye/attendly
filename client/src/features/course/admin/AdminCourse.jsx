@@ -2,31 +2,29 @@ import { useState } from 'react';
 import {
   BookOpen,
   Edit,
+  Filter,
   Plus,
   Search,
   Trash2,
-  Filter,
 } from 'lucide-react';
 
-import PageHeader from '../../../components/PageHeader';
 import Button from '../../../components/Button';
-import EmptyCard from '../../../components/EmptyCard';
-import SearchBar from '../../../components/SearchBar';
-import DataTable from '../../../components/DataTable';
-
 import ConfirmDeleteDialog from '../../../components/ConfirmDeleteDialog';
-import { useDeleteCourse } from './useDeleteCourse';
+import DataTable from '../../../components/DataTable';
+import EmptyCard from '../../../components/EmptyCard';
+import FilterBar from '../../../components/FilterBar';
+import PageHeader from '../../../components/PageHeader';
+import SearchBar from '../../../components/SearchBar';
+import { MAX_LEVEL } from '../../../config/level';
+import { useFilteredCourses } from '../../../hooks/filters/useFilteredCourses';
+import { useFilters } from '../../../hooks/filters/useFilters';
+import { useButtonState } from '../../../hooks/useButtonState';
+import { useOpenModalFromActions } from '../../../hooks/useOpenModalFromActions';
+import { generateLevel } from '../../../utils/courseHelpers';
+import { useAllCourses } from '../general/useAllCourses';
 
 import CourseForm from './CourseForm';
-import { useAllCourses } from '../general/useAllCourses';
-import { useButtonState } from '../../../hooks/useButtonState';
-import { generateLevel } from '../../../utils/courseHelpers';
-import { MAX_LEVEL } from '../../../config/level';
-
-import FilterBar from '../../../components/FilterBar';
-import { useOpenModalFromActions } from '../../../hooks/useOpenModalFromActions';
-import { useFilters } from '../../../hooks/filters/useFilters';
-import { useFilteredCourses } from '../../../hooks/filters/useFilteredCourses';
+import { useDeleteCourse } from './useDeleteCourse';
 
 
 function AdminCourse() {

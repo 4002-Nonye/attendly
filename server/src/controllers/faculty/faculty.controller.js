@@ -27,6 +27,7 @@ exports.getFacultiesBySchool = async (req, res) => {
 
     return res.status(200).json({ faculties });
   } catch (error) {
+    console.error('Error fetching faculties:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
