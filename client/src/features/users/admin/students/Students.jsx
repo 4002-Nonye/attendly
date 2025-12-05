@@ -1,16 +1,18 @@
 import { useState } from 'react';
-import { Filter, Search,Users } from 'lucide-react';
+import { Filter, Search, Users } from 'lucide-react';
 
 import Button from '../../../../components/Button';
 import DataTable from '../../../../components/DataTable';
 import EmptyCard from '../../../../components/EmptyCard';
 import FilterBar from '../../../../components/FilterBar';
 import PageHeader from '../../../../components/PageHeader';
+import Pagination from '../../../../components/Pagination';
 import SearchBar from '../../../../components/SearchBar';
 import { MAX_LEVEL } from '../../../../config/level';
 import { useFilteredUsers } from '../../../../hooks/filters/useFilteredUsers';
 import { useFilters } from '../../../../hooks/filters/useFilters';
 import { useButtonState } from '../../../../hooks/useButtonState';
+import { usePagination } from '../../../../hooks/usePagination';
 import { generateLevel } from '../../../../utils/courseHelpers';
 import { useAllDepartments } from '../../../department/admin/useAllDepartments';
 import { useAllFaculties } from '../../../faculty/admin/useAllFaculties';
@@ -46,7 +48,15 @@ function Students() {
     searchQuery,
     filters
   );
-
+  // pagination
+  const {
+    currentPage,
+    totalPages,
+    itemsPerPage,
+    totalItems,
+    currentData: paginatedStudents,
+    setCurrentPage,
+  } = usePagination(filteredStudents, 10);
   const columns = [
     'Student',
     'Matric No',
@@ -175,13 +185,25 @@ function Students() {
           iconColor='text-gray-400'
         />
       ) : (
-        <DataTable
-          columns={columns}
-          renderRow={renderRow}
-          data={filteredStudents}
-          isPending={isPending}
-          showSkeletonHead={false}
-        />
+        <>
+          <DataTable
+            columns={columns}
+            renderRow={renderRow}
+            data={paginatedStudents}
+            isPending={isPending}
+            showSkeletonHead={false}
+          />
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              itemsPerPage={itemsPerPage}
+              totalItems={totalItems}
+              onPageChange={setCurrentPage}
+            />
+          )}
+        </>
       )}
     </div>
   );

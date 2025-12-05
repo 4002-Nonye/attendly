@@ -15,9 +15,11 @@ import DataTable from '../../../components/DataTable';
 import DownloadReportButton from '../../../components/DownloadReportButton';
 import EmptyCard from '../../../components/EmptyCard';
 import PageHeader from '../../../components/PageHeader';
+import Pagination from '../../../components/Pagination';
 import SearchBar from '../../../components/SearchBar';
 import ReportSkeleton from '../../../components/skeletons/ReportSkeleton';
 import { useFilteredUsers } from '../../../hooks/filters/useFilteredUsers';
+import { usePagination } from '../../../hooks/usePagination';
 import { useSchoolInfo } from '../../../hooks/useSchoolInfo';
 import { useSearchQuery } from '../../../hooks/useSearchQuery';
 import { getAttendanceColor } from '../../../utils/courseHelpers';
@@ -36,7 +38,7 @@ function AttendanceDetailsAdmin() {
   const { courseInfo, summary, students = [] } = data || {};
   const navigate = useNavigate();
 
-  // Filter students by search
+  // filter students by search
   const filteredStudents = useFilteredUsers(students, searchQuery);
 
   const handleDownload = () => {
@@ -112,7 +114,17 @@ function AttendanceDetailsAdmin() {
     );
   };
 
-  // Show skeleton while loading
+  // pagination
+  const {
+    currentPage,
+    totalPages,
+    itemsPerPage,
+    totalItems,
+    currentData: paginatedStudents,
+    setCurrentPage,
+  } = usePagination(filteredStudents, 10);
+
+  //  skeleton while loading
   if (isPending) {
     return (
       <div className='w-full'>
@@ -194,12 +206,25 @@ function AttendanceDetailsAdmin() {
           iconColor='text-gray-400'
         />
       ) : (
-        <DataTable
-          columns={columns}
-          data={filteredStudents}
-          renderRow={renderRow}
-          showSkeletonHead={false}
-        />
+        <>
+          <DataTable
+            columns={columns}
+            data={paginatedStudents}
+            renderRow={renderRow}
+            showSkeletonHead={false}
+          />
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              itemsPerPage={itemsPerPage}
+              totalItems={totalItems}
+              onPageChange={setCurrentPage}
+            />
+          )}
+        </>
       )}
     </div>
   );

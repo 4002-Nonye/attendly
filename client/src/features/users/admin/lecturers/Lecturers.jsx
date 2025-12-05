@@ -1,15 +1,17 @@
 import { useState } from 'react';
-import { Filter,Search, Users } from 'lucide-react';
+import { Filter, Search, Users } from 'lucide-react';
 
 import Button from '../../../../components/Button';
 import DataTable from '../../../../components/DataTable';
 import EmptyCard from '../../../../components/EmptyCard';
 import FilterBar from '../../../../components/FilterBar';
 import PageHeader from '../../../../components/PageHeader';
+import Pagination from '../../../../components/Pagination';
 import SearchBar from '../../../../components/SearchBar';
 import { useFilteredUsers } from '../../../../hooks/filters/useFilteredUsers';
 import { useFilters } from '../../../../hooks/filters/useFilters';
 import { useButtonState } from '../../../../hooks/useButtonState';
+import { usePagination } from '../../../../hooks/usePagination';
 import { useAllDepartments } from '../../../department/admin/useAllDepartments';
 import { useAllFaculties } from '../../../faculty/admin/useAllFaculties';
 
@@ -46,6 +48,16 @@ function Lecturer() {
     searchQuery,
     filters
   );
+
+  // pagination
+  const {
+    currentPage,
+    totalPages,
+    itemsPerPage,
+    totalItems,
+    currentData: paginatedLecturers,
+    setCurrentPage,
+  } = usePagination(filteredLecturers, 10);
 
   const columns = ['Lecturer', 'Email', 'Faculty', 'Department', 'Courses'];
 
@@ -155,13 +167,25 @@ function Lecturer() {
           iconColor='text-gray-400'
         />
       ) : (
-        <DataTable
-          columns={columns}
-          renderRow={renderRow}
-          data={filteredLecturers}
-          isPending={isPending}
-          showSkeletonHead={false}
-        />
+        <>
+          <DataTable
+            columns={columns}
+            renderRow={renderRow}
+            data={paginatedLecturers}
+            isPending={isPending}
+            showSkeletonHead={false}
+          />
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              itemsPerPage={itemsPerPage}
+              totalItems={totalItems}
+              onPageChange={setCurrentPage}
+            />
+          )}
+        </>
       )}
     </div>
   );

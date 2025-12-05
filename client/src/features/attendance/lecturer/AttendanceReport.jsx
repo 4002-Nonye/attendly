@@ -9,9 +9,11 @@ import DataTable from '../../../components/DataTable';
 import DownloadReportButton from '../../../components/DownloadReportButton';
 import EmptyCard from '../../../components/EmptyCard';
 import PageHeader from '../../../components/PageHeader';
+import Pagination from '../../../components/Pagination';
 import SearchBar from '../../../components/SearchBar';
 import ReportSkeleton from '../../../components/skeletons/ReportSkeleton';
 import { useFilteredUsers } from '../../../hooks/filters/useFilteredUsers';
+import { usePagination } from '../../../hooks/usePagination';
 import { useSchoolInfo } from '../../../hooks/useSchoolInfo';
 import { useSearchQuery } from '../../../hooks/useSearchQuery';
 import {
@@ -36,6 +38,16 @@ function AttendanceReport() {
   const students = data?.students || [];
 
   const filteredStudents = useFilteredUsers(students, searchQuery);
+
+  // pagination
+  const {
+    currentPage,
+    totalPages,
+    itemsPerPage,
+    totalItems,
+    currentData: paginatedStudents,
+    setCurrentPage,
+  } = usePagination(filteredStudents, 10);
 
   const handleDownload = () => {
     if (!courseId) {
@@ -171,13 +183,25 @@ function AttendanceReport() {
               iconColor='text-gray-400'
             />
           ) : (
-            <DataTable
-              columns={columns}
-              renderRow={renderRow}
-              data={filteredStudents}
-              isPending={false}
-              showSkeletonHead={false}
-            />
+            <>
+              <DataTable
+                columns={columns}
+                renderRow={renderRow}
+                data={paginatedStudents}
+                isPending={false}
+                showSkeletonHead={false}
+              />
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  itemsPerPage={itemsPerPage}
+                  totalItems={totalItems}
+                  onPageChange={setCurrentPage}
+                />
+              )}
+            </>
           )}
         </>
       )}

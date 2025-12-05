@@ -7,8 +7,10 @@ import Button from '../../../components/Button';
 import DataTable from '../../../components/DataTable';
 import EmptyCard from '../../../components/EmptyCard';
 import PageHeader from '../../../components/PageHeader';
+import Pagination from '../../../components/Pagination';
 import ReportButton from '../../../components/ReportButton';
 import AttendanceDetailsSkeleton from '../../../components/skeletons/AttendanceDetailsSkeleton';
+import { usePagination } from '../../../hooks/usePagination';
 import { getAttendanceColor } from '../../../utils/courseHelpers';
 import { formatTime, formatYear } from '../../../utils/dateHelper';
 
@@ -17,11 +19,20 @@ import { useSessionDetails } from './useSessionDetails';
 function AttendanceDetailsLecturer() {
   const { courseId } = useParams();
   const navigate = useNavigate();
-
   const { data, isPending } = useSessionDetails(courseId);
 
   const sessions = data?.sessionDetails || [];
   const course = data?.course || {};
+
+  // pagination
+  const {
+    currentPage,
+    totalPages,
+    itemsPerPage,
+    totalItems,
+    currentData: paginatedSessions,
+    setCurrentPage,
+  } = usePagination(sessions, 10);
 
   const columns = [
     'Date',
@@ -88,7 +99,6 @@ function AttendanceDetailsLecturer() {
             <span className='text-xs text-gray-500 italic'>—</span>
           )}
         </td>
-
         <td className='px-6 py-4'>
           <Link to={`session/${session._id}`}>
             <Button variant='outline' size='sm'>
@@ -119,30 +129,47 @@ function AttendanceDetailsLecturer() {
         />
       </div>
 
-      {isPending && <AttendanceDetailsSkeleton />}
-
-      {/* Course Info */}
-      {course._id && (
-        <AttendanceSessionInfoCard course={course} sessions={sessions} />
-      )}
-
-      {/* Sessions Table */}
-      {!sessions.length ? (
-        <EmptyCard
-          icon={Calendar}
-          title='No sessions yet'
-          message='Start taking attendance for this course'
-          iconBg='bg-gray-100'
-          iconColor='text-gray-400'
-        />
+      {isPending ? (
+        <AttendanceDetailsSkeleton />
       ) : (
-        <DataTable
-          columns={columns}
-          renderRow={renderRow}
-          data={sessions}
-          isPending={false}
-          showSkeletonHead={false}
-        />
+        <>
+          {/* Course Info */}
+          {course._id && (
+            <AttendanceSessionInfoCard course={course} sessions={sessions} />
+          )}
+
+          {/* Sessions Table */}
+          {!sessions.length ? (
+            <EmptyCard
+              icon={Calendar}
+              title='No sessions yet'
+              message='Start taking attendance for this course'
+              iconBg='bg-gray-100'
+              iconColor='text-gray-400'
+            />
+          ) : (
+            <>
+              <DataTable
+                columns={columns}
+                renderRow={renderRow}
+                data={paginatedSessions}
+                isPending={false}
+                showSkeletonHead={false}
+              />
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  itemsPerPage={itemsPerPage}
+                  totalItems={totalItems}
+                  onPageChange={setCurrentPage}
+                />
+              )}
+            </>
+          )}
+        </>
       )}
     </div>
   );

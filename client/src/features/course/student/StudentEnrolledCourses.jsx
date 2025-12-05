@@ -5,10 +5,12 @@ import Button from '../../../components/Button';
 import CourseCard from '../../../components/CourseCard';
 import DataTable from '../../../components/DataTable';
 import EmptyCard from '../../../components/EmptyCard';
+import Pagination from '../../../components/Pagination';
 import SearchBar from '../../../components/SearchBar';
 import LecturerCourseCardSkeleton from '../../../components/skeletons/LecturerCourseCardSkeleton';
 import { useFilteredCourses } from '../../../hooks/filters/useFilteredCourses';
 import { useButtonState } from '../../../hooks/useButtonState';
+import { usePagination } from '../../../hooks/usePagination';
 import { useSearchQuery } from '../../../hooks/useSearchQuery';
 import { getStatusStyle } from '../../../utils/courseHelpers';
 import { useActiveSessionStudent } from '../../session/student/useActiveSessionStudent';
@@ -37,6 +39,15 @@ function StudentEnrolledCourses() {
     filteredCourses,
     activeSession
   );
+  // pagination
+  const {
+    currentPage,
+    totalPages,
+    itemsPerPage,
+    totalItems,
+    currentData: paginatedCourses,
+    setCurrentPage,
+  } = usePagination(coursesWithSessionStatus, 10);
 
   const handleViewCourses = (tab) => {
     setSearchParams({ tab });
@@ -50,7 +61,7 @@ function StudentEnrolledCourses() {
 
   const renderRow = (course) => {
     const statusStyle = getStatusStyle(course.sessionStatus);
-  
+
     return (
       <tr
         key={course._id}
@@ -78,7 +89,6 @@ function StudentEnrolledCourses() {
             {course.sessionStatus}
           </span>
         </td>
-
       </tr>
     );
   };
@@ -126,7 +136,7 @@ function StudentEnrolledCourses() {
             <DataTable
               columns={columns}
               renderRow={renderRow}
-              data={coursesWithSessionStatus}
+              data={paginatedCourses}
               isPending={isLoading}
               showSkeletonHead={false}
             />
@@ -138,7 +148,7 @@ function StudentEnrolledCourses() {
               <LecturerCourseCardSkeleton showSkeletonHead={false} />
             ) : (
               <div className='grid grid-cols-1 md:grid-cols-2 gap-5 w-full'>
-                {coursesWithSessionStatus.map((course) => {
+                {paginatedCourses.map((course) => {
                   const isActive = course.isOngoing;
                   return (
                     <CourseCard key={course._id} course={course}>
@@ -157,6 +167,17 @@ function StudentEnrolledCourses() {
               </div>
             )}
           </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              itemsPerPage={itemsPerPage}
+              totalItems={totalItems}
+              onPageChange={setCurrentPage}
+            />
+          )}
         </>
       )}
     </div>

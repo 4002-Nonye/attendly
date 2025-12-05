@@ -1,5 +1,7 @@
 import { CheckCircle, Clock, XCircle } from 'lucide-react';
 
+/* LEVEL BADGES */
+
 export const getBadgeColor = (level) => {
   if (level >= 700) return 'bg-purple-50 text-purple-700 border-purple-200';
   if (level >= 600) return 'bg-pink-50 text-pink-700 border-pink-200';
@@ -9,6 +11,8 @@ export const getBadgeColor = (level) => {
   if (level >= 200) return 'bg-cyan-50 text-cyan-700 border-cyan-200';
   return 'bg-gray-50 text-gray-700 border-gray-200';
 };
+
+/* ATTENDANCE COLORS */
 
 export const getAttendanceColor = (percentage) => {
   if (percentage >= 90) return 'bg-green-50 text-green-700 border-green-200';
@@ -24,16 +28,18 @@ export const getProgressBarColor = (percentage) => {
   return 'bg-red-500';
 };
 
+/* STUDENT STATUS BADGES (Present/Absent/Pending) */
+
 export const getStatusBadge = (status) => {
   const statusConfig = {
     Present: {
       icon: CheckCircle,
-      className: 'bg-green-100 text-green-800 ',
+      className: 'bg-green-100 text-green-800',
       label: 'Present',
     },
     Absent: {
       icon: XCircle,
-      className: 'bg-red-100 text-red-800 ',
+      className: 'bg-red-100 text-red-800',
       label: 'Absent',
     },
     default: {
@@ -42,42 +48,59 @@ export const getStatusBadge = (status) => {
       label: 'Pending',
     },
   };
+
   return statusConfig[status] || statusConfig.default;
 };
 
-// generate level options dynamically
+/* GENERATE LEVEL OPTIONS */
+
 export const generateLevel = (maxLevel) => {
-  const levelOptions = Array.from(
-    { length: Math.floor(maxLevel / 100) },
-    (_, i) => {
-      const levelValue = (i + 1) * 100;
-      return {
-        _id: levelValue.toString(),
-        level: `${levelValue} Level`,
-      };
-    }
-  );
-  return levelOptions;
+  return Array.from({ length: Math.floor(maxLevel / 100) }, (_, i) => {
+    const levelValue = (i + 1) * 100;
+    return {
+      _id: levelValue.toString(),
+      level: `${levelValue} Level`,
+    };
+  });
 };
 
-// For status styling
+/* ELIGIBILITY BADGE */
+
+export const getEligibilityStyle = (eligible) => {
+  const base =
+    'inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium';
+
+  return eligible
+    ? `${base} bg-green-100 text-green-700`
+    : `${base} bg-red-100 text-red-700`;
+};
+
+/* SESSION STATUS BADGE (Active / Ongoing / Ended) */
+
+export const getSessionStatusBadge = (status) => {
+  const base =
+    'inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium capitalize';
+
+  const map = {
+    ended: `${base} bg-gray-100 text-gray-700`,
+    active: `${base} bg-blue-100 text-blue-700`,
+    ongoing: `${base} bg-blue-100 text-blue-700`,
+  };
+
+  return map[status?.toLowerCase()] || `${base} bg-gray-100 text-gray-500`;
+};
+
+
 export const getStatusStyle = (status) => {
   const baseActiveStyle =
     'text-green-700 bg-green-100 border border-green-200 px-3 py-0.5 rounded-full font-medium capitalize inline-flex items-center text-xs';
   const baseInactiveStyle =
     'text-gray-700 bg-gray-100 border border-gray-200 px-3 py-0.5 rounded-full font-medium capitalize inline-flex items-center text-xs';
-  const styles = {
+  const map = {
     ongoing: baseActiveStyle,
     active: baseActiveStyle,
     inactive: baseInactiveStyle,
   };
 
-  return styles[status?.toLowerCase()] || styles.inactive;
-};
-
-export const getEligibilityStyle = (eligible) => {
-  const baseStyle =
-    'inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium';
-  if (eligible) return ` ${baseStyle} bg-green-100 text-green-700`;
-  else return ` ${baseStyle} bg-red-100 text-red-700`;
+  return map[status?.toLowerCase()] || map.inactive;
 };

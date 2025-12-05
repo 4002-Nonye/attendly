@@ -5,10 +5,12 @@ import Button from '../../../components/Button';
 import CourseCard from '../../../components/CourseCard';
 import DataTable from '../../../components/DataTable';
 import EmptyCard from '../../../components/EmptyCard';
+import Pagination from '../../../components/Pagination';
 import SearchBar from '../../../components/SearchBar';
 import LecturerCourseCardSkeleton from '../../../components/skeletons/LecturerCourseCardSkeleton';
 import { useFilteredCourses } from '../../../hooks/filters/useFilteredCourses';
 import { useButtonState } from '../../../hooks/useButtonState';
+import { usePagination } from '../../../hooks/usePagination';
 import { useSearchQuery } from '../../../hooks/useSearchQuery';
 import { getStatusStyle } from '../../../utils/courseHelpers';
 import { useActiveSessionLecturer } from '../../session/lecturer/useActiveSessionLecturer';
@@ -31,12 +33,21 @@ function LecturerAssignedCourses() {
   // filter courses
   const filteredCourses = useFilteredCourses(courseData?.courses, searchQuery);
 
-
   // add session status to course
   const { coursesWithSessionStatus } = useCourseSessionStatus(
     filteredCourses,
     activeSession
   );
+
+  // pagination
+  const {
+    currentPage,
+    totalPages,
+    itemsPerPage,
+    totalItems,
+    currentData: paginatedCourses,
+    setCurrentPage,
+  } = usePagination(coursesWithSessionStatus, 10);
 
   const isLoading = disableButton ? false : isPending || isActiveSessionPending;
 
@@ -129,7 +140,7 @@ function LecturerAssignedCourses() {
             <DataTable
               columns={columns}
               renderRow={renderRow}
-              data={coursesWithSessionStatus}
+              data={paginatedCourses}
               isPending={isLoading}
               showSkeletonHead={false}
             />
@@ -141,7 +152,7 @@ function LecturerAssignedCourses() {
               <LecturerCourseCardSkeleton showSkeletonHead={false} />
             ) : (
               <div className='grid grid-cols-1 md:grid-cols-2 gap-5 w-full'>
-                {coursesWithSessionStatus.map((course) => {
+                {paginatedCourses.map((course) => {
                   const isCreatingSession = activeCourseId === course._id;
                   const isActive = course.isOngoing;
                   return (
@@ -167,6 +178,17 @@ function LecturerAssignedCourses() {
               </div>
             )}
           </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              itemsPerPage={itemsPerPage}
+              totalItems={totalItems}
+              onPageChange={setCurrentPage}
+            />
+          )}
         </>
       )}
     </div>

@@ -1,12 +1,5 @@
 import { useState } from 'react';
-import {
-  BookOpen,
-  Edit,
-  Filter,
-  Plus,
-  Search,
-  Trash2,
-} from 'lucide-react';
+import { BookOpen, Edit, Filter, Plus, Search, Trash2 } from 'lucide-react';
 
 import Button from '../../../components/Button';
 import ConfirmDeleteDialog from '../../../components/ConfirmDeleteDialog';
@@ -14,23 +7,23 @@ import DataTable from '../../../components/DataTable';
 import EmptyCard from '../../../components/EmptyCard';
 import FilterBar from '../../../components/FilterBar';
 import PageHeader from '../../../components/PageHeader';
+import Pagination from '../../../components/Pagination';
 import SearchBar from '../../../components/SearchBar';
 import { MAX_LEVEL } from '../../../config/level';
 import { useFilteredCourses } from '../../../hooks/filters/useFilteredCourses';
 import { useFilters } from '../../../hooks/filters/useFilters';
 import { useButtonState } from '../../../hooks/useButtonState';
 import { useOpenModalFromActions } from '../../../hooks/useOpenModalFromActions';
+import { usePagination } from '../../../hooks/usePagination';
 import { generateLevel } from '../../../utils/courseHelpers';
 import { useAllCourses } from '../general/useAllCourses';
 
 import CourseForm from './CourseForm';
 import { useDeleteCourse } from './useDeleteCourse';
 
-
 function AdminCourse() {
   const { disableButton } = useButtonState();
   const [showFilters, setShowFilters] = useState(false);
-
 
   const {
     searchQuery,
@@ -92,6 +85,16 @@ function AdminCourse() {
     setSelectedCourse(null);
   };
 
+  // pagination
+  const {
+    currentPage,
+    totalPages,
+    itemsPerPage,
+    totalItems,
+    currentData: paginatedCourses,
+    setCurrentPage,
+  } = usePagination(filteredCourses, 10);
+
   const columns = ['Course', 'Department', 'Level', 'Unit', 'Actions'];
 
   const renderRow = (course) => (
@@ -149,7 +152,6 @@ function AdminCourse() {
     new Map(
       allCourses?.map((course) => [course.department._id, course.department])
     ).values()
-
   );
 
   const levels = generateLevel(MAX_LEVEL);
@@ -165,7 +167,6 @@ function AdminCourse() {
       {/* Search & Filters */}
       <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6'>
         <div className='flex flex-col gap-4'>
-
           {/* Search Bar and Actions */}
           <div className='flex justify-between gap-3 items-center'>
             <SearchBar
@@ -210,9 +211,8 @@ function AdminCourse() {
             <div className='border-t border-gray-100 pt-4 grid grid-cols-1 md:grid-cols-5 gap-4 text-sm'>
               <FilterBar
                 filters={[
-
                   {
-                    label:'Department',
+                    label: 'Department',
                     name: 'department',
                     htmlFor: 'department-filter',
                     placeHolder: 'All Departments',
@@ -221,7 +221,7 @@ function AdminCourse() {
                     value: filters.department,
                   },
                   {
-                      label:'Level',
+                    label: 'Level',
                     name: 'level',
                     htmlFor: 'level-filter',
                     placeHolder: 'All Levels',
@@ -265,13 +265,25 @@ function AdminCourse() {
           )}
         </EmptyCard>
       ) : (
-        <DataTable
-          columns={columns}
-          renderRow={renderRow}
-          data={filteredCourses}
-          isPending={isLoading}
-          showSkeletonHead={false}
-        />
+        <>
+          <DataTable
+            columns={columns}
+            renderRow={renderRow}
+            data={paginatedCourses}
+            isPending={isLoading}
+            showSkeletonHead={false}
+          />
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              itemsPerPage={itemsPerPage}
+              totalItems={totalItems}
+              onPageChange={setCurrentPage}
+            />
+          )}
+        </>
       )}
 
       {/* Add/Edit Modal */}

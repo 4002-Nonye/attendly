@@ -6,10 +6,12 @@ import ConfirmDeleteDialog from '../../../components/ConfirmDeleteDialog';
 import DataTable from '../../../components/DataTable';
 import EmptyCard from '../../../components/EmptyCard';
 import PageHeader from '../../../components/PageHeader';
+import Pagination from '../../../components/Pagination';
 import SearchBar from '../../../components/SearchBar';
 import { useFilteredFaculties } from '../../../hooks/filters/useFilteredFaculties';
 import { useButtonState } from '../../../hooks/useButtonState';
 import { useOpenModalFromActions } from '../../../hooks/useOpenModalFromActions';
+import { usePagination } from '../../../hooks/usePagination';
 import { useSearchQuery } from '../../../hooks/useSearchQuery';
 
 import FacultyForm from './FacultyForm';
@@ -116,6 +118,16 @@ function AdminFaculty() {
     faculties?.facultyStats,
     searchQuery
   );
+  
+     // pagination
+      const {
+        currentPage,
+        totalPages,
+        itemsPerPage,
+        totalItems,
+        currentData: paginatedFaculties,
+        setCurrentPage,
+      } = usePagination(filteredFaculties, 10);
 
   return (
     <div className='w-full'>
@@ -172,13 +184,26 @@ function AdminFaculty() {
           )}
         </EmptyCard>
       ) : (
-        <DataTable
-          columns={columns}
-          renderRow={renderRow}
-          data={filteredFaculties}
-          isPending={isLoading}
-          showSkeletonHead={false}
-        />
+        <>
+          <DataTable
+            columns={columns}
+            renderRow={renderRow}
+            data={paginatedFaculties}
+            isPending={isLoading}
+            showSkeletonHead={false}
+          />
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              itemsPerPage={itemsPerPage}
+              totalItems={totalItems}
+              onPageChange={setCurrentPage}
+            />
+          )}
+        </>
       )}
 
       {/* Add/Edit Modal */}

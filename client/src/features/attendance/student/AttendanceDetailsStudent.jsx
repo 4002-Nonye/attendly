@@ -6,8 +6,11 @@ import Button from '../../../components/Button';
 import DataTable from '../../../components/DataTable';
 import EmptyCard from '../../../components/EmptyCard';
 import PageHeader from '../../../components/PageHeader';
+import Pagination from '../../../components/Pagination';
 import SessionStudentsSkeleton from '../../../components/skeletons/SessionStudentSkeleton';
 import StudentSessionSummary from '../../../components/StudentSessionSummary';
+import { usePagination } from '../../../hooks/usePagination';
+import { getSessionStatusBadge } from '../../../utils/courseHelpers';
 import { formatTime, formatYear } from '../../../utils/dateHelper';
 
 import { useStudentSessionDetails } from './useStudentSessionDetails';
@@ -20,6 +23,16 @@ function AttendanceDetailsStudent() {
 
   const course = data?.course || {};
   const sessions = data?.sessions || [];
+
+  // pagination
+  const {
+    currentPage,
+    totalPages,
+    itemsPerPage,
+    totalItems,
+    currentData: paginatedSessions,
+    setCurrentPage,
+  } = usePagination(sessions, 10);
 
   const columns = [
     'Date',
@@ -82,22 +95,11 @@ function AttendanceDetailsStudent() {
         )}
       </td>
 
-      {/* TODO: USE RESUABLE UTILS */}
       {/* Session Status */}
       <td className='px-6 py-4'>
-        {session.sessionStatus === 'ended' ? (
-          <span className='inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-medium'>
-            Ended
-          </span>
-        ) : session.sessionStatus === 'active' ? (
-          <span className='inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-medium'>
-            Active
-          </span>
-        ) : (
-          <span className='inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gray-100 text-gray-500 text-xs font-medium capitalize'>
-            {session.sessionStatus}
-          </span>
-        )}
+        <span className={getSessionStatusBadge(session.sessionStatus)}>
+          {session.sessionStatus}
+        </span>
       </td>
     </tr>
   );
@@ -155,8 +157,19 @@ function AttendanceDetailsStudent() {
               <DataTable
                 columns={columns}
                 renderRow={renderRow}
-                data={sessions}
+                data={paginatedSessions}
               />
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  itemsPerPage={itemsPerPage}
+                  totalItems={totalItems}
+                  onPageChange={setCurrentPage}
+                />
+              )}
             </>
           )}
         </>

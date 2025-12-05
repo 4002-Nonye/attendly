@@ -7,11 +7,13 @@ import DataTable from '../../../components/DataTable';
 import EmptyCard from '../../../components/EmptyCard';
 import FilterBar from '../../../components/FilterBar';
 import PageHeader from '../../../components/PageHeader';
+import Pagination from '../../../components/Pagination';
 import SearchBar from '../../../components/SearchBar';
 import { MAX_LEVEL } from '../../../config/level';
 import { useFilteredCourses } from '../../../hooks/filters/useFilteredCourses';
 import { useFilters } from '../../../hooks/filters/useFilters';
 import { useButtonState } from '../../../hooks/useButtonState';
+import { usePagination } from '../../../hooks/usePagination';
 import {
   generateLevel,
   getAttendanceColor,
@@ -35,12 +37,11 @@ function AttendanceOverviewAdmin() {
     activeFiltersCount,
   } = useFilters({ faculty: '', department: '', level: '' });
 
-  // Get courses from API response
   const courses = data?.data || [];
 
-  // Use the hook for filtering
+  // filtering
   const filteredCourses = useFilteredCourses(courses, searchQuery, filters);
-  // Get unique faculties and departments for filter dropdowns
+  //  unique faculties and departments for filter dropdowns
   const faculties = [
     ...new Map(courses.map((c) => [c.faculty?._id, c.faculty])).values(),
   ].filter(Boolean);
@@ -49,6 +50,16 @@ function AttendanceOverviewAdmin() {
     ...new Map(courses.map((c) => [c.department?._id, c.department])).values(),
   ].filter(Boolean);
   const levels = generateLevel(MAX_LEVEL);
+
+  // pagination
+  const {
+    currentPage,
+    totalPages,
+    itemsPerPage,
+    totalItems,
+    currentData: paginatedCourses,
+    setCurrentPage,
+  } = usePagination(filteredCourses, 10);
   // Table columns
   const columns = [
     'Course',
@@ -226,13 +237,26 @@ function AttendanceOverviewAdmin() {
           iconColor='text-gray-400'
         />
       ) : (
-        <DataTable
-          columns={columns}
-          data={filteredCourses}
-          renderRow={renderRow}
-          isPending={isPending}
-          showSkeletonHead={false}
-        />
+        <>
+          <DataTable
+            columns={columns}
+            data={paginatedCourses}
+            renderRow={renderRow}
+            isPending={isPending}
+            showSkeletonHead={false}
+          />
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              itemsPerPage={itemsPerPage}
+              totalItems={totalItems}
+              onPageChange={setCurrentPage}
+            />
+          )}
+        </>
       )}
     </div>
   );

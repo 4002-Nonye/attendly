@@ -5,10 +5,12 @@ import Button from '../../../components/Button';
 import DataTable from '../../../components/DataTable';
 import EmptyCard from '../../../components/EmptyCard';
 import PageHeader from '../../../components/PageHeader';
+import Pagination from '../../../components/Pagination';
 import SearchBar from '../../../components/SearchBar';
 import StudentAttendanceCardSkeleton from '../../../components/skeletons/StudentCardSkeleton';
 import StudentAttendanceCard from '../../../components/StudentAttendanceCard';
 import { useFilteredCourses } from '../../../hooks/filters/useFilteredCourses';
+import { usePagination } from '../../../hooks/usePagination';
 import { useSearchQuery } from '../../../hooks/useSearchQuery';
 import {
   getAttendanceColor,
@@ -25,9 +27,18 @@ function AttendanceOverviewStudent() {
 
   const courses = data?.report || [];
 
-
   // Filter courses by search query
   const filteredCourses = useFilteredCourses(courses, searchQuery);
+
+  // pagination
+  const {
+    currentPage,
+    totalPages,
+    itemsPerPage,
+    totalItems,
+    currentData: paginatedCourses,
+    setCurrentPage,
+  } = usePagination(filteredCourses, 10);
 
   // Table columns
   const columns = [
@@ -137,7 +148,7 @@ function AttendanceOverviewStudent() {
             <DataTable
               columns={columns}
               renderRow={renderRow}
-              data={filteredCourses}
+              data={paginatedCourses}
               isPending={isPending}
               showSkeletonHead={false}
             />
@@ -150,10 +161,21 @@ function AttendanceOverviewStudent() {
             </div>
           ) : (
             <div className='md:hidden grid grid-cols-1 sm:grid-cols-2 gap-4'>
-              {filteredCourses.map((course) => (
+              {paginatedCourses.map((course) => (
                 <StudentAttendanceCard key={course.courseId} course={course} />
               ))}
             </div>
+          )}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              itemsPerPage={itemsPerPage}
+              totalItems={totalItems}
+              onPageChange={setCurrentPage}
+            />
           )}
         </>
       )}

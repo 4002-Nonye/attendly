@@ -4,14 +4,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import DataTable from '../../../components/DataTable';
 import EmptyCard from '../../../components/EmptyCard';
 import PageHeader from '../../../components/PageHeader';
+import Pagination from '../../../components/Pagination';
 import ReportButton from '../../../components/ReportButton';
 import SearchBar from '../../../components/SearchBar';
 import { useFilteredCourses } from '../../../hooks/filters/useFilteredCourses';
 import { useButtonState } from '../../../hooks/useButtonState';
+import { usePagination } from '../../../hooks/usePagination';
 import { useSearchQuery } from '../../../hooks/useSearchQuery';
 
 import { useAttendanceOverview } from './useAttendanceOverview';
-
 
 function AttendanceOverviewLecturer() {
   const { disableButton } = useButtonState();
@@ -22,6 +23,16 @@ function AttendanceOverviewLecturer() {
 
   // filter courses
   const filteredCourses = useFilteredCourses(data?.overview, searchQuery);
+
+    // pagination
+    const {
+      currentPage,
+      totalPages,
+      itemsPerPage,
+      totalItems,
+      currentData: paginatedCourses,
+      setCurrentPage,
+    } = usePagination(filteredCourses, 10);
 
   const columns = ['ID', 'Course', 'Total Sessions', 'Actions'];
 
@@ -86,13 +97,25 @@ function AttendanceOverviewLecturer() {
           iconColor='text-gray-400'
         />
       ) : (
-        <DataTable
-          columns={columns}
-          renderRow={renderRow}
-          data={filteredCourses}
-          isPending={isPending}
-          showSkeletonHead={false}
-        />
+        <>
+          <DataTable
+            columns={columns}
+            renderRow={renderRow}
+            data={paginatedCourses}
+            isPending={isPending}
+            showSkeletonHead={false}
+          />
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              itemsPerPage={itemsPerPage}
+              totalItems={totalItems}
+              onPageChange={setCurrentPage}
+            />
+          )}
+        </>
       )}
     </div>
   );

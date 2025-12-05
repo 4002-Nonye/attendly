@@ -6,11 +6,13 @@ import BackButton from '../../../components/BackButton';
 import DataTable from '../../../components/DataTable';
 import EmptyCard from '../../../components/EmptyCard';
 import PageHeader from '../../../components/PageHeader';
+import Pagination from '../../../components/Pagination';
 import SearchBar from '../../../components/SearchBar';
 import SessionInfoCard from '../../../components/SessionInfoCard';
 import SessionStudentsSkeleton from '../../../components/skeletons/SessionStudentSkeleton';
 import StatusBadge from '../../../components/StatusBadge';
 import { useFilteredUsers } from '../../../hooks/filters/useFilteredUsers';
+import { usePagination } from '../../../hooks/usePagination';
 import { useSearchQuery } from '../../../hooks/useSearchQuery';
 import { formatTime, formatYear } from '../../../utils/dateHelper';
 
@@ -26,15 +28,14 @@ function AttendanceSessionStudentsDetails() {
     sessionId,
   });
 
- 
   const students = useMemo(() => data?.students || [], [data?.students]);
   const session = data?.session || {};
   const course = session?.course || {};
 
-  // Filter students based on search query
+  // filter students based on search query
   const filteredStudents = useFilteredUsers(students, searchQuery);
 
-  // Calculate stats
+  // calculate stats
   const stats = useMemo(() => {
     const presentCount = students.filter((s) => s.status === 'Present').length;
     const absentCount = students.filter((s) => s.status === 'Absent').length;
@@ -52,6 +53,17 @@ function AttendanceSessionStudentsDetails() {
     };
   }, [students]);
 
+  // pagination
+  const {
+    currentPage,
+    totalPages,
+    itemsPerPage,
+    totalItems,
+    currentData: paginatedStudents,
+    setCurrentPage,
+  } = usePagination(filteredStudents, 10);
+
+  
   const isSessionEnded =
     session.status === 'ended' || session.status === 'closed';
 
@@ -102,52 +114,69 @@ function AttendanceSessionStudentsDetails() {
         <BackButton navigate={navigate} text='Back' />
       </div>
 
-      {isPending && <SessionStudentsSkeleton />}
-      {/* Session Info Card */}
-      {session._id && (
-        <SessionInfoCard
-          course={course}
-          session={{
-            status: session.status,
-            formattedDate: formatYear(session.createdAt),
-            formattedStartTime: formatTime(session.createdAt),
-          }}
-          stats={stats}
-          isSessionEnded={isSessionEnded}
-        />
-      )}
-
-      {/* Search Bar */}
-      <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6'>
-        <SearchBar
-          placeholder='Search by name or matric No...'
-          value={searchQuery}
-          onChange={setSearchQuery}
-          disabled={false}
-        />
-      </div>
-
-      {/* Students Table */}
-      {!filteredStudents.length ? (
-        <EmptyCard
-          icon={Search}
-          title='No students found'
-          message={
-            searchQuery
-              ? 'Try adjusting your search query'
-              : 'No students enrolled in this session'
-          }
-          iconBg='bg-gray-100'
-          iconColor='text-gray-400'
-        />
+      {isPending ? (
+        <SessionStudentsSkeleton />
       ) : (
-        <DataTable
-          columns={columns}
-          renderRow={renderRow}
-          data={filteredStudents}
-          isPending={false}
-          showSkeletonHead={false}
-        />
+        <>
+          {/* Session Info Card */}
+          {session._id && (
+            <SessionInfoCard
+              course={course}
+              session={{
+                status: session.status,
+                formattedDate: formatYear(session.createdAt),
+                formattedStartTime: formatTime(session.createdAt),
+              }}
+              stats={stats}
+              isSessionEnded={isSessionEnded}
+            />
+          )}
+
+          {/* Search Bar */}
+          <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6'>
+            <SearchBar
+              placeholder='Search by name or matric No...'
+              value={searchQuery}
+              onChange={setSearchQuery}
+              disabled={false}
+            />
+          </div>
+
+          {/* Students Table */}
+          {!filteredStudents.length && !isPending ? (
+            <EmptyCard
+              icon={Search}
+              title='No students found'
+              message={
+                searchQuery
+                  ? 'Try adjusting your search query'
+                  : 'No students enrolled in this session'
+              }
+              iconBg='bg-gray-100'
+              iconColor='text-gray-400'
+            />
+          ) : (
+            <>
+              {' '}
+              <DataTable
+                columns={columns}
+                renderRow={renderRow}
+                data={paginatedStudents}
+                showSkeletonHead={false}
+              />
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  itemsPerPage={itemsPerPage}
+                  totalItems={totalItems}
+                  onPageChange={setCurrentPage}
+                />
+              )}
+            </>
+          )}
+        </>
       )}
     </div>
   );

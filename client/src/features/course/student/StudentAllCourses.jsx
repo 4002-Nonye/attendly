@@ -7,11 +7,13 @@ import Button from '../../../components/Button';
 import CourseAssignmentCard from '../../../components/CourseAssignmentCard';
 import DataTable from '../../../components/DataTable';
 import EmptyCard from '../../../components/EmptyCard';
+import Pagination from '../../../components/Pagination';
 import SearchBar from '../../../components/SearchBar';
 import SelectionInfoBar from '../../../components/SelectionInfoBar';
 import LecturerCourseCardSkeleton from '../../../components/skeletons/LecturerCourseCardSkeleton';
 import { useFilteredCourses } from '../../../hooks/filters/useFilteredCourses';
 import { useButtonState } from '../../../hooks/useButtonState';
+import { usePagination } from '../../../hooks/usePagination';
 import { useSearchQuery } from '../../../hooks/useSearchQuery';
 import { useSelection } from '../../../hooks/useSelection';
 import { getStatusStyle } from '../../../utils/courseHelpers';
@@ -43,6 +45,16 @@ function StudentAllCourses() {
 
   // filter courses based on search
   const filteredCourses = useFilteredCourses(courseData?.courses, searchQuery);
+
+  // pagination
+  const {
+    currentPage,
+    totalPages,
+    itemsPerPage,
+    totalItems,
+    currentData: paginatedCourses,
+    setCurrentPage,
+  } = usePagination(filteredCourses, 10);
 
   // toggle course selection
   const { selected, toggle, isSelected, clear } = useSelection();
@@ -194,7 +206,7 @@ function StudentAllCourses() {
             <DataTable
               columns={COLUMNS}
               renderRow={renderRow}
-              data={filteredCourses}
+              data={paginatedCourses}
               isPending={isLoading}
               showSkeletonHead={false}
             />
@@ -206,7 +218,7 @@ function StudentAllCourses() {
               <LecturerCourseCardSkeleton showSkeletonHead={false} />
             ) : (
               <div className='grid grid-cols-1 md:grid-cols-2 gap-5 w-full'>
-                {filteredCourses.map((course) => (
+                {paginatedCourses.map((course) => (
                   <CourseAssignmentCard
                     key={course._id}
                     course={course}
@@ -223,6 +235,17 @@ function StudentAllCourses() {
               </div>
             )}
           </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              itemsPerPage={itemsPerPage}
+              totalItems={totalItems}
+              onPageChange={setCurrentPage}
+            />
+          )}
         </>
       )}
 

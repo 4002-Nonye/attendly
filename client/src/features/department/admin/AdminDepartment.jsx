@@ -7,11 +7,13 @@ import DataTable from '../../../components/DataTable';
 import EmptyCard from '../../../components/EmptyCard';
 import FilterBar from '../../../components/FilterBar';
 import PageHeader from '../../../components/PageHeader';
+import Pagination from '../../../components/Pagination';
 import SearchBar from '../../../components/SearchBar';
 import { useFilteredDepartments } from '../../../hooks/filters/useFilteredDepartments';
 import { useFilters } from '../../../hooks/filters/useFilters';
 import { useButtonState } from '../../../hooks/useButtonState';
 import { useOpenModalFromActions } from '../../../hooks/useOpenModalFromActions';
+import { usePagination } from '../../../hooks/usePagination';
 import { useAllFaculties } from '../../faculty/admin/useAllFaculties';
 
 import DepartmentForm from './DepartmentForm';
@@ -49,6 +51,15 @@ function AdminDepartment() {
     filters
   );
   
+   // pagination
+    const {
+      currentPage,
+      totalPages,
+      itemsPerPage,
+      totalItems,
+      currentData: paginatedDepartments,
+      setCurrentPage,
+    } = usePagination(filteredDepartments, 10);
 
   // open modal when quick actions button is clicked in dashboard
   useOpenModalFromActions('mode', 'add', setShowModal);
@@ -217,7 +228,9 @@ function AdminDepartment() {
       {!filteredDepartments.length && !isLoading ? (
         <EmptyCard
           icon={hasActiveFilters ? Search : Layers}
-          title={hasActiveFilters ? 'No departments found' : 'No departments yet'}
+          title={
+            hasActiveFilters ? 'No departments found' : 'No departments yet'
+          }
           message={
             hasActiveFilters
               ? 'Try adjusting your search query'
@@ -239,13 +252,25 @@ function AdminDepartment() {
           )}
         </EmptyCard>
       ) : (
-        <DataTable
-          columns={columns}
-          renderRow={renderRow}
-          data={filteredDepartments}
-          isPending={isLoading}
-          showSkeletonHead={false}
-        />
+        <>
+          <DataTable
+            columns={columns}
+            renderRow={renderRow}
+            data={paginatedDepartments}
+            isPending={isLoading}
+            showSkeletonHead={false}
+          />
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              itemsPerPage={itemsPerPage}
+              totalItems={totalItems}
+              onPageChange={setCurrentPage}
+            />
+          )}
+        </>
       )}
 
       {/* Add/Edit Modal */}

@@ -7,11 +7,13 @@ import Button from '../../../components/Button';
 import CourseAssignmentCard from '../../../components/CourseAssignmentCard';
 import DataTable from '../../../components/DataTable';
 import EmptyCard from '../../../components/EmptyCard';
+import Pagination from '../../../components/Pagination';
 import SearchBar from '../../../components/SearchBar';
 import SelectionInfoBar from '../../../components/SelectionInfoBar';
 import LecturerCourseCardSkeleton from '../../../components/skeletons/LecturerCourseCardSkeleton';
 import { useFilteredCourses } from '../../../hooks/filters/useFilteredCourses';
 import { useButtonState } from '../../../hooks/useButtonState';
+import { usePagination } from '../../../hooks/usePagination';
 import { useSearchQuery } from '../../../hooks/useSearchQuery';
 import { useSelection } from '../../../hooks/useSelection';
 import { getStatusStyle } from '../../../utils/courseHelpers';
@@ -27,7 +29,7 @@ const ACTION_TEXTS = {
   ENROLL_SELECTED: 'Enroll Selected',
 };
 
- const COLUMNS = ['', 'Course', 'Level', 'Unit', 'Status', 'Actions'];
+const COLUMNS = ['', 'Course', 'Level', 'Unit', 'Status', 'Actions'];
 
 function LecturerAllCourses() {
   const { disableButton } = useButtonState();
@@ -94,6 +96,16 @@ function LecturerAllCourses() {
     );
   };
 
+  // pagination
+  const {
+    currentPage,
+    totalPages,
+    itemsPerPage,
+    totalItems,
+    currentData: paginatedCourses,
+    setCurrentPage,
+  } = usePagination(filteredCourses, 10);
+  
   const renderRow = (course) => {
     const isCourseActionPending = activeCourseId === course._id;
     const statusText = course.status ? 'active' : 'inactive';
@@ -158,8 +170,6 @@ function LecturerAllCourses() {
     );
   };
 
- 
-
   return (
     <div className='w-full'>
       {/* Search Bar */}
@@ -197,7 +207,7 @@ function LecturerAllCourses() {
             <DataTable
               columns={COLUMNS}
               renderRow={renderRow}
-              data={filteredCourses}
+              data={paginatedCourses}
               isPending={isLoading}
               showSkeletonHead={false}
             />
@@ -209,7 +219,7 @@ function LecturerAllCourses() {
               <LecturerCourseCardSkeleton showSkeletonHead={false} />
             ) : (
               <div className='grid grid-cols-1 md:grid-cols-2 gap-5 w-full'>
-                {filteredCourses.map((course) => (
+                {paginatedCourses.map((course) => (
                   <CourseAssignmentCard
                     key={course._id}
                     course={course}
@@ -226,6 +236,17 @@ function LecturerAllCourses() {
               </div>
             )}
           </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              itemsPerPage={itemsPerPage}
+              totalItems={totalItems}
+              onPageChange={setCurrentPage}
+            />
+          )}
         </>
       )}
 
