@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate,Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
 import CompleteProfileProtected from './components/CompleteProfileProtected';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -32,7 +32,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        
+        {/* Public Routes */}
         <Route
           path='/'
           element={
@@ -67,8 +67,11 @@ function App() {
             </CompleteProfileProtected>
           }
         />
-        <Route path="/mark-attendance" element={<AttendanceQRScanPage />} />
 
+        {/* QR Code Attendance Route - Publicly accessible for students scanning QR */}
+        <Route path='/mark-attendance' element={<AttendanceQRScanPage />} />
+
+        {/* Protected Routes */}
         <Route
           element={
             <ProtectedRoute>
@@ -76,7 +79,10 @@ function App() {
             </ProtectedRoute>
           }
         >
+          {/* Dashboard */}
           <Route path='dashboard' element={<DashboardPage />} />
+
+          {/* Faculty Management - Admin Only */}
           <Route
             path='faculties'
             element={
@@ -85,6 +91,8 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          {/* Department Management - Admin Only */}
           <Route
             path='departments'
             element={
@@ -93,7 +101,11 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          {/* Course Management */}
           <Route path='courses' element={<CoursePage />} />
+
+          {/* Lecturer Management - Admin Only */}
           <Route
             path='lecturers'
             element={
@@ -102,6 +114,8 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          {/* Student Management - Admin Only */}
           <Route
             path='students'
             element={
@@ -111,6 +125,7 @@ function App() {
             }
           />
 
+          {/* Attendance Routes  */}
           <Route path='attendance' element={<AttendancePage />}>
             <Route index element={<AttendanceOverviewPage />} />
             <Route
@@ -127,6 +142,7 @@ function App() {
             />
           </Route>
 
+          {/* Session Routes  */}
           <Route path='sessions' element={<SessionPage />}>
             <Route
               index
@@ -136,7 +152,6 @@ function App() {
                 </ProtectedRoute>
               }
             />
-
             <Route
               path=':id'
               element={
@@ -147,23 +162,23 @@ function App() {
             />
           </Route>
 
-        <Route path='profile' element={<ProfilePage />} />
+          {/* User Profile */}
+          <Route path='profile' element={<ProfilePage />} />
 
-        <Route
-          path='settings'
-          element={
-            <ProtectedRoute allowedRoles={['admin']}>
-              <AdminSettingsPage />
-            </ProtectedRoute>
-          }
-        />
+          {/* Settings - Admin Only */}
+          <Route
+            path='settings'
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminSettingsPage />
+              </ProtectedRoute>
+            }
+          />
         </Route>
-        
 
+        {/* Catch all - Redirect to home */}
         <Route path='*' element={<Navigate to='/' />} />
       </Routes>
-
-
     </BrowserRouter>
   );
 }

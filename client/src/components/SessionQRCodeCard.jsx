@@ -6,6 +6,7 @@ import { handleDownloadQR, handlePrintQR } from '../utils/SessionHelpers';
 import Button from './Button';
 
 export default function SessionQRCodeCard({ session }) {
+  
   return (
     <div className='bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky top-6'>
       <h2 className='text-xl font-bold text-gray-900 mb-4'>Attendance QR Code</h2>
