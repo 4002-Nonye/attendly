@@ -9,7 +9,7 @@ function PageHeader({ title, subtitle, showGreeting = true }) {
   return (
     <div className='mb-6 lg:mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4 ' >
       <div>
-        <h1 className='text-2xl  font-bold text-gray-900 capitalize'>
+        <h1 className='text-2xl  font-bold text-gray-900 '>
           {showGreeting ? `${title}, ${firstName}! 👋` : title}
         </h1>
         <p className='text-sm lg:text-base text-gray-600 mt-1'>{subtitle}</p>

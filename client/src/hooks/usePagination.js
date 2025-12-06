@@ -14,13 +14,15 @@ export function usePagination(data = [], itemsPerPage = 10) {
   const endIndex = startIndex + itemsPerPage;
   const currentData = data.slice(startIndex, endIndex);
 
-  // handle page change
-  const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= totalPages) {
-      setSearchParams({ page: newPage.toString() }, { replace: true });
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
+ // handle page change
+const handlePageChange = (newPage) => {
+  if (newPage >= 1 && newPage <= totalPages) {
+    // preserve existing params
+    const params = Object.fromEntries(searchParams);
+    setSearchParams({ ...params, page: newPage.toString() }, { replace: true });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+};
 
   // reset to page 1 if current page exceeds total pages
   useEffect(() => {

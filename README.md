@@ -16,6 +16,7 @@
 - [Screenshots](#-screenshots)
 - [Tech Stack](#️-tech-stack)
 - [Quick Start](#-quick-start)
+- [Test Accounts](#-test-accounts)
 - [Technical Highlights](#-technical-highlights)
 - [Complete Feature List](#-complete-feature-list)
 - [Roadmap](#-roadmap)
@@ -575,7 +576,7 @@ Passionate about building scalable web applications that solve real-world proble
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License.
 
 **Note:** Feel free to use this project for learning, but please credit the original author if you fork or adapt it.
 

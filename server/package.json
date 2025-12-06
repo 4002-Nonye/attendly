@@ -33,7 +33,10 @@
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "build": "cd ../client && npm install && npm run build",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "seed": "node seed.js",
+    "seed:fresh": "node clearDb.js && node seed.js"
+
   },
   "keywords": [],
   "author": "",

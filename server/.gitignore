@@ -30,3 +30,6 @@ logs/
 # Misc
 *.bak
 *.tmp
+
+seed.js
+clearDb.js
