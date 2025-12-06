@@ -92,13 +92,15 @@ function AttendanceOverviewAdmin() {
       <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6'>
         <div className='flex flex-col gap-4'>
           {/* Search Bar and Actions */}
-          <div className='flex justify-between gap-3 items-center'>
-            <SearchBar
-              placeholder='Search courses by code or title...'
-              value={searchQuery}
-              onChange={handleSearch}
-              disabled={disableButton || isPending}
-            />
+          <div className='flex flex-col sm:flex-row justify-between gap-3'>
+            <div className='flex-1'>
+              <SearchBar
+                placeholder='Search courses by code or title...'
+                value={searchQuery}
+                onChange={handleSearch}
+                disabled={disableButton || isPending}
+              />
+            </div>
 
             <Button
               variant='outline'
@@ -106,7 +108,9 @@ function AttendanceOverviewAdmin() {
               icon={Filter}
               onClick={() => setShowFilters(!showFilters)}
               disabled={disableButton || isPending}
+              className='flex-1 sm:flex-none'
             >
+              <span className='sm:hidden'>Filters</span>
               <span className='hidden sm:inline font-medium text-base'>
                 Filters
               </span>
@@ -120,7 +124,7 @@ function AttendanceOverviewAdmin() {
 
           {/* Filter Panel */}
           {showFilters && (
-            <div className='border-t border-gray-100 pt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2'>
+            <div className='border-t border-gray-100 pt-4'>
               <FilterBar
                 filters={[
                   {

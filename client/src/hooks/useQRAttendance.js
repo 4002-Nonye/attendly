@@ -6,8 +6,11 @@ import {useMarkAttendance}from '../features/session/student/useMarkAttendance'
 
 
 export function useQRAttendance() {
+
   const location = useLocation();
   const navigate = useNavigate();
+
+
   const {
     markAttendance,
     isPending: isMarking,

@@ -6,6 +6,7 @@ import { handleDownloadQR, handlePrintQR } from '../utils/SessionHelpers';
 import Button from './Button';
 
 export default function SessionQRCodeCard({ session }) {
+  console.log(session)
   
   return (
     <div className='bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky top-6'>

@@ -68,7 +68,7 @@ function App() {
           }
         />
 
-        {/* QR Code Attendance Route - Publicly accessible for students scanning QR */}
+        {/* QR Code Attendance Route  */}
         <Route path='/mark-attendance' element={<AttendanceQRScanPage />} />
 
         {/* Protected Routes */}

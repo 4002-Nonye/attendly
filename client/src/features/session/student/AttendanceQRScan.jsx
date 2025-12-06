@@ -5,6 +5,7 @@ import QRScanWarningScreen from "../../../components/QRScanWarningScreen";
 import { useQRAttendance } from "../../../hooks/useQRAttendance";
 
 export default function AttendanceQRScan() {
+  
   const { status, isCheckingAuth, isMarking, error } = useQRAttendance();
 
   // loading states

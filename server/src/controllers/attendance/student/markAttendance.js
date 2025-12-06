@@ -1,10 +1,8 @@
 const mongoose = require('mongoose');
 const Session = mongoose.model('Session');
 const StudentEnrollment = mongoose.model('StudentEnrollment');
-const School = mongoose.model('School');
 const Attendance = mongoose.model('Attendance');
-const User = mongoose.model('User');
-const Course = mongoose.model('Course');
+
 
 exports.markAttendance = async (req, res) => {
   // SUPPORTS BOTH QR CODE SCANNING AND BUTTON MARKING
