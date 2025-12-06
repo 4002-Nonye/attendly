@@ -34,7 +34,7 @@ function StudentSessionSummary({ course }) {
             </span>
           </p>
           <p className='text-2xl font-bold text-gray-900'>
-            {course.totalSessions - course.totalPending}
+            {course.totalSessions}
           </p>
         </div>
 

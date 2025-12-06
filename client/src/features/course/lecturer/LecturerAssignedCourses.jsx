@@ -1,4 +1,5 @@
 import { BookOpen } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import ClipLoader from 'react-spinners/ClipLoader';
 
 import Button from '../../../components/Button';
@@ -21,6 +22,7 @@ import { useAssignedCourses } from './useAssignedCourses';
 
 function LecturerAssignedCourses() {
   const { disableButton } = useButtonState();
+  const [_, setSearchParams] = useSearchParams();
   const { data: courseData, isPending } = useAssignedCourses({
     enabled: !disableButton,
   });
@@ -51,7 +53,12 @@ function LecturerAssignedCourses() {
 
   const isLoading = disableButton ? false : isPending || isActiveSessionPending;
 
-  const handleViewCourses = (tab) => setSearchQuery({ tab });
+
+
+
+  const handleViewCourses = (tab) => {
+    setSearchParams({ tab });
+  };
 
   const { handleCreateSession, activeCourseId } = useHandleCreateSession();
 

@@ -17,7 +17,7 @@ export function useSearchQuery(paramKey = 'search') {
   // update URL when query changes
   useEffect(() => {
     const params = new URLSearchParams(searchParams);
-    if (query.trim()) params.set(paramKey, query);
+    if (query?.trim()) params.set(paramKey, query);
     else params.delete(paramKey);
     setSearchParams(params, { replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps

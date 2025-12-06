@@ -31,6 +31,7 @@ export const getProgressBarColor = (percentage) => {
 /* STUDENT STATUS BADGES (Present/Absent/Pending) */
 
 export const getStatusBadge = (status) => {
+  console.log(status)
   const statusConfig = {
     Present: {
       icon: CheckCircle,

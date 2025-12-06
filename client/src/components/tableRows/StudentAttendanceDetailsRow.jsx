@@ -1,9 +1,7 @@
 import { Clock } from 'lucide-react';
 import PropTypes from 'prop-types';
 
-import {
-  getSessionStatusBadge,
-} from '../../utils/courseHelpers';
+import { getSessionStatusBadge } from '../../utils/courseHelpers';
 import { formatTime, formatYear } from '../../utils/dateHelper';
 import StatusBadge from '../StatusBadge';
 
@@ -40,10 +38,9 @@ function StudentAttendanceDetailsRow({ session }) {
         )}
       </td>
 
-
       {/* Student Status */}
       <td className='px-6 py-4'>
-        {StatusBadge(session.studentStatus)}
+        <StatusBadge status={session.studentStatus} />
       </td>
 
       {/* Session Status */}

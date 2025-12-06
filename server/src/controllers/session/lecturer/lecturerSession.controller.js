@@ -95,9 +95,9 @@ exports.createSession = async (req, res) => {
     const qrData = `${process.env.CLIENT_URL}/mark-attendance?sessionId=${session._id}&token=${sessionToken}`;
     const qrCode = await QRCode.toDataURL(qrData);
    
- console.log(qrData)
+ 
 
-    // populate session with essential info
+    // populate session with needed data
     const populatedSession = await Session.findById(session._id)
       .select('-token')
       .populate({

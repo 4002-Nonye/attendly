@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { getStatusBadge } from '../utils/courseHelpers';
 
 function StatusBadge({ status }) {
+
   const config = getStatusBadge(status);
   const Icon = config.icon;
   return (

@@ -4,9 +4,11 @@ const Course = mongoose.model('Course');
 const StudentEnrollment = mongoose.model('StudentEnrollment');
 
 exports.getLecturers = async (req, res) => {
+  const { schoolId } = req.user;
   try {
     const lecturers = await User.find({
       role: 'lecturer',
+      schoolId
     })
       .populate('faculty', 'name')
       .populate('department', 'name')
@@ -31,9 +33,11 @@ exports.getLecturers = async (req, res) => {
 };
 
 exports.getStudents = async (req, res) => {
+    const { schoolId } = req.user;
   try {
     const students = await User.find({
       role: 'student',
+      schoolId
     })
       .populate('faculty', 'name')
       .populate('department', 'name')
@@ -43,7 +47,7 @@ exports.getStudents = async (req, res) => {
       students.map(async (student) => {
         const courseCount = await StudentEnrollment.countDocuments({
           student: student._id,
-          enrollmentStatus:'active'
+          enrollmentStatus: 'active',
         });
         return {
           ...student,
@@ -57,4 +61,3 @@ exports.getStudents = async (req, res) => {
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
-

@@ -25,7 +25,7 @@ function ProfileHeader({ data, isLecturer = false, isAdmin = false }) {
         <Avatar fullName={data.fullName} className='w-32 h-32 mb-4' />
 
         {/* Name */}
-        <h2 className='text-2xl font-bold text-gray-900 mb-1'>
+        <h2 className='text-2xl font-bold text-gray-900 mb-1 capitalize'>
           {data.fullName}
         </h2>
 

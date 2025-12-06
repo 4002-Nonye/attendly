@@ -54,6 +54,9 @@ function FacultyAttendanceChart({ hasData, data, faculties }) {
                   border: '1px solid #e5e7eb',
                   borderRadius: '8px',
                   fontSize: '12px',
+                  textTransform: 'capitalize',
+
+
                 }}
                 formatter={(value) => `${value}%`}
               />
