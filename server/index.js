@@ -75,10 +75,14 @@ app.use('/api/lecturer/attendance', lecturerAttendanceRoute);
 app.use('/api/student/attendance', studentAttendanceRoute);
 app.use('/api/admin/attendance', adminAttendanceRoute);
 
+
 // UPTIMEROBOT - KEEP APP ALIVE
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date() });
 });
+
+
+
 
 // HANDLING ROUTES IN PRODUCTION
 if (process.env.NODE_ENV === 'production') {
@@ -86,10 +90,12 @@ if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../client/dist')));
 
   //express will serve up index.html when it does not recognize a route
-  app.get('*', (_, res) => {
+  app.get('/{*any}', (_, res) => {
     res.sendFile(path.join(__dirname, '../client/dist', 'index.html'));
   });
 }
+
+
 
 app.listen(process.env.PORT, () => {
   // Connect to the database after server starts
