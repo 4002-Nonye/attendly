@@ -1,7 +1,6 @@
-import { AlertCircle, BookOpen, Calendar, Search } from 'lucide-react';
+import {  BookOpen, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-import Button from '../../../components/Button';
 import DataTable from '../../../components/DataTable';
 import EmptyCard from '../../../components/EmptyCard';
 import PageHeader from '../../../components/PageHeader';
@@ -9,13 +8,10 @@ import Pagination from '../../../components/Pagination';
 import SearchBar from '../../../components/SearchBar';
 import StudentAttendanceCardSkeleton from '../../../components/skeletons/StudentCardSkeleton';
 import StudentAttendanceCard from '../../../components/StudentAttendanceCard';
+import StudentAttendanceOverviewRow from '../../../components/tableRows/StudentAttendanceOverviewRow';
 import { useFilteredCourses } from '../../../hooks/filters/useFilteredCourses';
 import { usePagination } from '../../../hooks/usePagination';
 import { useSearchQuery } from '../../../hooks/useSearchQuery';
-import {
-  getAttendanceColor,
-  getEligibilityStyle,
-} from '../../../utils/courseHelpers';
 
 import { useStudentAttReport } from './useStudentAttReport';
 
@@ -55,61 +51,14 @@ function AttendanceOverviewStudent() {
   ];
 
   // Table row renderer
-  const renderRow = (course) => (
-    <tr key={course.courseId} className='hover:bg-gray-50 transition-colors'>
-      <td className='px-6 py-4 text-sm font-semibold text-gray-900 uppercase'>
-        {course.courseCode}
-      </td>
-      <td className='px-6 py-4 text-sm text-gray-700 capitalize'>
-        {course.courseTitle}
-      </td>
-      <td className='px-6 py-4 text-sm text-gray-700 text-center'>
-        {course.totalSessions}
-      </td>
-      <td className='px-6 py-4 text-sm font-medium text-green-600 text-center'>
-        {course.totalAttended}
-      </td>
-      <td className='px-6 py-4 text-sm font-medium text-yellow-600 text-center'>
-        {course.totalPending}
-      </td>
-      <td className='px-6 py-4 text-sm font-medium text-red-600 text-center'>
-        {course.totalMissed}
-      </td>
-      <td className='px-6 py-4 text-center'>
-        <span
-          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getAttendanceColor(
-            course.attendancePercentage
-          )}`}
-        >
-          {course.attendancePercentage}%
-        </span>
-      </td>
-      <td className='px-6 py-4 text-center'>
-        {course.eligible ? (
-          <span className={getEligibilityStyle(course.eligible)}>
-            <Calendar className='w-3 h-3' />
-            Eligible
-          </span>
-        ) : (
-          <span className={getEligibilityStyle(course.eligible)}>
-            <AlertCircle className='w-3 h-3' />
-            Not Eligible
-          </span>
-        )}
-      </td>
+const renderRow = (course) => (
+  <StudentAttendanceOverviewRow
+    key={course.courseId}
+    course={course}
+    onViewDetails={(id) => navigate(`/attendance/course/${id}`)}
+  />
+);
 
-      <td className='px-6 py-4 text-center'>
-        <Button
-          onClick={() => navigate(`/attendance/course/${course.courseId}`)}
-          variant='primary'
-          size='sm'
-          disabled={!course.totalSessions}
-        >
-          <span className='hidden sm:inline'>View Details</span>
-        </Button>
-      </td>
-    </tr>
-  );
 
   return (
     <div className='w-full'>

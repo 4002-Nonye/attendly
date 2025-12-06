@@ -90,7 +90,6 @@ export const getSessionStatusBadge = (status) => {
   return map[status?.toLowerCase()] || `${base} bg-gray-100 text-gray-500`;
 };
 
-
 export const getStatusStyle = (status) => {
   const baseActiveStyle =
     'text-green-700 bg-green-100 border border-green-200 px-3 py-0.5 rounded-full font-medium capitalize inline-flex items-center text-xs';
@@ -104,3 +103,5 @@ export const getStatusStyle = (status) => {
 
   return map[status?.toLowerCase()] || map.inactive;
 };
+
+

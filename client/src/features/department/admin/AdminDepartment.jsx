@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Edit, Filter, Layers, Plus, Search, Trash2 } from 'lucide-react';
+import {  Filter, Layers, Plus, Search } from 'lucide-react';
 
 import Button from '../../../components/Button';
 import ConfirmDeleteDialog from '../../../components/ConfirmDeleteDialog';
@@ -9,6 +9,7 @@ import FilterBar from '../../../components/FilterBar';
 import PageHeader from '../../../components/PageHeader';
 import Pagination from '../../../components/Pagination';
 import SearchBar from '../../../components/SearchBar';
+import DepartmentRow from '../../../components/tableRows/DepartmentRow';
 import { useFilteredDepartments } from '../../../hooks/filters/useFilteredDepartments';
 import { useFilters } from '../../../hooks/filters/useFilters';
 import { useButtonState } from '../../../hooks/useButtonState';
@@ -51,15 +52,15 @@ function AdminDepartment() {
     filters
   );
   
-   // pagination
-    const {
-      currentPage,
-      totalPages,
-      itemsPerPage,
-      totalItems,
-      currentData: paginatedDepartments,
-      setCurrentPage,
-    } = usePagination(filteredDepartments, 10);
+  // pagination
+  const {
+    currentPage,
+    totalPages,
+    itemsPerPage,
+    totalItems,
+    currentData: paginatedDepartments,
+    setCurrentPage,
+  } = usePagination(filteredDepartments, 10);
 
   // open modal when quick actions button is clicked in dashboard
   useOpenModalFromActions('mode', 'add', setShowModal);
@@ -103,51 +104,14 @@ function AdminDepartment() {
   ];
 
   const renderRow = (department) => (
-    <tr key={department._id} className='hover:bg-gray-50 transition-colors'>
-      <td className='px-6 py-4'>
-        <div className='text-sm text-gray-700 capitalize'>
-          {department.name}
-        </div>
-        <div className='text-xs text-gray-500 capitalize'>
-          Faculty <span className='lowercase'>of</span>{' '}
-          {department.faculty.name}
-        </div>
-      </td>
-
-      <td className='px-6 py-4 text-sm text-gray-700 capitalize'>
-        {String(department.maxLevel)[0]}-year
-      </td>
-      <td className='px-6 py-4 text-sm text-gray-700'>
-        {department.totalCourses}
-      </td>
-      <td className='px-6 py-4 text-sm text-gray-700'>
-        {department.totalLecturers}
-      </td>
-      <td className='px-6 py-4 text-sm text-gray-700'>
-        {department.totalStudents}
-      </td>
-      <td className='px-6 py-4'>
-        <div className='flex items-start gap-3'>
-          <button
-            type='button'
-            onClick={() => handleEdit(department)}
-            className='text-blue-500 hover:text-blue-700 transition-colors'
-            title='Edit faculty'
-          >
-            <Edit size={20} />
-          </button>
-          <button
-            type='button'
-            onClick={() => handleDelete(department)}
-            className='text-red-500 hover:text-red-700 transition-colors'
-            title='Delete faculty'
-          >
-            <Trash2 size={20} />
-          </button>
-        </div>
-      </td>
-    </tr>
+    <DepartmentRow
+      key={department._id}
+      department={department}
+      onEdit={handleEdit}
+      onDelete={handleDelete}
+    />
   );
+
 
   return (
     <div className='w-full'>
@@ -160,22 +124,28 @@ function AdminDepartment() {
       {/* Search & Filters */}
       <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6'>
         <div className='flex flex-col gap-4'>
-          <div className='flex justify-between gap-3 items-center'>
-            <SearchBar
-              placeholder='Search departments...'
-              value={searchQuery}
-              onChange={handleSearch}
-              disabled={disableButton}
-            />
+          <div className='flex flex-col sm:flex-row justify-between gap-3'>
+            {/* Search */}
+            <div className='flex-1'>
+              <SearchBar
+                placeholder='Search departments...'
+                value={searchQuery}
+                onChange={handleSearch}
+                disabled={disableButton}
+              />
+            </div>
 
-            <div className='flex gap-3'>
+            {/* Action Buttons */}
+            <div className='flex gap-2 sm:gap-3'>
               <Button
                 variant='outline'
                 icon={Filter}
                 size='md'
                 onClick={() => setShowFilters(!showFilters)}
                 disabled={disableButton}
+                className='flex-1 sm:flex-none'
               >
+                <span className='sm:hidden'>Filters</span>
                 <span className='hidden sm:inline font-medium text-base'>
                   Filters
                 </span>
@@ -191,8 +161,10 @@ function AdminDepartment() {
                 size='md'
                 onClick={() => setShowModal(true)}
                 disabled={disableButton}
+                className='flex-1 sm:flex-none'
               >
                 <Plus className='w-5 h-5' />
+                <span className='sm:hidden'>Add</span>
                 <span className='hidden sm:inline font-medium'>
                   Add Department
                 </span>
@@ -202,7 +174,7 @@ function AdminDepartment() {
 
           {/* Filter Panel */}
           {showFilters && (
-            <div className='border-t border-gray-100 pt-4 grid grid-cols-5 gap-2 text-sm'>
+            <div className='border-t border-gray-100 pt-4 grid md:grid-cols-3 lg:grid-cols-5 gap-2 text-sm'>
               <FilterBar
                 filters={[
                   {

@@ -9,10 +9,10 @@ import PageHeader from '../../../components/PageHeader';
 import SearchBar from '../../../components/SearchBar';
 import SessionsCard from '../../../components/SessionsCard';
 import SessionsCardSkeleton from '../../../components/skeletons/SessionCardSkeleton';
+import StudentActiveSessionRow from '../../../components/tableRows/StudentActiveSessionRow';
 import { useFilteredSessions } from '../../../hooks/filters/useFilteredSessions';
 import { useButtonState } from '../../../hooks/useButtonState';
 import { useSearchQuery } from '../../../hooks/useSearchQuery';
-import { formatTime } from '../../../utils/dateHelper';
 
 import { useActiveSessionStudent } from './useActiveSessionStudent';
 import { useMarkAttendance } from './useMarkAttendance';
@@ -32,78 +32,24 @@ function ActiveSessionsStudent() {
   const handleMarkAttendance = (sessionId) => {
     setActiveSessionId(sessionId);
 
-    markAttendance({sessionId}, {
-      onSettled: () => setActiveSessionId(null),
-    });
+    markAttendance(
+      { sessionId },
+      {
+        onSettled: () => setActiveSessionId(null),
+      }
+    );
   };
 
   const columns = ['Course', 'Status', 'Started By', 'Started At', 'Actions'];
 
-  const renderRow = (session) => {
-    const isMarkingSession = session._id === activeSessionId;
-    const marked = session.attendanceMarked;
-
-    return (
-      <tr key={session._id} className='hover:bg-gray-50'>
-        {/* Course */}
-        <td className='px-6 py-4'>
-          <div>
-            <div className='text-sm font-semibold text-gray-900 uppercase'>
-              {session.course.courseCode}
-            </div>
-            <div className='text-sm text-gray-600 capitalize'>
-              {session.course.courseTitle}
-            </div>
-          </div>
-        </td>
-
-        {/* Status */}
-        <td className='px-6 py-4'>
-          <div className='flex items-center gap-2'>
-            <span className='relative flex h-2 w-2'>
-              <span className='animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75'></span>
-              <span className='relative inline-flex rounded-full h-2 w-2 bg-green-500'></span>
-            </span>
-            <span className='text-sm font-medium text-green-700 capitalize'>
-              {session.status}
-            </span>
-          </div>
-        </td>
-
-        {/* Started By */}
-        <td className='px-6 py-4'>
-          <div className='text-sm font-medium text-gray-900 whitespace-nowrap'>
-            {session.startedBy.fullName}
-          </div>
-        </td>
-
-        {/* Started At */}
-        <td className='px-6 py-4'>
-          <div className='flex items-center gap-1.5 text-sm text-gray-700 whitespace-nowrap'>
-            <Clock size={16} className='text-gray-400' />
-            {formatTime(session.createdAt)}
-          </div>
-        </td>
-        <td className='px-6 py-4'>
-          <Button
-            onClick={() => handleMarkAttendance(session._id)}
-            variant={marked ? 'secondary' : 'primary'}
-            disabled={isMarkingSession || marked}
-            size='sm'
-            className='capitalize whitespace-nowrap w-38'
-          >
-            {isMarkingSession ? (
-              <ClipLoader size={22} color='#fff' />
-            ) : marked ? (
-              'Marked'
-            ) : (
-              'Mark attendance'
-            )}
-          </Button>
-        </td>
-      </tr>
-    );
-  };
+  const renderRow = (session) => (
+    <StudentActiveSessionRow
+      key={session._id}
+      session={session}
+      onMarkAttendance={handleMarkAttendance}
+      isMarking={session._id === activeSessionId}
+    />
+  );
 
   return (
     <div className='w-full'>

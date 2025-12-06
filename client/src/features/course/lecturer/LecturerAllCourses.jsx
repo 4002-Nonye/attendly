@@ -1,9 +1,7 @@
 import { useState } from 'react';
 import { BookOpen, Check } from 'lucide-react';
-import { ClipLoader } from 'react-spinners';
 
 import BulkActionBar from '../../../components/BulkActionBar';
-import Button from '../../../components/Button';
 import CourseAssignmentCard from '../../../components/CourseAssignmentCard';
 import DataTable from '../../../components/DataTable';
 import EmptyCard from '../../../components/EmptyCard';
@@ -11,12 +9,12 @@ import Pagination from '../../../components/Pagination';
 import SearchBar from '../../../components/SearchBar';
 import SelectionInfoBar from '../../../components/SelectionInfoBar';
 import LecturerCourseCardSkeleton from '../../../components/skeletons/LecturerCourseCardSkeleton';
+import LecturerAllCoursesRow from '../../../components/tableRows/LecturerAllCoursesRow';
 import { useFilteredCourses } from '../../../hooks/filters/useFilteredCourses';
 import { useButtonState } from '../../../hooks/useButtonState';
 import { usePagination } from '../../../hooks/usePagination';
 import { useSearchQuery } from '../../../hooks/useSearchQuery';
 import { useSelection } from '../../../hooks/useSelection';
-import { getStatusStyle } from '../../../utils/courseHelpers';
 import { useAllCourses } from '../general/useAllCourses';
 
 import { useAssignCourse } from './useAssignCourse';
@@ -25,8 +23,8 @@ import { useUnassignCourse } from './useUnassignCourse';
 // Constants
 const ACTION_TEXTS = {
   ASSIGN: 'Assign',
-  UNASSIGN: 'Unenroll',
-  ENROLL_SELECTED: 'Enroll Selected',
+  UNASSIGN: 'Unassign',
+  ENROLL_SELECTED: 'Assign Selected',
 };
 
 const COLUMNS = ['', 'Course', 'Level', 'Unit', 'Status', 'Actions'];
@@ -106,69 +104,18 @@ function LecturerAllCourses() {
     setCurrentPage,
   } = usePagination(filteredCourses, 10);
   
-  const renderRow = (course) => {
-    const isCourseActionPending = activeCourseId === course._id;
-    const statusText = course.status ? 'active' : 'inactive';
-    const statusStyle = getStatusStyle(statusText);
-
-    return (
-      <tr key={course._id} className={`hover:bg-gray-50 transition-colors `}>
-        <td className='px-4 py-4'>
-          <input
-            type='checkbox'
-            checked={isSelected(course._id) || course.status}
-            disabled={course.status}
-            onChange={() => toggle(course._id)}
-            className={`w-4 h-4  rounded border-gray-300 focus:ring-0 `}
-          />
-        </td>
-
-        <td className='px-6 py-4'>
-          <div>
-            <div className='text-sm font-semibold text-gray-900 uppercase'>
-              {course.courseCode}
-            </div>
-            <div className='text-sm text-gray-600 capitalize'>
-              {course.courseTitle}
-            </div>
-          </div>
-        </td>
-
-        <td className='px-6 py-4 text-sm text-gray-700'>{course.level}L</td>
-        <td className='px-6 py-4 text-sm text-gray-700'>{course.unit}</td>
-
-        <td className='px-6 py-4'>
-          {course.status ? (
-            <span className={`${statusStyle}`}>Assigned</span>
-          ) : (
-            <span className={`${statusStyle}`}>Unassigned</span>
-          )}
-        </td>
-
-        <td className='px-6 py-4'>
-          <Button
-            onClick={() =>
-              course.status
-                ? handleUnassign(course._id)
-                : handleAssignSingle(course._id)
-            }
-            variant={course.status ? 'danger' : 'primary'}
-            className='gap-1 w-30'
-            size='sm'
-            disabled={isCourseActionPending || isBulkAssigning}
-          >
-            {isCourseActionPending ? (
-              <ClipLoader size={16} color='white' />
-            ) : course.status ? (
-              'Unassign'
-            ) : (
-              'Assign'
-            )}
-          </Button>
-        </td>
-      </tr>
-    );
-  };
+const renderRow = (course) => (
+  <LecturerAllCoursesRow
+    key={course._id}
+    course={course}
+    isSelected={isSelected(course._id)}
+    onToggle={toggle}
+    onAssign={handleAssignSingle}
+    onUnassign={handleUnassign}
+    isActionPending={activeCourseId === course._id}
+    isBulkAssigning={isBulkAssigning}
+  />
+);
 
   return (
     <div className='w-full'>

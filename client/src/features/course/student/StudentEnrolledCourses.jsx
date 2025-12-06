@@ -8,11 +8,11 @@ import EmptyCard from '../../../components/EmptyCard';
 import Pagination from '../../../components/Pagination';
 import SearchBar from '../../../components/SearchBar';
 import LecturerCourseCardSkeleton from '../../../components/skeletons/LecturerCourseCardSkeleton';
+import StudentEnrolledCoursesRow from '../../../components/tableRows/StudentEnrolledCoursesRow';
 import { useFilteredCourses } from '../../../hooks/filters/useFilteredCourses';
 import { useButtonState } from '../../../hooks/useButtonState';
 import { usePagination } from '../../../hooks/usePagination';
 import { useSearchQuery } from '../../../hooks/useSearchQuery';
-import { getStatusStyle } from '../../../utils/courseHelpers';
 import { useActiveSessionStudent } from '../../session/student/useActiveSessionStudent';
 import { useCourseSessionStatus } from '../general/useCourseSessionStatus';
 
@@ -59,39 +59,9 @@ function StudentEnrolledCourses() {
 
   const isLoading = disableButton ? false : isPending || isActiveSessionPending;
 
-  const renderRow = (course) => {
-    const statusStyle = getStatusStyle(course.sessionStatus);
-
-    return (
-      <tr
-        key={course._id}
-        className='hover:bg-gray-50 transition-colors capitalize'
-      >
-        <td className='px-6 py-4'>
-          <div>
-            <div className='text-sm font-semibold text-gray-900 uppercase'>
-              {course.courseCode}
-            </div>
-            <div className='text-sm text-gray-600 capitalize'>
-              {course.courseTitle}
-            </div>
-          </div>
-        </td>
-
-        <td className='px-6 py-4 text-sm text-gray-700'>{course.level}L</td>
-
-        <td className='px-6 py-4 text-sm text-gray-700'>{course.unit}</td>
-
-        <td className='px-6 py-4 text-sm'>
-          <span
-            className={`inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full ${statusStyle}`}
-          >
-            {course.sessionStatus}
-          </span>
-        </td>
-      </tr>
-    );
-  };
+ const renderRow = (course) => (
+  <StudentEnrolledCoursesRow key={course._id} course={course} />
+);
 
   const columns = ['Course', 'Level', 'Units', 'Status'];
 

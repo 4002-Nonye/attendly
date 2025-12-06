@@ -8,6 +8,7 @@ import FilterBar from '../../../../components/FilterBar';
 import PageHeader from '../../../../components/PageHeader';
 import Pagination from '../../../../components/Pagination';
 import SearchBar from '../../../../components/SearchBar';
+import LecturerRow from '../../../../components/tableRows/LecturerRow';
 import { useFilteredUsers } from '../../../../hooks/filters/useFilteredUsers';
 import { useFilters } from '../../../../hooks/filters/useFilters';
 import { useButtonState } from '../../../../hooks/useButtonState';
@@ -61,26 +62,10 @@ function Lecturer() {
 
   const columns = ['Lecturer', 'Email', 'Faculty', 'Department', 'Courses'];
 
-  const renderRow = (lecturer) => (
-    <tr key={lecturer._id} className='hover:bg-gray-50 transition-colors'>
-      <td className='px-6 py-4'>
-        <span className='text-sm font-medium capitalize text-gray-900'>
-          {lecturer.fullName}
-        </span>
-      </td>
-      <td className='px-6 py-4 text-sm text-gray-700'>{lecturer.email}</td>
-      <td className='px-6 py-4 text-sm text-gray-700 capitalize'>
-        {lecturer.faculty.name}
-      </td>
-      <td className='px-6 py-4 text-sm text-gray-700 capitalize'>
-        {lecturer.department?.name}
-      </td>
+const renderRow = (lecturer) => (
+  <LecturerRow key={lecturer._id} lecturer={lecturer} />
+);
 
-      <td className='px-6 py-4 text-sm text-gray-700'>
-        {lecturer.coursesTotal}
-      </td>
-    </tr>
-  );
 
   return (
     <div className='w-full'>
@@ -94,21 +79,27 @@ function Lecturer() {
       <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6'>
         <div className='flex flex-col gap-4'>
           {/* Search Bar and Actions */}
-          <div className='flex justify-between gap-3 items-center'>
-            <SearchBar
-              placeholder='Search lecturers by name or email...'
-              value={searchQuery}
-              onChange={handleSearch}
-              disabled={disableButton}
-            />
+          <div className='flex flex-col sm:flex-row justify-between gap-3'>
+            {/* Search  */}
+            <div className='flex-1'>
+              <SearchBar
+                placeholder='Search lecturers by name or email...'
+                value={searchQuery}
+                onChange={handleSearch}
+                disabled={disableButton}
+              />
+            </div>
 
+            {/* Filter Button */}
             <Button
               variant='outline'
               size='md'
               icon={Filter}
               onClick={() => setShowFilters(!showFilters)}
               disabled={disableButton}
+              className='sm:flex-none'
             >
+              <span className='sm:hidden'>Filters</span>
               <span className='hidden sm:inline font-medium text-base'>
                 Filters
               </span>

@@ -9,9 +9,8 @@ import PageHeader from '../../../components/PageHeader';
 import Pagination from '../../../components/Pagination';
 import SessionStudentsSkeleton from '../../../components/skeletons/SessionStudentSkeleton';
 import StudentSessionSummary from '../../../components/StudentSessionSummary';
+import StudentAttendanceDetailsRow from '../../../components/tableRows/StudentAttendanceDetailsRow';
 import { usePagination } from '../../../hooks/usePagination';
-import { getSessionStatusBadge } from '../../../utils/courseHelpers';
-import { formatTime, formatYear } from '../../../utils/dateHelper';
 
 import { useStudentSessionDetails } from './useStudentSessionDetails';
 
@@ -44,65 +43,8 @@ function AttendanceDetailsStudent() {
   ];
 
   const renderRow = (session) => (
-    <tr key={session.sessionId} className='hover:bg-gray-50 transition-colors'>
-      {/* Date */}
-      <td className='px-6 py-4 text-sm font-medium text-gray-900'>
-        {formatYear(session.sessionDate)}
-      </td>
-
-      {/* Lecturer */}
-      <td className='px-6 py-4 text-sm text-gray-700 capitalize'>
-        {session.startedBy}
-      </td>
-
-      {/* Started At */}
-      <td className='px-6 py-4 text-sm text-gray-700 whitespace-nowrap'>
-        <span className='flex items-center gap-1'>
-          <Clock className='w-4 h-4 text-gray-400' />
-          {formatTime(session.sessionDate)}
-        </span>
-      </td>
-
-      {/* Marked At */}
-      <td className='px-6 py-4 text-sm text-gray-700 whitespace-nowrap'>
-        {session.timeMarked ? (
-          <span className='flex items-center gap-1'>
-            <Clock className='w-4 h-4 text-gray-400' />
-            {formatTime(session.timeMarked)}
-          </span>
-        ) : (
-          <span className='text-gray-400'>-</span>
-        )}
-      </td>
-
-      {/* Student Status */}
-      <td className='px-6 py-4'>
-        {session.studentStatus === 'Present' ? (
-          <span className='inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium'>
-            <CheckCircle className='w-4 h-4' />
-            Present
-          </span>
-        ) : session.studentStatus === 'Pending' ? (
-          <span className='inline-flex items-center gap-1 px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs font-medium'>
-            <Clock className='w-4 h-4' />
-            Pending
-          </span>
-        ) : (
-          <span className='inline-flex items-center gap-1 px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-medium'>
-            <XCircle className='w-4 h-4' />
-            Absent
-          </span>
-        )}
-      </td>
-
-      {/* Session Status */}
-      <td className='px-6 py-4'>
-        <span className={getSessionStatusBadge(session.sessionStatus)}>
-          {session.sessionStatus}
-        </span>
-      </td>
-    </tr>
-  );
+  <StudentAttendanceDetailsRow key={session.sessionId} session={session} />
+);
 
   return (
     <div className='w-full'>

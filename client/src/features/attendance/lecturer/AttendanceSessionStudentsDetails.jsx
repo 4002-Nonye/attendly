@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Clock, Search } from 'lucide-react';
+import {  Search } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import BackButton from '../../../components/BackButton';
@@ -10,7 +10,7 @@ import Pagination from '../../../components/Pagination';
 import SearchBar from '../../../components/SearchBar';
 import SessionInfoCard from '../../../components/SessionInfoCard';
 import SessionStudentsSkeleton from '../../../components/skeletons/SessionStudentSkeleton';
-import StatusBadge from '../../../components/StatusBadge';
+import LecturerSessionAttendanceRow from '../../../components/tableRows/LecturerSessionAttendanceRow';
 import { useFilteredUsers } from '../../../hooks/filters/useFilteredUsers';
 import { usePagination } from '../../../hooks/usePagination';
 import { useSearchQuery } from '../../../hooks/useSearchQuery';
@@ -69,37 +69,9 @@ function AttendanceSessionStudentsDetails() {
 
   const columns = ['Matric Number', 'Full Name', 'Status', 'Time Marked'];
 
-  const renderRow = (student) => {
-    return (
-      <tr
-        key={student.studentId}
-        className='hover:bg-gray-50 transition-colors'
-      >
-        <td className='px-6 py-4 text-sm font-medium text-gray-900 uppercase'>
-          {student.matricNo}
-        </td>
-
-        <td className='px-6 py-4 text-sm text-gray-700 capitalize'>
-          {student.fullName}
-        </td>
-
-        <td className='px-6 py-4 whitespace-nowrap'>
-          <StatusBadge status={student.status} />
-        </td>
-
-        <td className='px-6 py-4 text-sm text-gray-700'>
-          {student.timeMarked ? (
-            <span className='flex items-center gap-1'>
-              <Clock className='w-4 h-4' />
-              {formatTime(student.timeMarked)}
-            </span>
-          ) : (
-            <span className='text-gray-400'>-</span>
-          )}
-        </td>
-      </tr>
-    );
-  };
+const renderRow = (student) => (
+  <LecturerSessionAttendanceRow key={student.studentId} student={student} />
+);
 
   return (
     <div className='w-full'>

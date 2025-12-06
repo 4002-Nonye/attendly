@@ -8,6 +8,7 @@ import EmptyCard from '../../../components/EmptyCard';
 import PageHeader from '../../../components/PageHeader';
 import Pagination from '../../../components/Pagination';
 import SearchBar from '../../../components/SearchBar';
+import FacultyRow from '../../../components/tableRows/FacultyRow';
 import { useFilteredFaculties } from '../../../hooks/filters/useFilteredFaculties';
 import { useButtonState } from '../../../hooks/useButtonState';
 import { useOpenModalFromActions } from '../../../hooks/useOpenModalFromActions';
@@ -21,7 +22,7 @@ import { useFacultyStats } from './useFacultyStats';
 function AdminFaculty() {
   const { disableButton } = useButtonState();
   const { data: faculties, isPending } = useFacultyStats(
-    { enabled: !disableButton } // options
+    { enabled: !disableButton }
   );
   const { deleteFaculty, isPending: isDeleting } = useDeleteFaculty();
   const [searchQuery, setSearchQuery] = useSearchQuery('name');
@@ -73,61 +74,29 @@ function AdminFaculty() {
   ];
 
   const renderRow = (faculty) => (
-    <tr key={faculty._id} className='hover:bg-gray-50 transition-colors'>
-      <td className='px-6 py-4'>
-        <span className='text-sm font-medium capitalize text-gray-900'>
-          Faculty <span className='lowercase'>of</span> {faculty.name}
-        </span>
-      </td>
-      <td className='px-6 py-4 text-sm text-gray-700'>
-        {faculty.totalDepartments}
-      </td>
-      <td className='px-6 py-4 text-sm text-gray-700'>
-        {faculty.totalCourses}
-      </td>
-      <td className='px-6 py-4 text-sm text-gray-700'>
-        {faculty.totalLecturers}
-      </td>
-      <td className='px-6 py-4 text-sm text-gray-700'>
-        {faculty.totalStudents}
-      </td>
-      <td className='px-6 py-4'>
-        <div className='flex items-start gap-3'>
-          <button
-            type='button'
-            onClick={() => handleEdit(faculty)}
-            className='text-blue-500 hover:text-blue-700 transition-colors'
-            title='Edit faculty'
-          >
-            <Edit size={20} />
-          </button>
-          <button
-            type='button'
-            onClick={() => handleDelete(faculty)}
-            className='text-red-500 hover:text-red-700 transition-colors'
-            title='Delete faculty'
-          >
-            <Trash2 size={20} />
-          </button>
-        </div>
-      </td>
-    </tr>
-  );
+  <FacultyRow
+    key={faculty._id}
+    faculty={faculty}
+    onEdit={handleEdit}
+    onDelete={handleDelete}
+  />
+);
+
 
   const filteredFaculties = useFilteredFaculties(
     faculties?.facultyStats,
     searchQuery
   );
   
-     // pagination
-      const {
-        currentPage,
-        totalPages,
-        itemsPerPage,
-        totalItems,
-        currentData: paginatedFaculties,
-        setCurrentPage,
-      } = usePagination(filteredFaculties, 10);
+  // pagination
+  const {
+    currentPage,
+    totalPages,
+    itemsPerPage,
+    totalItems,
+    currentData: paginatedFaculties,
+    setCurrentPage,
+  } = usePagination(filteredFaculties, 10);
 
   return (
     <div className='w-full'>
@@ -139,20 +108,27 @@ function AdminFaculty() {
 
       {/* Search & CTA */}
       <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6'>
-        <div className='flex justify-between gap-3 items-center'>
-          <SearchBar
-            placeholder='Search faculties...'
-            value={searchQuery}
-            onChange={setSearchQuery}
-            disabled={disableButton}
-          />
+        <div className='flex flex-col sm:flex-row justify-between gap-3'>
+          {/* Search */}
+          <div className='flex-1'>
+            <SearchBar
+              placeholder='Search faculties...'
+              value={searchQuery}
+              onChange={setSearchQuery}
+              disabled={disableButton}
+            />
+          </div>
+
+          {/* Add Button */}
           <Button
             variant='primary'
             size='md'
             onClick={() => setShowModal(true)}
             disabled={disableButton}
+            className='sm:flex-none'
           >
             <Plus className='w-5 h-5' />
+            <span className='sm:hidden'>Add</span>
             <span className='hidden sm:inline font-medium'>Add Faculty</span>
           </Button>
         </div>
@@ -207,7 +183,6 @@ function AdminFaculty() {
       )}
 
       {/* Add/Edit Modal */}
-
       <FacultyForm
         isOpen={showModal}
         onClose={handleCloseModal}

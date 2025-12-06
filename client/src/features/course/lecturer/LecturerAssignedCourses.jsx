@@ -8,11 +8,11 @@ import EmptyCard from '../../../components/EmptyCard';
 import Pagination from '../../../components/Pagination';
 import SearchBar from '../../../components/SearchBar';
 import LecturerCourseCardSkeleton from '../../../components/skeletons/LecturerCourseCardSkeleton';
+import LecturerAssignedCoursesRow from '../../../components/tableRows/LecturerAssignedCoursesRow';
 import { useFilteredCourses } from '../../../hooks/filters/useFilteredCourses';
 import { useButtonState } from '../../../hooks/useButtonState';
 import { usePagination } from '../../../hooks/usePagination';
 import { useSearchQuery } from '../../../hooks/useSearchQuery';
-import { getStatusStyle } from '../../../utils/courseHelpers';
 import { useActiveSessionLecturer } from '../../session/lecturer/useActiveSessionLecturer';
 import { useHandleCreateSession } from '../../session/lecturer/useHandleCreateSession';
 import { useCourseSessionStatus } from '../general/useCourseSessionStatus';
@@ -55,47 +55,15 @@ function LecturerAssignedCourses() {
 
   const { handleCreateSession, activeCourseId } = useHandleCreateSession();
 
-  const renderRow = (course) => {
-    const statusStyle = getStatusStyle(course.sessionStatus);
-    const isCreatingSession = activeCourseId === course._id;
-    const isActive = course.isOngoing;
-    return (
-      <tr key={course._id} className='hover:bg-gray-50 transition-colors'>
-        <td className='px-6 py-4'>
-          <div>
-            <div className='text-sm font-semibold text-gray-900 uppercase'>
-              {course.courseCode}
-            </div>
-            <div className='text-sm text-gray-600 capitalize'>
-              {course.courseTitle}
-            </div>
-          </div>
-        </td>
-        <td className='px-6 py-4 text-sm text-gray-700'>{course.level}L</td>
-        <td className='px-6 py-4 text-sm text-gray-700'>{course.unit}</td>
-        <td className='px-6 py-4 text-sm'>
-          <span className={` ${statusStyle}`}>{course.sessionStatus}</span>
-        </td>
-        <td className='px-6 py-4'>
-          <Button
-            variant={!isActive ? 'primary' : 'secondary'}
-            size='sm'
-            className='capitalize text-sm mt-auto w-35'
-            disabled={isCreatingSession || isActive}
-            onClick={() => handleCreateSession(course._id)}
-          >
-            {isCreatingSession ? (
-              <ClipLoader size={22} color='white' />
-            ) : isActive ? (
-              'Session active'
-            ) : (
-              'Start Session'
-            )}
-          </Button>
-        </td>
-      </tr>
-    );
-  };
+const renderRow = (course) => (
+  <LecturerAssignedCoursesRow
+    key={course._id}
+    course={course}
+    onCreateSession={handleCreateSession}
+    isCreatingSession={activeCourseId === course._id}
+  />
+);
+
 
   const columns = ['Course', 'Level', 'Unit', 'Status', 'Actions'];
 

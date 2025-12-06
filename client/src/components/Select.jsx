@@ -34,7 +34,7 @@ function Select({
             focus:outline-none focus:ring-2 focus:ring-blue-500
             text-gray-600 text-sm cursor-pointer py-4
             appearance-none bg-white capitalize
-            disabled:opacity-50 disabled:cursor-not-allowed
+            disabled:opacity-50 disabled:cursor-not-allowed 
             ${selectClassname}
           `}
 

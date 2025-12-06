@@ -8,6 +8,7 @@ import FilterBar from '../../../../components/FilterBar';
 import PageHeader from '../../../../components/PageHeader';
 import Pagination from '../../../../components/Pagination';
 import SearchBar from '../../../../components/SearchBar';
+import StudentRow from '../../../../components/tableRows/StudentRow';
 import { MAX_LEVEL } from '../../../../config/level';
 import { useFilteredUsers } from '../../../../hooks/filters/useFilteredUsers';
 import { useFilters } from '../../../../hooks/filters/useFilters';
@@ -57,6 +58,7 @@ function Students() {
     currentData: paginatedStudents,
     setCurrentPage,
   } = usePagination(filteredStudents, 10);
+
   const columns = [
     'Student',
     'Matric No',
@@ -67,29 +69,9 @@ function Students() {
     'Courses',
   ];
 
-  const renderRow = (student) => (
-    <tr key={student._id} className='hover:bg-gray-50 transition-colors'>
-      <td className='px-6 py-4'>
-        <span className='text-sm font-medium capitalize text-gray-900'>
-          {student.fullName}
-        </span>
-      </td>
-      <td className='px-6 py-4 text-sm text-gray-700 uppercase'>
-        {student.matricNo}
-      </td>
-      <td className='px-6 py-4 text-sm text-gray-700'>{student.email}</td>
-      <td className='px-6 py-4 text-sm text-gray-700 capitalize'>
-        {student.faculty?.name}
-      </td>
-      <td className='px-6 py-4 text-sm text-gray-700 capitalize'>
-        {student.department?.name}
-      </td>
-      <td className='px-6 py-4 text-sm text-gray-700'>{student.level}L</td>
-      <td className='px-6 py-4 text-sm text-gray-700'>
-        {student.coursesTotal}
-      </td>
-    </tr>
-  );
+const renderRow = (student) => (
+  <StudentRow key={student._id} student={student} />
+);
 
   return (
     <div className='w-full'>
@@ -103,21 +85,27 @@ function Students() {
       <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6'>
         <div className='flex flex-col gap-4'>
           {/* Search Bar and Actions */}
-          <div className='flex justify-between gap-3 items-center'>
-            <SearchBar
-              placeholder='Search students by name, email or matric no...'
-              value={searchQuery}
-              onChange={handleSearch}
-              disabled={disableButton}
-            />
+          <div className='flex flex-col sm:flex-row justify-between gap-3'>
+            {/* Search */}
+            <div className='flex-1'>
+              <SearchBar
+                placeholder='Search students by name, email or matric no...'
+                value={searchQuery}
+                onChange={handleSearch}
+                disabled={disableButton}
+              />
+            </div>
 
+            {/* Filter Button */}
             <Button
               variant='outline'
               size='md'
               icon={Filter}
               onClick={() => setShowFilters(!showFilters)}
               disabled={disableButton}
+              className='sm:flex-none'
             >
+              <span className='sm:hidden'>Filters</span>
               <span className='hidden sm:inline font-medium text-base'>
                 Filters
               </span>
@@ -208,5 +196,4 @@ function Students() {
     </div>
   );
 }
-
 export default Students;

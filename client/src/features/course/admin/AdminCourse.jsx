@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BookOpen, Edit, Filter, Plus, Search, Trash2 } from 'lucide-react';
+import { BookOpen, Filter, Plus, Search, Trash2 } from 'lucide-react';
 
 import Button from '../../../components/Button';
 import ConfirmDeleteDialog from '../../../components/ConfirmDeleteDialog';
@@ -9,6 +9,7 @@ import FilterBar from '../../../components/FilterBar';
 import PageHeader from '../../../components/PageHeader';
 import Pagination from '../../../components/Pagination';
 import SearchBar from '../../../components/SearchBar';
+import AdminCourseRow from '../../../components/tableRows/AdminCourseRow';
 import { MAX_LEVEL } from '../../../config/level';
 import { useFilteredCourses } from '../../../hooks/filters/useFilteredCourses';
 import { useFilters } from '../../../hooks/filters/useFilters';
@@ -98,51 +99,12 @@ function AdminCourse() {
   const columns = ['Course', 'Department', 'Level', 'Unit', 'Actions'];
 
   const renderRow = (course) => (
-    <tr key={course._id} className='hover:bg-gray-50 transition-colors '>
-      <td className='px-6 py-4'>
-        <div>
-          <div className='text-sm font-semibold text-gray-900 uppercase'>
-            {course.courseCode}
-          </div>
-          <div className='text-sm text-gray-600 capitalize'>
-            {course.courseTitle}
-          </div>
-        </div>
-      </td>
-      <td className='px-6 py-4'>
-        <div className='text-sm text-gray-700 capitalize'>
-          {course.department?.name}
-        </div>
-        <div className='text-xs text-gray-500 capitalize'>
-          Faculty <span className='lowercase'>of</span> {course.faculty?.name}
-        </div>
-      </td>
-      <td className='px-6 py-4 text-sm text-gray-700'>{course.level}L</td>
-      <td className='px-6 py-4 text-sm text-gray-700'>
-        {course.unit} {course.unit === 1 ? 'Unit' : 'Units'}
-      </td>
-
-      <td className='px-6 py-4'>
-        <div className='flex items-start gap-3'>
-          <button
-            type='button'
-            onClick={() => handleEdit(course)}
-            className='text-blue-500 hover:text-blue-700 transition-colors'
-            title='Edit course'
-          >
-            <Edit size={20} />
-          </button>
-          <button
-            type='button'
-            onClick={() => handleDelete(course)}
-            className='text-red-500 hover:text-red-700 transition-colors'
-            title='Delete course'
-          >
-            <Trash2 size={20} />
-          </button>
-        </div>
-      </td>
-    </tr>
+    <AdminCourseRow
+      key={course._id}
+      course={course}
+      onEdit={handleEdit}
+      onDelete={handleDelete}
+    />
   );
 
   const allCourses = courses?.courses || [];
@@ -168,22 +130,28 @@ function AdminCourse() {
       <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6'>
         <div className='flex flex-col gap-4'>
           {/* Search Bar and Actions */}
-          <div className='flex justify-between gap-3 items-center'>
-            <SearchBar
-              placeholder='Search courses...'
-              value={searchQuery}
-              onChange={handleSearch}
-              disabled={disableButton}
-            />
+          <div className='flex flex-col sm:flex-row justify-between gap-3'>
+            {/* Search  */}
+            <div className='flex-1'>
+              <SearchBar
+                placeholder='Search courses...'
+                value={searchQuery}
+                onChange={handleSearch}
+                disabled={disableButton}
+              />
+            </div>
 
-            <div className='flex gap-3'>
+            {/* Action Buttons */}
+            <div className='flex gap-2 sm:gap-3'>
               <Button
                 variant='outline'
                 icon={Filter}
                 size='md'
                 onClick={() => setShowFilters(!showFilters)}
                 disabled={disableButton}
+                className='flex-1 sm:flex-none'
               >
+                <span className='sm:hidden'>Filters</span>
                 <span className='hidden sm:inline font-medium text-base'>
                   Filters
                 </span>
@@ -199,8 +167,10 @@ function AdminCourse() {
                 size='md'
                 onClick={() => setShowModal(true)}
                 disabled={disableButton}
+                className='flex-1 sm:flex-none'
               >
                 <Plus className='w-5 h-5' />
+                <span className='sm:hidden'>Add</span>
                 <span className='hidden sm:inline font-medium'>Add Course</span>
               </Button>
             </div>
