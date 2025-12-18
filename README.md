@@ -19,7 +19,6 @@
 - [Test Accounts](#-test-accounts)
 - [Technical Highlights](#-technical-highlights)
 - [Complete Feature List](#-complete-feature-list)
-- [Roadmap](#-roadmap)
 - [Author](#-author)
 - [License](#-license)
 - [Contact & Feedback](#-contact--feedback)
@@ -519,7 +518,6 @@ await User.updateMany(
 
 #### UI/UX
 - ✅ **Responsive Design** - Mobile, tablet, desktop optimized
-- ✅ **Dark Mode Support** - (Future: Toggle between light/dark themes)
 - ✅ **Loading States** - Skeleton screens for better perceived performance
 - ✅ **Toast Notifications** - Real-time feedback for all actions
 - ✅ **Empty States** - Helpful messages when no data exists
@@ -528,9 +526,7 @@ await User.updateMany(
 
 #### Data Management
 - ✅ **PDF Export** - Generate printable attendance reports
-- ✅ **CSV Export** - (Future: Export data to Excel)
 - ✅ **Data Persistence** - All data stored in MongoDB with proper indexing
-- ✅ **Audit Trail** - (Future: Track who changed what and when)
 
 ---
 

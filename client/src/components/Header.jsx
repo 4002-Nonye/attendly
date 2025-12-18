@@ -17,6 +17,7 @@ function Header() {
   return (
     <>
       {' '}
+      
       <header className='border-b border-gray-200 py-4 md:py-5 px-4 md:px-8 w-full bg-white'>
         <div className='flex justify-between items-center'>
           {/* Left: School name */}
