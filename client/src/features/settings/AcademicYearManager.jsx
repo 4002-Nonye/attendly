@@ -3,6 +3,7 @@ import { Calendar, Check } from 'lucide-react';
 import PropTypes from 'prop-types';
 
 import Button from '../../components/Button';
+import { useButtonState } from '../../hooks/useButtonState';
 
 import { useSwitchSemester } from './useSwitchSemester';
 
@@ -14,6 +15,7 @@ function AcademicYearManager({
   const [selectedSemester, setSelectedSemester] = useState(currentSemester);
   const hasChanged = selectedSemester !== currentSemester;
   const { switchSemester, isPending } = useSwitchSemester();
+  const {disableButton}=useButtonState()
 
   const handleSemesterSwitch = () => {
     switchSemester({
@@ -70,7 +72,7 @@ function AcademicYearManager({
                 <button
                   key={semester}
                   onClick={() => setSelectedSemester(semester)}
-                  disabled={isPending}
+                  disabled={isPending||disableButton}
                   className={`relative p-4 rounded-lg border-2 font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
                     isSelected
                       ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
@@ -92,7 +94,7 @@ function AcademicYearManager({
           {hasChanged && (
             <Button
               onClick={handleSemesterSwitch}
-              disabled={isPending}
+              disabled={isPending|| disableButton}
               variant='primary'
               size='md'
               className='mt-4'
